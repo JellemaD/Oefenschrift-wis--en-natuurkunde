@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Esra's oefenschrift</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBFCFE; --grid:#E3EBF5; --grid-strong:#C9D6E6;
+  --ink:#1D3A6E; --text:#1F2733; --pencil:#5B6577;
+  --marker:#FFE45C; --marker-soft:#FFF4B0;
+  --red:#C9302C; --red-soft:#FCE9E8; --green:#237A4B; --green-soft:#E3F4EA;
+  --card:#FFFFFF; --margin:#E8A0A0;
+  --hand:"Kalam","Comic Sans MS",cursive;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131924; --grid:#1C2432; --grid-strong:#2B3547;
+    --ink:#A9C6FF; --text:#E6EAF2; --pencil:#9AA4B5;
+    --marker:#E2C53A; --marker-soft:#3A3417;
+    --red:#FF7A74; --red-soft:#3A1E1E; --green:#6FD39C; --green-soft:#17301F;
+    --card:#1A2130; --margin:#7A3C3C;
+  }
+}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;min-height:100%;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:24px 24px;
+  color:var(--text);font-family:var(--body);font-size:1.0625rem;line-height:1.55;
+}
+main{max-width:760px;margin:0 auto;padding:1.5rem 1rem 6rem}
+h1,h2,h3{color:var(--ink);line-height:1.2}
+h1{font-family:var(--hand);font-weight:700;font-size:clamp(2.2rem,7vw,3.2rem);margin:.5rem 0 .25rem}
+.intro{max-width:34em;color:var(--pencil);margin:0 0 2rem}
+h2{font-size:1.25rem;margin:2rem 0 .75rem}
+button,input,textarea{font:inherit}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
+
+/* Onderwerpen als regels in een schrift, met kantlijn */
+.schrift{background:var(--card);border:1px solid var(--grid-strong);border-radius:6px;position:relative;padding-left:3rem}
+.schrift::before{content:"";position:absolute;left:2.25rem;top:0;bottom:0;width:2px;background:var(--margin)}
+.topic{display:flex;align-items:center;gap:1rem;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--grid);padding:.9rem 1rem .9rem .5rem;cursor:pointer;color:var(--text)}
+.topic:last-child{border-bottom:0}
+.topic:hover .t-title{text-decoration:underline;text-decoration-color:var(--marker);text-decoration-thickness:5px;text-underline-offset:-1px}
+.t-main{flex:1}
+.t-title{font-weight:700;color:var(--ink);display:block}
+.t-sub{font-size:.92rem;color:var(--pencil)}
+.t-score{font-family:var(--hand);font-size:1rem;color:var(--pencil);white-space:nowrap}
+.t-score.goed{color:var(--green)}
+@media (max-width:540px){
+  .schrift{padding-left:1.75rem}.schrift::before{left:1.1rem}
+  .topic{flex-wrap:wrap;gap:.1rem;padding-left:.6rem}
+  .t-score{width:100%}
+}
+
+.linkbtn{background:none;border:0;color:var(--ink);cursor:pointer;padding:.25rem 0;font-weight:700}
+.linkbtn:hover{text-decoration:underline}
+
+/* Oefenen */
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.sessie{font-family:var(--hand);color:var(--pencil)}
+details.uitleg{background:var(--card);border:1px solid var(--grid-strong);border-radius:6px;padding:.25rem 1rem;margin:1rem 0}
+details.uitleg summary{cursor:pointer;font-weight:700;color:var(--ink);padding:.5rem 0}
+details.uitleg p,details.uitleg ul{margin:.4rem 0 .8rem}
+.formule{font-family:var(--hand);font-size:1.25rem;color:var(--ink);background:var(--marker-soft);padding:0 .35rem;border-radius:3px;white-space:nowrap}
+.opgave{background:var(--card);border:2px solid var(--ink);border-radius:8px;padding:1.25rem;margin:1rem 0}
+.vraag{font-size:1.125rem;margin:0 0 1rem}
+.plotwrap{overflow-x:auto;margin:0 0 1rem}
+svg.plot{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;font-family:var(--body)}
+.g-grid{stroke:var(--grid-strong);stroke-width:1}
+.g-axis{stroke:var(--pencil);stroke-width:1.6}
+.g-lbl{fill:var(--pencil);font-size:11px}
+.g-name{fill:var(--ink);font-size:13px;font-weight:700}
+.g-line{stroke:var(--ink);stroke-width:2.6;fill:none}
+.g-pt{fill:var(--red)}
+.g-ptl{fill:var(--red);font-size:13px;font-weight:700}
+.g-help{stroke:var(--red);stroke-width:1.2;stroke-dasharray:4 3}
+.g-tri{fill:var(--marker);fill-opacity:.45;stroke:#B89400;stroke-width:2}
+.g-tril{fill:var(--text);font-size:13px;font-weight:700}
+table.tabel{border-collapse:collapse;margin:0 0 1rem;font-variant-numeric:tabular-nums}
+table.tabel th,table.tabel td{border:1px solid var(--grid-strong);padding:.35rem .8rem;text-align:center}
+table.tabel th{background:var(--marker-soft);color:var(--ink)}
+.tabelwrap{overflow-x:auto}
+
+.velden{display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;margin:0 0 1rem}
+.veld{display:flex;align-items:center;gap:.5rem}
+.veld label{font-weight:700;color:var(--ink)}
+.veld input{width:7.5rem;padding:.5rem .6rem;font-size:1.15rem;border:2px solid var(--pencil);border-radius:6px;background:var(--paper);color:var(--text)}
+.veld input.ok{border-color:var(--green);background:var(--green-soft)}
+.veld input.fout{border-color:var(--red);background:var(--red-soft)}
+.eenheid{color:var(--pencil)}
+.knoppen{display:flex;flex-wrap:wrap;gap:.6rem}
+.btn{border-radius:8px;padding:.6rem 1.1rem;cursor:pointer;border:2px solid var(--ink);background:transparent;color:var(--ink);font-weight:700}
+.btn.hoofd{background:var(--ink);color:var(--paper)}
+.btn:hover{filter:brightness(1.08)}
+.feedback{font-family:var(--hand);font-size:1.3rem;min-height:1.8rem;margin:1rem 0 0}
+.feedback.goed{color:var(--green)}
+.feedback.fout{color:var(--red)}
+.hint{background:var(--marker-soft);border-radius:6px;padding:.75rem 1rem;margin:1rem 0 0}
+.stappen{border-left:5px solid var(--marker);padding:.5rem 0 .5rem 1rem;margin:1rem 0 0;line-height:1.9}
+.stappen b{color:var(--ink)}
+.hidden{display:none !important}
+
+/* Spiekbrief */
+.spiek{background:var(--card);border:1px solid var(--grid-strong);border-radius:6px;padding:.5rem 1.25rem 1rem}
+.spiek h3{margin:1.25rem 0 .5rem;font-size:1.05rem}
+.spiek dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;margin:0}
+.spiek dt{white-space:nowrap}
+.spiek dd{margin:0;color:var(--pencil)}
+
+/* Vraag-knop en venster */
+.vraagknop{position:fixed;right:1rem;bottom:calc(1rem + env(safe-area-inset-bottom,0px));background:var(--marker);color:#1F2733;border:2px solid #1F2733;border-radius:999px;padding:.75rem 1.25rem;font-family:var(--hand);font-size:1.2rem;font-weight:700;cursor:pointer;box-shadow:3px 3px 0 #1F2733}
+dialog{border:2px solid var(--ink);border-radius:10px;padding:1.25rem;max-width:min(520px,92vw);width:100%;background:var(--card);color:var(--text)}
+dialog::backdrop{background:rgba(20,25,36,.55)}
+dialog h2{margin-top:0;font-family:var(--hand);font-size:1.6rem}
+dialog textarea{width:100%;min-height:7rem;padding:.6rem;border:2px solid var(--pencil);border-radius:6px;background:var(--paper);color:var(--text)}
+.context{font-size:.9rem;color:var(--pencil);background:var(--paper);border-radius:6px;padding:.5rem .75rem;margin:.75rem 0;white-space:pre-wrap;max-height:9rem;overflow:auto}
+.klein{font-size:.9rem;color:var(--pencil)}
+footer{max-width:760px;margin:0 auto;padding:0 1rem 2rem;font-size:.85rem;color:var(--pencil)}
+@media (prefers-reduced-motion: no-preference){
+  .feedback.goed{animation:pop .35s ease-out}
+  @keyframes pop{from{transform:scale(.92);opacity:.3}to{transform:scale(1);opacity:1}}
+}
+</style>
+</head>
+<body>
+<main>
+  <!-- STARTSCHERM -->
+  <section id="home">
+    <h1>Esra's oefenschrift</h1>
+    <p class="intro">Wiskunde en natuurkunde voor havo 3. Kies een onderwerp en oefen zoveel je wilt: elke som is nieuw. Kom je er niet uit? Vraag een hint, bekijk de uitwerking of stel je vraag.</p>
+
+    <h2>Wiskunde: lineaire formules</h2>
+    <div class="schrift" id="lijst-wis"></div>
+
+    <h2>Natuurkunde</h2>
+    <div class="schrift" id="lijst-nat"></div>
+
+    <h2>Alles op een rij</h2>
+    <div class="schrift">
+      <button class="topic" id="naar-spiek">
+        <span class="t-main"><span class="t-title">Spiekbrief</span><span class="t-sub">Alle formules en eenheden op één pagina</span></span>
+      </button>
+    </div>
+    <p class="klein" style="margin-top:1.5rem"><button class="linkbtn" id="reset">Scores wissen</button></p>
+  </section>
+
+  <!-- OEFENSCHERM -->
+  <section id="oefen" class="hidden">
+    <div class="topbar">
+      <button class="linkbtn" data-home>← Onderwerpen</button>
+      <span class="sessie" id="sessie"></span>
+    </div>
+    <h2 id="o-titel" style="font-size:1.6rem;margin-top:1rem"></h2>
+    <details class="uitleg" id="o-uitleg"><summary>Uitleg</summary><div id="o-uitlegtekst"></div></details>
+
+    <div class="opgave">
+      <p class="vraag" id="o-vraag"></p>
+      <div class="plotwrap" id="o-plot"></div>
+      <div class="velden" id="o-velden"></div>
+      <div class="knoppen">
+        <button class="btn hoofd" id="b-check">Controleer</button>
+        <button class="btn" id="b-hint">Hint</button>
+        <button class="btn" id="b-uitw">Uitwerking</button>
+        <button class="btn" id="b-nieuw">Nieuwe som</button>
+      </div>
+      <p class="feedback" id="o-feedback" aria-live="polite"></p>
+      <div class="hint hidden" id="o-hint"></div>
+      <div class="stappen hidden" id="o-stappen"></div>
+    </div>
+    <p class="klein">Tip: een komma mag, dus 2,5 of 2.5. Breuken zoals 3/2 mogen ook.</p>
+  </section>
+
+  <!-- SPIEKBRIEF -->
+  <section id="spiekbrief" class="hidden">
+    <button class="linkbtn" data-home>← Onderwerpen</button>
+    <h2 style="font-size:1.6rem">Spiekbrief</h2>
+    <div class="spiek">
+      <h3>Lineaire formules</h3>
+      <dl>
+        <dt><span class="formule">y = ax + b</span></dt><dd>a is de richtingscoëfficiënt (helling), b is het startgetal (snijpunt met de y-as)</dd>
+        <dt><span class="formule">a = Δy / Δx</span></dt><dd>hoeveel omhoog (of omlaag) gedeeld door hoeveel opzij</dd>
+        <dt>a positief</dt><dd>lijn stijgt; a negatief: lijn daalt; a = 0: horizontaal</dd>
+      </dl>
+      <h3>Elektriciteit</h3>
+      <dl>
+        <dt><span class="formule">U = I · R</span></dt><dd>U spanning (V), I stroomsterkte (A), R weerstand (Ω)</dd>
+        <dt><span class="formule">P = U · I</span></dt><dd>P vermogen (W)</dd>
+        <dt><span class="formule">E = P · t</span></dt><dd>E in J met P in W en t in s; of E in kWh met P in kW en t in h</dd>
+        <dt>kosten</dt><dd>aantal kWh × prijs per kWh</dd>
+      </dl>
+      <h3>Krachten</h3>
+      <dl>
+        <dt><span class="formule">Fz = m · g</span></dt><dd>Fz in N, m in kg, g = 9,81 N/kg</dd>
+        <dt><span class="formule">F = C · u</span></dt><dd>C veerconstante (N/cm of N/m), u uitrekking (cm of m)</dd>
+      </dl>
+      <h3>Beweging en stoffen</h3>
+      <dl>
+        <dt><span class="formule">v = s / t</span></dt><dd>m/s bij m en s; km/h bij km en h</dd>
+        <dt>km/h ↔ m/s</dt><dd>km/h ÷ 3,6 = m/s; m/s × 3,6 = km/h</dd>
+        <dt><span class="formule">ρ = m / V</span></dt><dd>dichtheid in g/cm³, m in g, V in cm³</dd>
+      </dl>
+      <h3>Omrekenen</h3>
+      <dl>
+        <dt>1 km = 1000 m</dt><dd>1 m = 100 cm = 1000 mm</dd>
+        <dt>1 kg = 1000 g</dt><dd>1 A = 1000 mA; 1 kW = 1000 W</dd>
+        <dt>1 h = 60 min</dt><dd>= 3600 s</dd>
+        <dt>1 dm³ = 1 L</dt><dd>= 1000 cm³ = 1000 mL</dd>
+      </dl>
+    </div>
+  </section>
+</main>
+<footer>Gemaakt voor Esra om te oefenen. Scores worden alleen op dit apparaat bewaard.</footer>
+
+<button class="vraagknop" id="vraagknop">Vraag stellen</button>
+
+<dialog id="vraagvenster">
+  <h2>Waar loop je vast?</h2>
+  <label for="vraagtekst">Schrijf je vraag zo precies mogelijk op. Wat snap je wel, en waar loop je vast?</label>
+  <textarea id="vraagtekst" placeholder="Bijvoorbeeld: ik snap niet waarom ik door Δx moet delen"></textarea>
+  <div class="context" id="vraagcontext"></div>
+  <div class="knoppen">
+    <a class="btn hoofd hidden" id="v-whatsapp" target="_blank" rel="noopener">Stuur via WhatsApp</a>
+    <a class="btn hidden" id="v-mail">Stuur via e-mail</a>
+    <button class="btn" id="v-kopieer">Kopieer vraag</button>
+    <button class="btn" id="v-sluit">Sluiten</button>
+  </div>
+  <p class="klein" id="v-status" aria-live="polite"></p>
+</dialog>
+
+<script>
+/* ============ INSTELLINGEN: vul hier je eigen gegevens in ============ */
+const CONFIG = {
+  begeleider: "Durk",
+  whatsapp: "",   // bijvoorbeeld "31612345678" (landcode 31, zonder 0 en zonder +)
+  email: ""       // bijvoorbeeld "naam@voorbeeld.nl"
+};
+/* ===================================================================== */
+
+// ---------- hulpfuncties ----------
+const R = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+function fmt(n, d = 3) {
+  if (!isFinite(n)) return "?";
+  const r = Math.round(n * 10 ** d) / 10 ** d;
+  return (Object.is(r, -0) ? 0 : r).toLocaleString("nl-NL", { maximumFractionDigits: d, useGrouping: false }).replace("-", "−");
+}
+const par = n => (n < 0 ? `(${fmt(n)})` : fmt(n));
+function parseNum(s) {
+  s = String(s).trim().replace(/\s/g, "").replace(/[−–]/g, "-").replace(/,/g, ".");
+  if (!s) return NaN;
+  if (/^-?\d+(\.\d+)?\/-?\d+(\.\d+)?$/.test(s)) {
+    const [p, q] = s.split("/").map(Number);
+    return q === 0 ? NaN : p / q;
+  }
+  return /^-?(\d+\.?\d*|\.\d+)$/.test(s) ? Number(s) : NaN;
+}
+const EXACT = { abs: 0.001, rel: 0.001 };
+const AFRONDEN = { abs: 0.01, rel: 0.02 };
+const dichtbij = (x, v, tol) => Math.abs(x - v) <= Math.max(tol.abs, Math.abs(v) * tol.rel);
+function formule(a, b, x = "x", y = "y") {
+  let s = `${y} = `;
+  if (a === 1) s += x; else if (a === -1) s += "−" + x; else s += fmt(a) + x;
+  if (b > 0) s += ` + ${fmt(b)}`; else if (b < 0) s += ` − ${fmt(-b)}`;
+  return s;
+}
+const F = s => `<span class="formule">${s}</span>`;
+
+// ---------- grafieken ----------
+function vlakSVG({ a, b, P, Q, tri }) {
+  const U = 20, C = 170, S = 340, id = "c" + Math.random().toString(36).slice(2, 8);
+  const X = x => C + U * x, Y = y => C - U * y;
+  let s = `<svg viewBox="0 0 ${S} ${S}" class="plot" role="img" aria-label="Rechte lijn in een assenstelsel">`;
+  s += `<defs><clipPath id="${id}"><rect x="${X(-8)}" y="${Y(8)}" width="${16 * U}" height="${16 * U}"/></clipPath></defs>`;
+  for (let i = -8; i <= 8; i++) {
+    if (i === 0) continue;
+    s += `<line class="g-grid" x1="${X(i)}" y1="${Y(8)}" x2="${X(i)}" y2="${Y(-8)}"/>`;
+    s += `<line class="g-grid" x1="${X(-8)}" y1="${Y(i)}" x2="${X(8)}" y2="${Y(i)}"/>`;
+  }
+  s += `<line class="g-axis" x1="${X(0)}" y1="${Y(8)}" x2="${X(0)}" y2="${Y(-8)}"/>`;
+  s += `<line class="g-axis" x1="${X(-8)}" y1="${Y(0)}" x2="${X(8)}" y2="${Y(0)}"/>`;
+  for (const i of [-8, -6, -4, -2, 2, 4, 6, 8]) {
+    s += `<text class="g-lbl" x="${X(i)}" y="${Y(0) + 14}" text-anchor="middle">${fmt(i)}</text>`;
+    s += `<text class="g-lbl" x="${X(0) - 5}" y="${Y(i) + 4}" text-anchor="end">${fmt(i)}</text>`;
+  }
+  s += `<text class="g-name" x="${X(8) - 2}" y="${Y(0) - 6}" text-anchor="end">x</text>`;
+  s += `<text class="g-name" x="${X(0) + 6}" y="${Y(8) + 12}">y</text>`;
+  s += `<line class="g-line" clip-path="url(#${id})" x1="${X(-9)}" y1="${Y(a * -9 + b)}" x2="${X(9)}" y2="${Y(a * 9 + b)}"/>`;
+  if (tri) {
+    const L = P[0] < Q[0] ? P : Q, Rr = P[0] < Q[0] ? Q : P;
+    s += `<path class="g-tri" d="M${X(L[0])},${Y(L[1])} L${X(Rr[0])},${Y(L[1])} L${X(Rr[0])},${Y(Rr[1])} Z"/>`;
+    const dx = Rr[0] - L[0], dy = Rr[1] - L[1];
+    s += `<text class="g-tril" x="${(X(L[0]) + X(Rr[0])) / 2}" y="${Y(L[1]) + (dy > 0 ? 16 : -7)}" text-anchor="middle">Δx = ${fmt(dx)}</text>`;
+    s += `<text class="g-tril" x="${X(Rr[0]) + 6}" y="${(Y(L[1]) + Y(Rr[1])) / 2 + 4}">Δy = ${fmt(dy)}</text>`;
+  }
+  for (const [pt, n] of [[P, "P"], [Q, "Q"]]) {
+    s += `<circle class="g-pt" cx="${X(pt[0])}" cy="${Y(pt[1])}" r="4.5"/>`;
+    s += `<text class="g-ptl" x="${X(pt[0]) - 8}" y="${Y(pt[1]) - 8}" text-anchor="end">${n}</text>`;
+  }
+  return s + "</svg>";
+}
+
+function kwadrantSVG({ xmax, ymax, ystep, xlab, ylab, slope, pt, tri }) {
+  const W = 340, H = 290, ml = 48, mr = 16, mt = 24, mb = 44, pw = W - ml - mr, ph = H - mt - mb;
+  const X = x => ml + (pw * x) / xmax, Y = y => mt + ph * (1 - y / ymax);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="plot" role="img" aria-label="Diagram met een rechte lijn door de oorsprong">`;
+  for (let x = 1; x <= xmax; x++) s += `<line class="g-grid" x1="${X(x)}" y1="${Y(0)}" x2="${X(x)}" y2="${Y(ymax)}"/>`;
+  for (let k = 1; k * ystep <= ymax + 1e-9; k++) s += `<line class="g-grid" x1="${X(0)}" y1="${Y(k * ystep)}" x2="${X(xmax)}" y2="${Y(k * ystep)}"/>`;
+  s += `<line class="g-axis" x1="${X(0)}" y1="${Y(0)}" x2="${X(xmax)}" y2="${Y(0)}"/>`;
+  s += `<line class="g-axis" x1="${X(0)}" y1="${Y(0)}" x2="${X(0)}" y2="${Y(ymax)}"/>`;
+  for (let x = 0; x <= xmax; x++) s += `<text class="g-lbl" x="${X(x)}" y="${Y(0) + 15}" text-anchor="middle">${x}</text>`;
+  for (let k = 0; k * ystep <= ymax + 1e-9; k++) s += `<text class="g-lbl" x="${X(0) - 6}" y="${Y(k * ystep) + 4}" text-anchor="end">${fmt(k * ystep)}</text>`;
+  s += `<text class="g-name" x="${W - mr}" y="${H - 6}" text-anchor="end">${xlab}</text>`;
+  s += `<text class="g-name" x="6" y="14">${ylab}</text>`;
+  if (tri) s += `<path class="g-tri" d="M${X(0)},${Y(0)} L${X(pt[0])},${Y(0)} L${X(pt[0])},${Y(pt[1])} Z"/>`;
+  s += `<line class="g-line" x1="${X(0)}" y1="${Y(0)}" x2="${X(xmax)}" y2="${Y(slope * xmax)}"/>`;
+  s += `<line class="g-help" x1="${X(pt[0])}" y1="${Y(pt[1])}" x2="${X(pt[0])}" y2="${Y(0)}"/>`;
+  s += `<line class="g-help" x1="${X(pt[0])}" y1="${Y(pt[1])}" x2="${X(0)}" y2="${Y(pt[1])}"/>`;
+  s += `<circle class="g-pt" cx="${X(pt[0])}" cy="${Y(pt[1])}" r="4.5"/>`;
+  return s + "</svg>";
+}
+
+// ---------- onderwerpen ----------
+const HELLINGEN = [-3, -2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 3];
+
+const ONDERWERPEN = [
+  // ================= WISKUNDE =================
+  {
+    id: "rc-punten", vak: "wis", titel: "Richtingscoëfficiënt uit twee punten",
+    sub: "a = Δy / Δx met coördinaten",
+    uitleg: `<p>De richtingscoëfficiënt a vertelt hoe steil een lijn is: hoeveel y verandert als x één stap groter wordt.</p>
+      <p>${F("a = Δy / Δx")}</p>
+      <ul><li>Δy = y van het tweede punt min y van het eerste punt</li>
+      <li>Δx = x van het tweede punt min x van het eerste punt</li>
+      <li>Begin bij Δy en Δx met hetzelfde punt. Min keer min is plus: 3 − (−2) = 5.</li></ul>
+      <p>Voorbeeld: A(1, 2) en B(4, 8). Δy = 8 − 2 = 6, Δx = 4 − 1 = 3, dus a = 6 / 3 = 2.</p>`,
+    gen() {
+      const a = pick(HELLINGEN), q = Number.isInteger(a) ? 1 : 2;
+      const dx = q * R(1, 3), x1 = R(-6, 3), y1 = R(-8, 8);
+      let A = [x1, y1], B = [x1 + dx, y1 + a * dx];
+      if (Math.random() < 0.4) [A, B] = [B, A];
+      const Dy = B[1] - A[1], Dx = B[0] - A[0];
+      return {
+        vraag: `Een rechte lijn gaat door de punten <b>A(${fmt(A[0])}, ${fmt(A[1])})</b> en <b>B(${fmt(B[0])}, ${fmt(B[1])})</b>. Bereken de richtingscoëfficiënt a.`,
+        velden: [{ label: "a =", val: a, tol: EXACT, omgekeerd: true }],
+        hint: `Gebruik ${F("a = Δy / Δx")}. Reken eerst Δy uit (verschil in y), dan Δx (verschil in x). Trek bij allebei het punt A eraf.`,
+        stappen: `Δy = ${fmt(B[1])} − ${par(A[1])} = ${fmt(Dy)}<br>Δx = ${fmt(B[0])} − ${par(A[0])} = ${fmt(Dx)}<br>a = Δy / Δx = ${fmt(Dy)} / ${fmt(Dx)} = <b>${fmt(a)}</b>`
+          + (a < 0 ? `<br>a is negatief, dus de lijn daalt.` : `<br>a is positief, dus de lijn stijgt.`)
+      };
+    }
+  },
+  {
+    id: "rc-grafiek", vak: "wis", titel: "Formule aflezen uit een grafiek",
+    sub: "Hellingsdriehoek en startgetal",
+    uitleg: `<p>Zo vind je de formule ${F("y = ax + b")} bij een rechte lijn:</p>
+      <ul><li><b>b</b>: kijk waar de lijn de y-as (de verticale as) snijdt.</li>
+      <li><b>a</b>: kies twee punten die precies op een roosterpunt liggen. Ga van het linker punt naar rechts (Δx) en dan omhoog of omlaag (Δy). Omlaag is negatief.</li>
+      <li>a = Δy / Δx. Dit heet de hellingsdriehoek.</li></ul>`,
+    gen() {
+      const a = pick(HELLINGEN), q = Number.isInteger(a) ? 1 : 2, b = R(-4, 4);
+      let P, Q;
+      for (let i = 0; i < 300; i++) {
+        const xP = q * R(-3, 2), xQ = xP + q * R(1, q === 1 ? 3 : 2);
+        const yP = a * xP + b, yQ = a * xQ + b;
+        if ([xP, xQ, yP, yQ].every(v => v >= -7 && v <= 7) && xP !== 0 && xQ !== 0) { P = [xP, yP]; Q = [xQ, yQ]; break; }
+      }
+      if (!P) { P = [0, b]; Q = [q, b + a * q]; }
+      const L = P[0] < Q[0] ? P : Q, Rr = P[0] < Q[0] ? Q : P;
+      return {
+        vraag: `Hieronder staat een rechte lijn. De punten P en Q liggen precies op roosterpunten. Stel de formule ${F("y = ax + b")} op: bepaal a en b.`,
+        svg: vlakSVG({ a, b, P, Q }),
+        svgUitw: vlakSVG({ a, b, P, Q, tri: true }),
+        velden: [{ label: "a =", val: a, tol: EXACT, omgekeerd: true }, { label: "b =", val: b, tol: EXACT }],
+        hint: `Voor b: waar snijdt de lijn de verticale y-as? Voor a: begin bij het linker punt. Tel hoeveel hokjes je naar rechts gaat (Δx) en hoeveel omhoog of omlaag (Δy) tot het andere punt. Omlaag telt als min.`,
+        stappen: `Van het linker punt (${fmt(L[0])}, ${fmt(L[1])}) naar het rechter punt (${fmt(Rr[0])}, ${fmt(Rr[1])}):<br>Δx = ${fmt(Rr[0] - L[0])} naar rechts, Δy = ${fmt(Rr[1] - L[1])} ${Rr[1] - L[1] >= 0 ? "omhoog" : "(omlaag)"}<br>a = ${fmt(Rr[1] - L[1])} / ${fmt(Rr[0] - L[0])} = <b>${fmt(a)}</b><br>De lijn snijdt de y-as bij y = ${fmt(b)}, dus <b>b = ${fmt(b)}</b><br>Formule: <b>${formule(a, b)}</b><br>In de grafiek zie je nu de hellingsdriehoek.`
+      };
+    }
+  },
+  {
+    id: "tabel", vak: "wis", titel: "Formule bij een tabel",
+    sub: "Zoek de vaste stap en het startgetal",
+    uitleg: `<p>Bij een lineaire formule gaat y bij elke gelijke stap in x met hetzelfde getal omhoog of omlaag.</p>
+      <ul><li><b>a</b> = hoeveel y verandert gedeeld door hoeveel x verandert. Is de stap in x 2, deel dan door 2.</li>
+      <li><b>b</b> = de y die hoort bij x = 0. Staat x = 0 niet in de tabel? Reken terug: b = y − a · x.</li></ul>`,
+    gen() {
+      const a = pick([-4, -3, -2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5]);
+      const b = R(-6, 10), start = pick([0, 0, 1, 2]), stap = pick([1, 1, 2]);
+      const xs = [0, 1, 2, 3, 4].map(i => start + i * stap), ys = xs.map(x => a * x + b);
+      const tabel = `<div class="tabelwrap"><table class="tabel"><tr><th>x</th>${xs.map(x => `<td>${fmt(x)}</td>`).join("")}</tr><tr><th>y</th>${ys.map(y => `<td>${fmt(y)}</td>`).join("")}</tr></table></div>`;
+      let st = `Stap in x: ${fmt(stap)}. Stap in y: ${fmt(ys[1])} − ${par(ys[0])} = ${fmt(ys[1] - ys[0])}<br>a = ${fmt(ys[1] - ys[0])} / ${fmt(stap)} = <b>${fmt(a)}</b><br>`;
+      st += start === 0
+        ? `Bij x = 0 hoort y = ${fmt(b)}, dus <b>b = ${fmt(b)}</b><br>`
+        : `x = 0 staat niet in de tabel. Reken terug met het eerste punt: b = y − a · x = ${fmt(ys[0])} − ${fmt(a)} · ${fmt(xs[0])} = <b>${fmt(b)}</b><br>`;
+      st += `Formule: <b>${formule(a, b)}</b>`;
+      return {
+        vraag: `Bij deze tabel hoort een lineaire formule ${F("y = ax + b")}. Bepaal a en b.${tabel}`,
+        velden: [{ label: "a =", val: a, tol: EXACT, omgekeerd: true }, { label: "b =", val: b, tol: EXACT }],
+        hint: `Hoeveel komt er bij y bij (of gaat eraf) per stap in x? Let op hoe groot de stap in x is. Voor b: welke y hoort bij x = 0?`,
+        stappen: st
+      };
+    }
+  },
+  {
+    id: "verhaal", vak: "wis", titel: "Formule bij een verhaal",
+    sub: "Vast bedrag en 'per'",
+    uitleg: `<p>In een verhaal herken je a en b zo:</p>
+      <ul><li><b>a</b> hoort bij het woordje <i>per</i>: per km, per uur, per minuut. Wordt het minder? Dan is a negatief.</li>
+      <li><b>b</b> is wat er al is bij de start: een vast bedrag, een beginlengte, wat er al in zit.</li></ul>
+      <p>Voorbeeld: een taxi kost €3 instap plus €2 per km. Dus K = 2d + 3.</p>`,
+    gen() {
+      const t = pick([
+        () => { const b = pick([2.5, 3, 3.5, 4]), a = pick([1.5, 2, 2.5]); return { tekst: `Een taxirit kost €${fmt(b)} instaptarief plus €${fmt(a)} per kilometer. K is de prijs in euro, d is de afstand in km.`, a, b, x: "d", y: "K", xw: pick([6, 8, 12, 15]), eenh: "euro" }; },
+        () => { const b = pick([20, 24, 25, 30]), a = pick([1.5, 2, 2.5, 3]); return { tekst: `Een kaars is ${b} cm lang. Als hij brandt, wordt hij elk uur ${fmt(a)} cm korter. L is de lengte in cm, t is de tijd in uren.`, a: -a, b, x: "t", y: "L", xw: pick([2, 3, 4]), eenh: "cm" }; },
+        () => { const b = pick([8, 10, 12.5, 15]), a = pick([2, 2.5, 3, 4]); return { tekst: `Een telefoonabonnement kost €${fmt(b)} per maand, plus €${fmt(a)} voor elke GB extra data. K is de prijs per maand in euro, g is het aantal GB extra.`, a, b, x: "g", y: "K", xw: pick([2, 3, 5]), eenh: "euro" }; },
+        () => { const b = pick([40, 50, 60, 80]), a = pick([10, 12, 15, 20]); return { tekst: `In een zwembadje zit al ${b} liter water. Met de tuinslang komt er elke minuut ${a} liter bij. V is het volume in liter, t is de tijd in minuten.`, a, b, x: "t", y: "V", xw: pick([5, 8, 10, 12]), eenh: "liter" }; },
+        () => { const b = pick([15, 18, 20]), a = pick([3, 4, 5, 6]); return { tekst: `Water in een pan is ${b} °C. Op het vuur wordt het elke minuut ${a} °C warmer. T is de temperatuur in °C, t is de tijd in minuten.`, a, b, x: "t", y: "T", xw: pick([3, 5, 10]), eenh: "°C" }; },
+        () => { const b = pick([120, 150, 200]), a = pick([5, 10, 12.5, 15]); return { tekst: `Sanne heeft €${b} gespaard. Elke week geeft ze €${fmt(a)} uit aan de sportschool. S is haar spaargeld in euro, w is het aantal weken.`, a: -a, b, x: "w", y: "S", xw: pick([4, 6, 8]), eenh: "euro" }; }
+      ])();
+      const yw = t.a * t.xw + t.b;
+      return {
+        vraag: `${t.tekst}<br>Stel de formule ${F(`${t.y} = a·${t.x} + b`)} op en bereken ${t.y} als ${t.x} = ${fmt(t.xw)}.`,
+        velden: [
+          { label: "a =", val: t.a, tol: EXACT },
+          { label: "b =", val: t.b, tol: EXACT },
+          { label: `${t.y} bij ${t.x} = ${fmt(t.xw)}:`, val: yw, tol: EXACT, eenheid: t.eenh }
+        ],
+        hint: `Welk getal staat bij "per" of "elke"? Dat is a. Wordt het minder, dan zet je er een min voor. Wat is er al bij de start? Dat is b.`,
+        stappen: `Per stap verandert ${t.y} met ${fmt(t.a)}, dus <b>a = ${fmt(t.a)}</b><br>Bij de start (${t.x} = 0) is ${t.y} = ${fmt(t.b)}, dus <b>b = ${fmt(t.b)}</b><br>Formule: <b>${formule(t.a, t.b, t.x, t.y)}</b><br>${t.y} = ${fmt(t.a)} · ${fmt(t.xw)} + ${par(t.b)} = <b>${fmt(yw)} ${t.eenh}</b>`
+      };
+    }
+  },
+  {
+    id: "vergelijking", vak: "wis", titel: "x uitrekenen",
+    sub: "Terugrekenen met de balansmethode",
+    uitleg: `<p>Je weet y en zoekt x. Doe aan beide kanten van het =-teken hetzelfde:</p>
+      <ul><li>Haal eerst b weg (min b, of plus b als b negatief is).</li>
+      <li>Deel daarna door a.</li></ul>
+      <p>Voorbeeld: 3x + 4 = 19 → 3x = 15 → x = 5.</p>`,
+    gen() {
+      const a = pick([-6, -5, -4, -3, -2, 2, 3, 4, 5, 6]), x = R(-8, 8), b = R(-12, 12), c = a * x + b;
+      return {
+        vraag: `Gegeven is de formule ${F(formule(a, b))}. Voor welke x geldt y = ${fmt(c)}?`,
+        velden: [{ label: "x =", val: x, tol: EXACT }],
+        hint: `Schrijf op: ${formule(a, b).slice(4)} = ${fmt(c)}. Haal eerst ${fmt(b)} weg aan beide kanten, deel dan door ${fmt(a)}.`,
+        stappen: `${formule(a, b).slice(4)} = ${fmt(c)}<br>${fmt(a)}x = ${fmt(c)} − ${par(b)} = ${fmt(c - b)}<br>x = ${fmt(c - b)} / ${par(a)} = <b>${fmt(x)}</b><br>Controle: ${fmt(a)} · ${par(x)} + ${par(b)} = ${fmt(c)} ✓`
+      };
+    }
+  },
+
+  // ================= NATUURKUNDE =================
+  {
+    id: "ohm", vak: "nat", titel: "Wet van Ohm",
+    sub: "U = I · R",
+    uitleg: `<p>${F("U = I · R")}, met U de spanning in volt (V), I de stroomsterkte in ampère (A) en R de weerstand in ohm (Ω).</p>
+      <ul><li>Zoek je I: ${F("I = U / R")}</li><li>Zoek je R: ${F("R = U / I")}</li>
+      <li>Staat de stroom in mA? Eerst delen door 1000: 250 mA = 0,25 A.</li></ul>`,
+    gen() {
+      const obj = pick(["een lampje", "een ledlampje", "een verwarmingselement", "een motortje"]);
+      let Rw, I, U;
+      do { Rw = pick([5, 10, 12, 20, 24, 40, 48, 50, 100, 120, 200]); I = pick([0.05, 0.1, 0.2, 0.25, 0.5, 1, 1.5, 2, 2.5, 3]); U = I * Rw; } while (U > 250 || U < 1);
+      const onb = pick(["U", "I", "R"]), mA = I < 1 && Math.random() < 0.5;
+      const Itxt = mA ? `${fmt(I * 1000)} mA` : `${fmt(I)} A`;
+      const omr = mA ? `I = ${fmt(I * 1000)} mA = ${fmt(I)} A<br>` : "";
+      if (onb === "U") return {
+        vraag: `Door ${obj} met een weerstand van ${fmt(Rw)} Ω loopt een stroom van ${Itxt}. Bereken de spanning U.`,
+        velden: [{ label: "U =", val: U, tol: AFRONDEN, eenheid: "V" }],
+        hint: `Gebruik ${F("U = I · R")}.${mA ? " Reken de stroom eerst om van mA naar A (delen door 1000)." : ""}`,
+        stappen: `${omr}U = I · R = ${fmt(I)} · ${fmt(Rw)} = <b>${fmt(U)} V</b>`
+      };
+      if (onb === "I") return {
+        vraag: `Over ${obj} met een weerstand van ${fmt(Rw)} Ω staat een spanning van ${fmt(U)} V. Bereken de stroomsterkte I in ${mA ? "mA" : "A"}.`,
+        velden: [{ label: "I =", val: mA ? I * 1000 : I, tol: AFRONDEN, eenheid: mA ? "mA" : "A" }],
+        hint: `U = I · R omgeschreven: ${F("I = U / R")}.${mA ? " Je antwoord moet in mA: keer 1000." : ""}`,
+        stappen: `I = U / R = ${fmt(U)} / ${fmt(Rw)} = <b>${fmt(I)} A</b>${mA ? ` = <b>${fmt(I * 1000)} mA</b>` : ""}`
+      };
+      return {
+        vraag: `Over ${obj} staat een spanning van ${fmt(U)} V. Er loopt een stroom van ${Itxt}. Bereken de weerstand R.`,
+        velden: [{ label: "R =", val: Rw, tol: AFRONDEN, eenheid: "Ω" }],
+        hint: `U = I · R omgeschreven: ${F("R = U / I")}.${mA ? " Reken de stroom eerst om naar A." : ""}`,
+        stappen: `${omr}R = U / I = ${fmt(U)} / ${fmt(I)} = <b>${fmt(Rw)} Ω</b>`
+      };
+    }
+  },
+  {
+    id: "vermogen", vak: "nat", titel: "Vermogen, energie en kosten",
+    sub: "P = U · I en E = P · t",
+    uitleg: `<ul><li>${F("P = U · I")}: vermogen P in watt (W).</li>
+      <li>${F("E = P · t")}: energie. Met P in W en t in s krijg je joule (J). Met P in kW en t in h krijg je kWh.</li>
+      <li>Kosten = aantal kWh × prijs per kWh.</li>
+      <li>W naar kW: delen door 1000. Minuten naar uren: delen door 60.</li></ul>`,
+    gen() {
+      const v = pick(["P", "I", "kWh", "kosten", "J"]);
+      if (v === "P") {
+        const U = pick([6, 12, 230]), I = U === 230 ? pick([0.5, 2, 5, 8, 10]) : pick([0.5, 1, 1.5, 2, 3]), P = U * I;
+        return { vraag: `Een apparaat werkt op ${U} V en er loopt een stroom van ${fmt(I)} A doorheen. Bereken het vermogen P.`,
+          velden: [{ label: "P =", val: P, tol: AFRONDEN, eenheid: "W" }], hint: `Gebruik ${F("P = U · I")}.`,
+          stappen: `P = U · I = ${U} · ${fmt(I)} = <b>${fmt(P)} W</b>` };
+      }
+      if (v === "I") {
+        const P = pick([460, 690, 1150, 2300, 3450]), I = P / 230;
+        return { vraag: `Een waterkoker van ${P} W is aangesloten op het stopcontact (230 V). Bereken de stroomsterkte I.`,
+          velden: [{ label: "I =", val: I, tol: AFRONDEN, eenheid: "A" }], hint: `P = U · I omgeschreven: ${F("I = P / U")}.`,
+          stappen: `I = P / U = ${P} / 230 = <b>${fmt(I, 2)} A</b>` };
+      }
+      const P = pick([60, 100, 800, 1000, 1500, 2000, 2500]), t = pick([0.5, 1, 1.5, 2, 3, 4, 8]), E = (P / 1000) * t;
+      if (v === "kWh") return { vraag: `Een apparaat van ${P} W staat ${fmt(t)} uur aan. Bereken hoeveel energie het gebruikt in kWh.`,
+        velden: [{ label: "E =", val: E, tol: AFRONDEN, eenheid: "kWh" }], hint: `Maak van W eerst kW (delen door 1000). Gebruik dan ${F("E = P · t")} met t in uren.`,
+        stappen: `P = ${P} W = ${fmt(P / 1000)} kW<br>E = P · t = ${fmt(P / 1000)} · ${fmt(t)} = <b>${fmt(E)} kWh</b>` };
+      if (v === "kosten") {
+        const prijs = pick([0.25, 0.3, 0.35, 0.4]), k = E * prijs;
+        return { vraag: `Een apparaat van ${P} W staat ${fmt(t)} uur aan. Eén kWh kost €${fmt(prijs, 2)}. Wat kost dit?`,
+          velden: [{ label: "kosten = €", val: k, tol: { abs: 0.011, rel: 0.02 } }], hint: `Reken eerst de energie uit in kWh (P in kW keer t in uren). Doe dat daarna keer de prijs.`,
+          stappen: `P = ${fmt(P / 1000)} kW<br>E = ${fmt(P / 1000)} · ${fmt(t)} = ${fmt(E)} kWh<br>kosten = ${fmt(E)} · €${fmt(prijs, 2)} = <b>€${fmt(k, 2)}</b>` };
+      }
+      const Pj = pick([5, 10, 40, 60, 100]), ts = pick([10, 20, 30, 60, 120]);
+      return { vraag: `Een lamp van ${Pj} W brandt ${ts} seconden. Bereken de energie in joule.`,
+        velden: [{ label: "E =", val: Pj * ts, tol: AFRONDEN, eenheid: "J" }], hint: `${F("E = P · t")} met P in W en t in s geeft joule.`,
+        stappen: `E = P · t = ${Pj} · ${ts} = <b>${fmt(Pj * ts)} J</b>` };
+    }
+  },
+  {
+    id: "zwaartekracht", vak: "nat", titel: "Zwaartekracht",
+    sub: "Fz = m · g",
+    uitleg: `<p>${F("Fz = m · g")}, met Fz in newton (N), m in kilogram (kg) en g = 9,81 N/kg.</p>
+      <ul><li>Staat de massa in gram? Eerst delen door 1000: 250 g = 0,25 kg.</li>
+      <li>Zoek je m: ${F("m = Fz / g")}</li></ul>`,
+    gen() {
+      const g = 9.81, TOL = { abs: 0.05, rel: 0.025 };
+      const v = pick(["kg", "g", "m"]), ding = pick(["een tas", "een pakket", "een kat", "een doos boeken", "een fiets", "een steen"]);
+      if (v === "kg") { const m = pick([0.2, 0.5, 1.5, 2, 3, 5, 8, 12, 15, 25]);
+        return { vraag: `${ding[0].toUpperCase() + ding.slice(1)} heeft een massa van ${fmt(m)} kg. Bereken de zwaartekracht Fz.`,
+          velden: [{ label: "Fz =", val: m * g, tol: TOL, eenheid: "N" }], hint: `Gebruik ${F("Fz = m · g")} met g = 9,81 N/kg.`,
+          stappen: `Fz = m · g = ${fmt(m)} · 9,81 = <b>${fmt(m * g, 1)} N</b>` }; }
+      if (v === "g") { const mg = pick([50, 100, 150, 200, 250, 400, 500, 750]);
+        return { vraag: `${pick(["Een appel", "Een blokje", "Een pak hagelslag"])} met een massa van ${mg} gram hangt aan een krachtmeter. Bereken de zwaartekracht Fz in N.`,
+          velden: [{ label: "Fz =", val: (mg / 1000) * g, tol: TOL, eenheid: "N" }], hint: `Reken eerst gram om naar kilogram (delen door 1000). Gebruik dan ${F("Fz = m · g")}.`,
+          stappen: `m = ${mg} g = ${fmt(mg / 1000)} kg<br>Fz = ${fmt(mg / 1000)} · 9,81 = <b>${fmt((mg / 1000) * g, 2)} N</b>` }; }
+      const m = pick([2, 5, 8, 10, 20, 40, 55, 70]), Fz = Math.round(m * g * 10) / 10;
+      return { vraag: `Op ${ding} werkt een zwaartekracht van ${fmt(Fz)} N. Bereken de massa in kg.`,
+        velden: [{ label: "m =", val: m, tol: TOL, eenheid: "kg" }], hint: `Fz = m · g omgeschreven: ${F("m = Fz / g")}.`,
+        stappen: `m = Fz / g = ${fmt(Fz)} / 9,81 = <b>${fmt(Fz / g, 1)} kg</b>` };
+    }
+  },
+  {
+    id: "veer", vak: "nat", titel: "Veerkracht",
+    sub: "F = C · u",
+    uitleg: `<p>${F("F = C · u")}: F is de kracht (N), C de veerconstante en u de uitrekking.</p>
+      <ul><li>C in N/cm: dan u in cm. C in N/m: dan u in meter (cm delen door 100).</li>
+      <li>Een grote C betekent een stugge veer.</li>
+      <li>Zoek je C: ${F("C = F / u")}. Zoek je u: ${F("u = F / C")}.</li></ul>`,
+    gen() {
+      if (Math.random() < 0.7) {
+        const C = pick([0.5, 1, 2, 2.5, 4, 5]), u = R(2, 12), Fk = C * u, onb = pick(["F", "C", "u"]);
+        if (onb === "F") return { vraag: `Een veer heeft een veerconstante van ${fmt(C)} N/cm. De veer wordt ${u} cm uitgerekt. Bereken de veerkracht F.`,
+          velden: [{ label: "F =", val: Fk, tol: AFRONDEN, eenheid: "N" }], hint: `Gebruik ${F("F = C · u")}.`, stappen: `F = C · u = ${fmt(C)} · ${u} = <b>${fmt(Fk)} N</b>` };
+        if (onb === "C") return { vraag: `Een veer wordt ${u} cm uitgerekt door een kracht van ${fmt(Fk)} N. Bereken de veerconstante C in N/cm.`,
+          velden: [{ label: "C =", val: C, tol: AFRONDEN, eenheid: "N/cm" }], hint: `${F("C = F / u")}.`, stappen: `C = F / u = ${fmt(Fk)} / ${u} = <b>${fmt(C)} N/cm</b>` };
+        return { vraag: `Aan een veer met een veerconstante van ${fmt(C)} N/cm trekt een kracht van ${fmt(Fk)} N. Hoeveel cm rekt de veer uit?`,
+          velden: [{ label: "u =", val: u, tol: AFRONDEN, eenheid: "cm" }], hint: `${F("u = F / C")}.`, stappen: `u = F / C = ${fmt(Fk)} / ${fmt(C)} = <b>${u} cm</b>` };
+      }
+      const C = pick([20, 25, 40, 50, 80, 100, 200]), ucm = pick([2, 4, 5, 8, 10, 15]), um = ucm / 100, Fk = C * um;
+      return { vraag: `Een veer heeft een veerconstante van ${C} N/m. De veer wordt ${ucm} cm uitgerekt. Bereken de veerkracht F.`,
+        velden: [{ label: "F =", val: Fk, tol: AFRONDEN, eenheid: "N" }],
+        hint: `Let op: C staat in N/m, dus u moet in meter. Deel de centimeters door 100. Gebruik dan ${F("F = C · u")}.`,
+        stappen: `u = ${ucm} cm = ${fmt(um)} m<br>F = C · u = ${C} · ${fmt(um)} = <b>${fmt(Fk)} N</b>` };
+    }
+  },
+  {
+    id: "snelheid", vak: "nat", titel: "Snelheid",
+    sub: "v = s / t, km/h en m/s",
+    uitleg: `<p>${F("v = s / t")}: snelheid = afstand gedeeld door tijd.</p>
+      <ul><li>Afstand in m en tijd in s geeft m/s. Afstand in km en tijd in h geeft km/h.</li>
+      <li>Tijd in minuten naar uren: delen door 60 (30 min = 0,5 h).</li>
+      <li>${F("km/h ÷ 3,6 = m/s")} en ${F("m/s × 3,6 = km/h")}</li>
+      <li>Zoek je s: ${F("s = v · t")}. Zoek je t: ${F("t = s / v")}.</li></ul>`,
+    gen() {
+      const var_ = pick(["ms", "ms", "kmh", "omr"]);
+      if (var_ === "ms") {
+        const v = pick([2, 3, 4, 5, 8, 10, 12, 15, 20, 25]), t = R(5, 60), s = v * t, onb = pick(["v", "s", "t"]);
+        const wie = v <= 5 ? pick(["Een hardloper", "Een wandelaar", "Een zwemmer"]) : v <= 12 ? pick(["Een fietser", "Een scooter"]) : pick(["Een auto", "Een trein"]);
+        if (onb === "v") return { vraag: `${wie} legt ${s} m af in ${t} s. Bereken de gemiddelde snelheid in m/s.`,
+          velden: [{ label: "v =", val: v, tol: AFRONDEN, eenheid: "m/s" }], hint: `${F("v = s / t")}.`, stappen: `v = s / t = ${s} / ${t} = <b>${fmt(v)} m/s</b>` };
+        if (onb === "s") return { vraag: `${wie} beweegt ${t} s lang met een snelheid van ${v} m/s. Hoeveel meter legt hij af?`,
+          velden: [{ label: "s =", val: s, tol: AFRONDEN, eenheid: "m" }], hint: `${F("s = v · t")}.`, stappen: `s = v · t = ${v} · ${t} = <b>${s} m</b>` };
+        return { vraag: `${wie} beweegt met ${v} m/s. Hoeveel seconden doet hij over ${s} m?`,
+          velden: [{ label: "t =", val: t, tol: AFRONDEN, eenheid: "s" }], hint: `${F("t = s / v")}.`, stappen: `t = s / v = ${s} / ${v} = <b>${t} s</b>` };
+      }
+      if (var_ === "kmh") {
+        const v = pick([15, 20, 30, 45, 60, 80, 90, 100, 120]), tm = pick([15, 20, 30, 45, 90, 120]), s = (v * tm) / 60;
+        return { vraag: `Een bus rijdt ${fmt(s)} km in ${tm} minuten. Bereken de gemiddelde snelheid in km/h.`,
+          velden: [{ label: "v =", val: v, tol: AFRONDEN, eenheid: "km/h" }], hint: `Voor km/h moet de tijd in uren. Deel de minuten door 60. Gebruik dan ${F("v = s / t")}.`,
+          stappen: `t = ${tm} min = ${tm} / 60 = ${fmt(tm / 60)} h<br>v = s / t = ${fmt(s)} / ${fmt(tm / 60)} = <b>${fmt(v)} km/h</b>` };
+      }
+      if (Math.random() < 0.5) { const k = pick([18, 36, 54, 72, 90, 108, 126]);
+        return { vraag: `Een auto rijdt ${k} km/h. Hoeveel is dat in m/s?`, velden: [{ label: "v =", val: k / 3.6, tol: AFRONDEN, eenheid: "m/s" }],
+          hint: `Van km/h naar m/s: delen door 3,6.`, stappen: `${k} / 3,6 = <b>${fmt(k / 3.6)} m/s</b>` }; }
+      const m = pick([5, 10, 15, 20, 25, 30]);
+      return { vraag: `Een brommer rijdt ${m} m/s. Hoeveel is dat in km/h?`, velden: [{ label: "v =", val: m * 3.6, tol: AFRONDEN, eenheid: "km/h" }],
+        hint: `Van m/s naar km/h: keer 3,6.`, stappen: `${m} × 3,6 = <b>${fmt(m * 3.6)} km/h</b>` };
+    }
+  },
+  {
+    id: "dichtheid", vak: "nat", titel: "Dichtheid",
+    sub: "ρ = m / V",
+    uitleg: `<p>${F("ρ = m / V")}: dichtheid (g/cm³) = massa (g) gedeeld door volume (cm³).</p>
+      <ul><li>Zoek je m: ${F("m = ρ · V")}. Zoek je V: ${F("V = m / ρ")}.</li>
+      <li>Met de dichtheid kun je opzoeken van welk materiaal iets gemaakt is.</li></ul>
+      <p>Enkele dichtheden: water 1,00; ijs 0,92; aluminium 2,70; ijzer 7,87; koper 8,96; zilver 10,5; lood 11,3; goud 19,3 g/cm³.</p>`,
+    gen() {
+      const [naam, rho] = pick([["aluminium", 2.7], ["ijzer", 7.87], ["koper", 8.96], ["lood", 11.3], ["goud", 19.3], ["zilver", 10.5], ["ijs", 0.92]]);
+      const V = pick([10, 20, 25, 40, 50, 100, 125, 200]), m = Math.round(rho * V * 10) / 10, onb = pick(["rho", "m", "V"]);
+      if (onb === "rho") return { vraag: `Een blokje heeft een massa van ${fmt(m)} g en een volume van ${V} cm³. Bereken de dichtheid.`,
+        velden: [{ label: "ρ =", val: rho, tol: AFRONDEN, eenheid: "g/cm³" }], hint: `${F("ρ = m / V")}.`,
+        stappen: `ρ = m / V = ${fmt(m)} / ${V} = <b>${fmt(m / V, 2)} g/cm³</b><br>In de tabel zie je: dit is ${naam}.` };
+      if (onb === "m") return { vraag: `Een voorwerp van ${naam} (ρ = ${fmt(rho, 2)} g/cm³) heeft een volume van ${V} cm³. Bereken de massa.`,
+        velden: [{ label: "m =", val: rho * V, tol: AFRONDEN, eenheid: "g" }], hint: `${F("m = ρ · V")}.`,
+        stappen: `m = ρ · V = ${fmt(rho, 2)} · ${V} = <b>${fmt(rho * V, 1)} g</b>` };
+      return { vraag: `Een voorwerp van ${naam} (ρ = ${fmt(rho, 2)} g/cm³) heeft een massa van ${fmt(m)} g. Bereken het volume.`,
+        velden: [{ label: "V =", val: m / rho, tol: AFRONDEN, eenheid: "cm³" }], hint: `${F("V = m / ρ")}.`,
+        stappen: `V = m / ρ = ${fmt(m)} / ${fmt(rho, 2)} = <b>${fmt(m / rho, 1)} cm³</b>` };
+    }
+  },
+  {
+    id: "omrekenen", vak: "nat", titel: "Eenheden omrekenen",
+    sub: "mm, kg, mA, kW, km/h en meer",
+    uitleg: `<p>Onthoud wat de voorvoegsels betekenen:</p>
+      <ul><li>kilo (k) = 1000 ×, dus 1 km = 1000 m</li><li>milli (m) = 1/1000, dus 1 mm = 0,001 m</li><li>centi (c) = 1/100, dus 1 cm = 0,01 m</li></ul>
+      <p>Van groot naar klein: keer. Van klein naar groot: delen. Snelheid: km/h ÷ 3,6 = m/s.</p>`,
+    gen() {
+      const c = pick([
+        { f: "mm", t: "m", k: 0.001, vals: [5, 25, 120, 350, 1500], w: "1 m = 1000 mm" },
+        { f: "cm", t: "m", k: 0.01, vals: [3, 15, 45, 120, 250], w: "1 m = 100 cm" },
+        { f: "km", t: "m", k: 1000, vals: [0.5, 1.2, 3, 4.5, 12], w: "1 km = 1000 m" },
+        { f: "m", t: "km", k: 0.001, vals: [250, 800, 1500, 4200, 12000], w: "1 km = 1000 m" },
+        { f: "g", t: "kg", k: 0.001, vals: [50, 250, 750, 1200, 3500], w: "1 kg = 1000 g" },
+        { f: "kg", t: "g", k: 1000, vals: [0.2, 0.5, 1.5, 2.25, 4], w: "1 kg = 1000 g" },
+        { f: "mA", t: "A", k: 0.001, vals: [20, 150, 250, 500, 1200], w: "1 A = 1000 mA" },
+        { f: "A", t: "mA", k: 1000, vals: [0.02, 0.1, 0.25, 0.5, 1.5], w: "1 A = 1000 mA" },
+        { f: "W", t: "kW", k: 0.001, vals: [60, 500, 1200, 2000, 3500], w: "1 kW = 1000 W" },
+        { f: "kW", t: "W", k: 1000, vals: [0.5, 1.2, 2, 2.5, 7], w: "1 kW = 1000 W" },
+        { f: "min", t: "s", k: 60, vals: [2, 5, 12, 15, 30], w: "1 min = 60 s" },
+        { f: "h", t: "min", k: 60, vals: [0.25, 0.5, 1.5, 2, 3], w: "1 h = 60 min" },
+        { f: "h", t: "s", k: 3600, vals: [0.5, 1, 2, 3], w: "1 h = 3600 s" },
+        { f: "min", t: "h", k: 1 / 60, vals: [15, 30, 45, 90, 120], w: "1 h = 60 min" },
+        { f: "km/h", t: "m/s", k: 1 / 3.6, vals: [18, 36, 54, 72, 90, 108], w: "km/h ÷ 3,6 = m/s" },
+        { f: "m/s", t: "km/h", k: 3.6, vals: [5, 10, 15, 20, 25, 30], w: "m/s × 3,6 = km/h" },
+        { f: "mL", t: "L", k: 0.001, vals: [250, 330, 500, 1500], w: "1 L = 1000 mL" },
+        { f: "cm³", t: "dm³", k: 0.001, vals: [500, 750, 1000, 2500], w: "1 dm³ = 1000 cm³ (en 1 dm³ = 1 L)" }
+      ]);
+      const x = pick(c.vals), ant = x * c.k, groot = c.k >= 1;
+      const factor = groot ? fmt(c.k) : fmt(1 / c.k);
+      return {
+        vraag: `Reken om: ${fmt(x)} ${c.f} = ? ${c.t}`,
+        velden: [{ label: `${fmt(x)} ${c.f} =`, val: ant, tol: EXACT, eenheid: c.t }],
+        hint: `${c.w}. Ga je naar een ${groot ? "kleinere" : "grotere"} eenheid, dan ${groot ? "vermenigvuldig" : "deel"} je.`,
+        stappen: `${c.w}<br>${fmt(x)} ${groot ? "×" : "÷"} ${factor} = <b>${fmt(ant)} ${c.t}</b>`
+      };
+    }
+  },
+  {
+    id: "diagram", vak: "nat", titel: "Diagrammen lezen",
+    sub: "De helling is de snelheid of de veerconstante",
+    uitleg: `<p>Veel natuurkundige verbanden zijn rechte lijnen door de oorsprong (b = 0). De richtingscoëfficiënt is dan een natuurkundige grootheid:</p>
+      <ul><li>(s,t)-diagram: helling = snelheid v = s / t</li><li>(F,u)-diagram van een veer: helling = veerconstante C = F / u</li></ul>
+      <p>Lees een punt af dat precies op de lijn én op een hulplijn ligt, en deel.</p>`,
+    gen() {
+      const schaal = (top, opties) => { const ys = opties.find(s => Math.ceil(top / s - 1e-9) <= 10); return { ystep: ys, ymax: Math.ceil(top / ys - 1e-9) * ys }; };
+      const kiesPunt = (sl, ystep) => { const k = []; for (let t = 3; t <= 10; t++) { const q = (sl * t) / ystep; if (Math.abs(q - Math.round(q)) < 1e-9) k.push(t); } return pick(k); };
+      if (Math.random() < 0.5) {
+        const v = pick([2, 2.5, 4, 5, 8]), { ystep, ymax } = schaal(10 * v, [2, 5, 10, 20]), tp = kiesPunt(v, ystep), pt = [tp, v * tp];
+        const o = { xmax: 10, ymax, ystep, xlab: "t (s)", ylab: "s (m)", slope: v, pt };
+        return { vraag: `Hieronder zie je het (s,t)-diagram van een fietser. Bepaal de snelheid v in m/s.`, svg: kwadrantSVG(o), svgUitw: kwadrantSVG({ ...o, tri: true }),
+          velden: [{ label: "v =", val: v, tol: AFRONDEN, eenheid: "m/s" }],
+          hint: `Lees bij het rode punt af hoeveel meter (s) er is afgelegd en na hoeveel seconden (t). Deel dan: v = s / t. Dit is hetzelfde als de richtingscoëfficiënt.`,
+          stappen: `Bij het rode punt: t = ${tp} s en s = ${fmt(pt[1])} m<br>v = s / t = ${fmt(pt[1])} / ${tp} = <b>${fmt(v)} m/s</b><br>Dat is de helling van de lijn: elke seconde komt er ${fmt(v)} m bij.` };
+      }
+      const C = pick([0.5, 1, 2, 2.5, 4]), { ystep, ymax } = schaal(10 * C, [0.5, 1, 2, 5, 10]), up = kiesPunt(C, ystep), pt = [up, C * up];
+      const o = { xmax: 10, ymax, ystep, xlab: "u (cm)", ylab: "F (N)", slope: C, pt };
+      return { vraag: `Hieronder zie je het (F,u)-diagram van een veer. Bepaal de veerconstante C in N/cm.`, svg: kwadrantSVG(o), svgUitw: kwadrantSVG({ ...o, tri: true }),
+        velden: [{ label: "C =", val: C, tol: AFRONDEN, eenheid: "N/cm", omgekeerd: true }],
+        hint: `Lees bij het rode punt de kracht F en de uitrekking u af. Deel dan: C = F / u.`,
+        stappen: `Bij het rode punt: u = ${up} cm en F = ${fmt(pt[1])} N<br>C = F / u = ${fmt(pt[1])} / ${up} = <b>${fmt(C)} N/cm</b><br>Dat is de helling van de lijn: per cm uitrekking ${fmt(C)} N meer kracht.` };
+    }
+  }
+];
+
+// ---------- scores ----------
+const OPSLAG = "oefenschrift-esra-v1";
+function laadScores() { try { return JSON.parse(localStorage.getItem(OPSLAG)) || {}; } catch (e) { return {}; } }
+function bewaarScores(s) { try { localStorage.setItem(OPSLAG, JSON.stringify(s)); } catch (e) {} }
+let scores = {};
+
+// ---------- toestand ----------
+let onderwerp = null, som = null, afgerond = false, geprobeerd = false, uitwerkingGezien = false;
+let sessie = { goed: 0, totaal: 0, reeks: 0 };
+const $ = id => document.getElementById(id);
+
+function toon(sectie) {
+  for (const id of ["home", "oefen", "spiekbrief"]) $(id).classList.toggle("hidden", id !== sectie);
+  window.scrollTo(0, 0);
+}
+
+function renderHome() {
+  for (const vak of ["wis", "nat"]) {
+    $("lijst-" + vak).innerHTML = ONDERWERPEN.filter(o => o.vak === vak).map(o => {
+      const sc = scores[o.id];
+      const txt = sc && sc.tot ? `${sc.goed} van ${sc.tot} goed` : "nog niet geoefend";
+      const cls = sc && sc.tot >= 5 && sc.goed / sc.tot >= 0.8 ? "t-score goed" : "t-score";
+      return `<button class="topic" data-id="${o.id}"><span class="t-main"><span class="t-title">${o.titel}</span><span class="t-sub">${o.sub}</span></span><span class="${cls}">${txt}</span></button>`;
+    }).join("");
+  }
+}
+
+function start(id) {
+  onderwerp = ONDERWERPEN.find(o => o.id === id);
+  $("o-titel").textContent = onderwerp.titel;
+  $("o-uitlegtekst").innerHTML = onderwerp.uitleg;
+  $("o-uitleg").open = !(scores[id] && scores[id].tot);
+  toon("oefen");
+  nieuweSom();
+}
+
+function telMee(goed) {
+  if (afgerond) return;
+  afgerond = true;
+  const sc = scores[onderwerp.id] || { goed: 0, tot: 0 };
+  sc.tot++; sessie.totaal++;
+  if (goed) { sc.goed++; sessie.goed++; sessie.reeks++; } else sessie.reeks = 0;
+  scores[onderwerp.id] = sc; bewaarScores(scores); renderSessie();
+}
+function renderSessie() {
+  $("sessie").textContent = sessie.totaal ? `Vandaag ${sessie.goed} van ${sessie.totaal} goed` : "";
+}
+
+function nieuweSom() {
+  if (som && geprobeerd && !afgerond) telMee(false);
+  som = onderwerp.gen();
+  afgerond = false; geprobeerd = false; uitwerkingGezien = false;
+  $("o-vraag").innerHTML = som.vraag;
+  $("o-plot").innerHTML = som.svg || "";
+  $("o-plot").classList.toggle("hidden", !som.svg);
+  $("o-velden").innerHTML = som.velden.map((v, i) =>
+    `<div class="veld"><label for="f${i}">${v.label}</label><input id="f${i}" inputmode="decimal" autocomplete="off" spellcheck="false">${v.eenheid ? `<span class="eenheid">${v.eenheid}</span>` : ""}</div>`).join("");
+  $("o-feedback").textContent = ""; $("o-feedback").className = "feedback";
+  $("o-hint").classList.add("hidden");
+  $("o-stappen").classList.add("hidden");
+  const f0 = $("f0"); if (f0) f0.focus({ preventScroll: true });
+}
+
+const LOF = ["Goed zo!", "Helemaal goed.", "Klopt!", "Precies goed.", "Yes, goed!", "Netjes!"];
+function controleer() {
+  if (afgerond && !uitwerkingGezien && $("o-feedback").classList.contains("goed")) { nieuweSom(); return; }
+  let alles = true, leeg = false, tip = "";
+  som.velden.forEach((v, i) => {
+    const inp = $("f" + i), x = parseNum(inp.value);
+    inp.classList.remove("ok", "fout");
+    if (isNaN(x)) { leeg = true; alles = false; inp.classList.add("fout"); return; }
+    if (dichtbij(x, v.val, v.tol)) { inp.classList.add("ok"); return; }
+    alles = false; inp.classList.add("fout");
+    if (!tip) {
+      if (v.val !== 0 && dichtbij(-x, v.val, v.tol)) tip = "Bijna: kijk nog eens naar het min-teken.";
+      else if (v.omgekeerd && x !== 0 && dichtbij(1 / x, v.val, v.tol)) tip = "Heb je misschien Δx en Δy omgedraaid? Het is Δy gedeeld door Δx.";
+      else if (dichtbij(x / 1000, v.val, v.tol) || dichtbij(x * 1000, v.val, v.tol)) tip = "De cijfers kloppen, maar het scheelt een factor 1000. Kijk naar de eenheden.";
+      else if (dichtbij(x / 100, v.val, v.tol) || dichtbij(x * 100, v.val, v.tol)) tip = "Het scheelt een factor 100. Heb je cm en m goed omgerekend?";
+      else if (dichtbij(x / 3.6, v.val, v.tol) || dichtbij(x * 3.6, v.val, v.tol)) tip = "Het scheelt precies 3,6. Kijk of je km/h en m/s goed hebt.";
+      else if (dichtbij(x / 60, v.val, v.tol) || dichtbij(x * 60, v.val, v.tol)) tip = "Het scheelt een factor 60. Kijk of je minuten en uren (of seconden) goed hebt.";
+    }
+  });
+  const fb = $("o-feedback");
+  if (leeg) { fb.className = "feedback fout"; fb.textContent = "Vul in elk vakje een getal in. Een komma mag, bijvoorbeeld 2,5."; return; }
+  geprobeerd = true;
+  if (alles) {
+    fb.className = "feedback goed";
+    const r = sessie.reeks + (afgerond ? 0 : 1);
+    fb.textContent = pick(LOF) + (!uitwerkingGezien && !afgerond && r >= 3 ? ` Al ${r} op rij!` : "") + " Kies Nieuwe som voor de volgende.";
+    telMee(!uitwerkingGezien);
+  } else {
+    fb.className = "feedback fout";
+    fb.textContent = tip || "Nog niet goed. Kijk naar de rode vakjes, of vraag een hint.";
+  }
+}
+
+function hint() { $("o-hint").innerHTML = "<b>Hint:</b> " + som.hint; $("o-hint").classList.remove("hidden"); }
+function uitwerking() {
+  uitwerkingGezien = true;
+  $("o-stappen").innerHTML = som.stappen;
+  $("o-stappen").classList.remove("hidden");
+  if (som.svgUitw) $("o-plot").innerHTML = som.svgUitw;
+  if (!afgerond) { geprobeerd = true; telMee(false); }
+}
+
+// ---------- vraag stellen ----------
+function tekstVan(html) { const d = document.createElement("div"); d.innerHTML = html.replace(/<br>/g, "\n"); return d.textContent.trim(); }
+function context() {
+  if (!onderwerp || $("oefen").classList.contains("hidden")) return "";
+  const antw = som.velden.map((v, i) => `${v.label} ${$("f" + i).value || "(leeg)"} ${v.eenheid || ""}`.trim()).join("; ");
+  return `Onderwerp: ${onderwerp.titel}\nOpgave: ${tekstVan(som.vraag)}${som.svg ? " (met grafiek)" : ""}\nMijn antwoord: ${antw}`;
+}
+function bericht() {
+  const ctx = context(), vraag = $("vraagtekst").value.trim();
+  return `Hoi ${CONFIG.begeleider}, ik heb een vraag.\n\n${ctx ? ctx + "\n\n" : ""}Mijn vraag: ${vraag || "(nog niet ingevuld)"}`;
+}
+function updateVraaglinks() {
+  const b = bericht();
+  if (CONFIG.whatsapp) { const a = $("v-whatsapp"); a.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(b)}`; a.classList.remove("hidden"); }
+  if (CONFIG.email) { const a = $("v-mail"); a.href = `mailto:${CONFIG.email}?subject=${encodeURIComponent("Vraag over " + (onderwerp && !$("oefen").classList.contains("hidden") ? onderwerp.titel : "huiswerk"))}&body=${encodeURIComponent(b)}`; a.classList.remove("hidden"); }
+}
+function openVraag() {
+  const ctx = context();
+  $("vraagcontext").textContent = ctx || "Tip: open eerst de som waar je vastloopt, dan wordt die automatisch meegestuurd.";
+  $("v-status").textContent = (!CONFIG.whatsapp && !CONFIG.email) ? `Kopieer je vraag en stuur hem in een appje naar ${CONFIG.begeleider}.` : "";
+  updateVraaglinks();
+  $("vraagvenster").showModal();
+  $("vraagtekst").focus();
+}
+async function kopieer() {
+  const b = bericht();
+  try { await navigator.clipboard.writeText(b); $("v-status").textContent = `Gekopieerd. Plak het in een bericht aan ${CONFIG.begeleider}.`; }
+  catch (e) {
+    const t = document.createElement("textarea"); t.value = b; document.body.appendChild(t); t.select();
+    try { document.execCommand("copy"); $("v-status").textContent = "Gekopieerd."; } catch (e2) { $("v-status").textContent = "Kopiëren lukte niet. Selecteer de tekst zelf."; }
+    t.remove();
+  }
+}
+
+// ---------- start ----------
+function init() {
+  scores = laadScores();
+  renderHome();
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-id]"); if (t) { start(t.dataset.id); return; }
+    if (e.target.closest("[data-home]")) { if (som && geprobeerd && !afgerond) telMee(false); som = null; renderHome(); toon("home"); }
+  });
+  $("naar-spiek").onclick = () => toon("spiekbrief");
+  $("reset").onclick = () => { if (confirm("Alle scores wissen?")) { scores = {}; bewaarScores(scores); renderHome(); } };
+  $("b-check").onclick = controleer;
+  $("b-hint").onclick = hint;
+  $("b-uitw").onclick = uitwerking;
+  $("b-nieuw").onclick = nieuweSom;
+  $("o-velden").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); controleer(); } });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !$("oefen").classList.contains("hidden") && e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON" && e.target.tagName !== "TEXTAREA" && afgerond) nieuweSom();
+  });
+  $("vraagknop").onclick = openVraag;
+  $("vraagtekst").addEventListener("input", updateVraaglinks);
+  $("v-kopieer").onclick = kopieer;
+  $("v-sluit").onclick = () => $("vraagvenster").close();
+}
+if (typeof document !== "undefined") init();
+if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij };
+</script>
+</body>
+</html>
