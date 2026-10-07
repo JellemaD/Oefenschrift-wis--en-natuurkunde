@@ -129,9 +129,56 @@ dialog textarea{width:100%;min-height:7rem;padding:.6rem;border:2px solid var(--
 .context{font-size:.9rem;color:var(--pencil);background:var(--paper);border-radius:6px;padding:.5rem .75rem;margin:.75rem 0;white-space:pre-wrap;max-height:9rem;overflow:auto}
 .klein{font-size:.9rem;color:var(--pencil)}
 footer{max-width:760px;margin:0 auto;padding:0 1rem 2rem;font-size:.85rem;color:var(--pencil)}
+
+/* AI-docent: chat met Professor Delta of Volta */
+.chatkop{display:flex;align-items:center;gap:.8rem;margin-bottom:.5rem}
+.chatkop h2{margin:0}
+#chat-av{width:64px;height:64px;flex:none}
+#chat-av svg{width:100%;height:100%;display:block}
+.wissel{display:flex;gap:.4rem;flex-wrap:wrap;margin:.25rem 0 .5rem}
+.wissel button{border:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;padding:.2rem .8rem;font-weight:700;cursor:pointer;font-size:.9rem}
+.wissel button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.chatlog{max-height:min(45vh,22rem);overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;margin:.5rem 0;padding:.25rem}
+.msg{padding:.55rem .8rem;border-radius:10px;max-width:88%;white-space:pre-wrap;word-wrap:break-word}
+.msg.ik{align-self:flex-end;background:var(--marker-soft);color:var(--text)}
+.msg.prof{align-self:flex-start;background:var(--paper);border:1px solid var(--grid-strong)}
+.msg.fout{align-self:flex-start;background:var(--red-soft);color:var(--red)}
+.msg .lees{display:block;margin-top:.3rem;background:none;border:0;color:var(--ink);cursor:pointer;font-weight:700;font-size:.85rem;padding:0}
+.typt{font-family:var(--hand);color:var(--pencil)}
+.stemrij{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.6rem 0;font-size:.9rem}
+.stemrij select{max-width:100%;padding:.3rem;border:2px solid var(--pencil);border-radius:6px;background:var(--paper);color:var(--text);font:inherit}
+.btn.klein2{padding:.3rem .7rem;font-size:.9rem}
+.testband{background:var(--marker);color:#1F2733;text-align:center;font-weight:700;padding:.3rem;font-size:.9rem}
+.av-bg{fill:var(--marker-soft)}
+.av-trui{fill:#1D3A6E}.av-trui-nat{fill:#237A4B}
+.av-bliksem{fill:#FFE45C;stroke:#1F2733;stroke-width:1}
+.av-huid{fill:#E9B98F;stroke:#1F2733;stroke-width:1.5}
+.av-huid2{fill:#C98E63;stroke:#1F2733;stroke-width:1.5}
+.av-haar{fill:#3B2A20}
+.av-haar-grijs{fill:#DDE1E7;stroke:#9AA4B5;stroke-width:1}
+.av-band{stroke:#5B3A1E;stroke-width:3}
+.av-lens{fill:#BFE3F2;stroke:#1F2733;stroke-width:2}
+.av-lijn{fill:none;stroke:#3B2A20;stroke-width:2.2;stroke-linecap:round}
+.av-lijn-grijs{fill:none;stroke:#8C96A6;stroke-width:2.4;stroke-linecap:round}
+.av-snor{fill:#DDE1E7;stroke:#8C96A6;stroke-width:1}
+.av-delta{fill:#FFE45C;font:700 14px var(--body)}
+.av-ogen{fill:#1F2733}
+.av-bril{fill:none;stroke:#1F2733;stroke-width:2}
+.av-wang{fill:#E8857A;opacity:.35}
+.av-potlood{fill:#F4C430;stroke:#1F2733;stroke-width:1}
+.av-gum{fill:#E8857A;stroke:#1F2733;stroke-width:1}
+.av-hout{fill:#E8C9A0;stroke:#1F2733;stroke-width:1}
+.m{display:none}
+.m0{fill:none;stroke:#1F2733;stroke-width:2.4;stroke-linecap:round}
+.m1,.m2,.m3{fill:#7A2E2E;stroke:#1F2733;stroke-width:1.5}
+svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mond="3"] .m3{display:inline}
 @media (prefers-reduced-motion: no-preference){
   .feedback.goed{animation:pop .35s ease-out}
   @keyframes pop{from{transform:scale(.92);opacity:.3}to{transform:scale(1);opacity:1}}
+  .av-ogen{transform-origin:60px 64px;animation:knipper 4.5s infinite}
+  @keyframes knipper{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+  .praat svg{animation:wiebel .5s ease-in-out infinite alternate}
+  @keyframes wiebel{to{transform:translateY(-2px) rotate(1deg)}}
 }
 </style>
 </head>
@@ -227,27 +274,53 @@ footer{max-width:760px;margin:0 auto;padding:0 1rem 2rem;font-size:.85rem;color:
 <button class="vraagknop" id="vraagknop">Vraag stellen</button>
 
 <dialog id="vraagvenster">
-  <h2>Waar loop je vast?</h2>
-  <label for="vraagtekst">Schrijf je vraag zo precies mogelijk op. Wat snap je wel, en waar loop je vast?</label>
-  <textarea id="vraagtekst" placeholder="Bijvoorbeeld: ik snap niet waarom ik door Δx moet delen"></textarea>
+  <div class="chatkop">
+    <div id="chat-av"></div>
+    <div><h2 id="chat-naam">Professor Delta</h2><span class="klein" id="chat-vak">wiskunde</span></div>
+  </div>
+  <div class="wissel" role="group" aria-label="Kies je docent">
+    <button type="button" data-docent="delta" aria-pressed="true">Wiskunde</button>
+    <button type="button" data-docent="volta" aria-pressed="false">Natuurkunde</button>
+  </div>
   <div class="context" id="vraagcontext"></div>
-  <div class="knoppen">
-    <a class="btn hoofd hidden" id="v-whatsapp" target="_blank" rel="noopener">Stuur via WhatsApp</a>
-    <a class="btn hidden" id="v-mail">Stuur via e-mail</a>
-    <button class="btn" id="v-kopieer">Kopieer vraag</button>
+  <div class="chatlog" id="chatlog" aria-live="polite"></div>
+  <label for="vraagtekst" class="klein">Wat snap je wel, en waar loop je vast?</label>
+  <textarea id="vraagtekst" placeholder="Bijvoorbeeld: ik snap niet waarom ik door Δx moet delen"></textarea>
+  <div class="knoppen" style="margin-top:.6rem">
+    <button class="btn hoofd" id="v-stuur">Vraag de professor</button>
     <button class="btn" id="v-sluit">Sluiten</button>
   </div>
+  <div class="stemrij">
+    <label><input type="checkbox" id="v-voorlezen"> Antwoorden voorlezen</label>
+    <label for="v-stem">Stem:</label><select id="v-stem"></select>
+    <button class="btn klein2" id="v-stemtest" type="button">▶ Test</button>
+    <button class="btn klein2" id="v-stop" type="button">■ Stop</button>
+  </div>
+  <details class="klein">
+    <summary>Liever aan <span class="begeleider">Durk</span> vragen?</summary>
+    <div class="knoppen" style="margin-top:.5rem">
+      <a class="btn hidden" id="v-whatsapp" target="_blank" rel="noopener">Stuur via WhatsApp</a>
+      <a class="btn hidden" id="v-mail">Stuur via e-mail</a>
+      <button class="btn" id="v-kopieer">Kopieer vraag</button>
+    </div>
+  </details>
   <p class="klein" id="v-status" aria-live="polite"></p>
 </dialog>
 
 <script>
 /* ============ INSTELLINGEN: vul hier je eigen gegevens in ============ */
 const CONFIG = {
-  vraagActief: false, // zet op true zodra "Vraag stellen" werkt
+  vraagActief: false, // zet op true zodra "Vraag stellen" werkt (testen kan altijd met ?test achter de link)
+  workerUrl: "",      // link van de Cloudflare Worker, bijvoorbeeld "https://oefenschrift-docent.jouwnaam.workers.dev"
+  niveau: "havo3",    // moet gelijk zijn aan een naam in NIVEAUS hieronder én in worker.js
+  bijnaam: "",        // naam waarmee de professor de leerling aanspreekt; leeg = geen naam
+  stemVoorkeur: { delta: "", volta: "" }, // deel van een stemnaam, bijvoorbeeld { delta: "Colette", volta: "Frank" }
   begeleider: "Durk",
   whatsapp: "",   // bijvoorbeeld "31612345678" (landcode 31, zonder 0 en zonder +)
   email: ""       // bijvoorbeeld "naam@voorbeeld.nl"
 };
+// Niveaus: label en spreektempo. Later mavo en vmbo toevoegen (zelfde naam in worker.js).
+const NIVEAUS = { havo3: { label: "havo 3", tempo: 1.0 } };
 /* ===================================================================== */
 
 // ---------- hulpfuncties ----------
@@ -739,6 +812,7 @@ function telMee(goed) {
   const sc = scores[onderwerp.id] || { goed: 0, tot: 0 };
   sc.tot++; sessie.totaal++;
   if (goed) { sc.goed++; sessie.goed++; sessie.reeks++; } else sessie.reeks = 0;
+  sc.recent = (sc.recent || []).concat(goed ? 1 : 0).slice(-10); // laatste 10 sommen, voor de professor
   scores[onderwerp.id] = sc; bewaarScores(scores); renderSessie();
 }
 function renderSessie() {
@@ -818,10 +892,161 @@ function updateVraaglinks() {
   if (CONFIG.whatsapp) { const a = $("v-whatsapp"); a.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(b)}`; a.classList.remove("hidden"); }
   if (CONFIG.email) { const a = $("v-mail"); a.href = `mailto:${CONFIG.email}?subject=${encodeURIComponent("Vraag over " + (onderwerp && !$("oefen").classList.contains("hidden") ? onderwerp.titel : "huiswerk"))}&body=${encodeURIComponent(b)}`; a.classList.remove("hidden"); }
 }
+// ---------- AI-docent ----------
+const DOCENT = {
+  delta: { naam: "Professor Delta", vak: "wiskunde", toonhoogte: 1.0,
+    svg: `<svg viewBox="0 0 120 120" data-mond="0" role="img" aria-label="Professor Delta"><circle cx="60" cy="60" r="58" class="av-bg"/><g transform="rotate(-30 90 48)"><rect x="87" y="22" width="7" height="34" rx="1" class="av-potlood"/><rect x="87" y="18" width="7" height="5" class="av-gum"/><path d="M87 56 L90.5 64 L94 56Z" class="av-hout"/></g><path d="M26 120 Q28 97 60 95 Q92 97 94 120Z" class="av-trui"/><text x="60" y="115" text-anchor="middle" class="av-delta">Δ</text><ellipse cx="33" cy="64" rx="5" ry="7" class="av-huid"/><ellipse cx="87" cy="64" rx="5" ry="7" class="av-huid"/><ellipse cx="60" cy="62" rx="27" ry="31" class="av-huid"/><path d="M33 60 Q31 29 60 28 Q89 29 87 60 Q82 41 66 39 Q50 47 33 60Z" class="av-haar"/><path d="M42 51 q7 -4 13 0" class="av-lijn"/><path d="M65 51 q7 -4 13 0" class="av-lijn"/><g class="av-ogen"><circle cx="49" cy="64" r="2.7"/><circle cx="71" cy="64" r="2.7"/></g><circle cx="49" cy="64" r="8.5" class="av-bril"/><circle cx="71" cy="64" r="8.5" class="av-bril"/><path d="M57.5 64 h5" class="av-bril"/><circle cx="42" cy="78" r="4" class="av-wang"/><circle cx="78" cy="78" r="4" class="av-wang"/><path class="m m0" d="M51 82 Q60 89 69 82"/><ellipse class="m m1" cx="60" cy="84" rx="5.5" ry="3.5"/><path class="m m2" d="M50 81 Q60 95 70 81 Q60 84 50 81Z"/><ellipse class="m m3" cx="60" cy="85" rx="3.5" ry="5"/></svg>` },
+  volta: { naam: "Professor Volta", vak: "natuurkunde", toonhoogte: 0.88,
+    svg: `<svg viewBox="0 0 120 120" data-mond="0" role="img" aria-label="Professor Volta"><circle cx="60" cy="60" r="58" class="av-bg"/><path d="M26 120 Q28 97 60 95 Q92 97 94 120Z" class="av-trui-nat"/><path d="M63 100 L55 111 L60 111 L56 119 L67 107 L62 107 L65 100Z" class="av-bliksem"/><ellipse cx="33" cy="64" rx="5" ry="7" class="av-huid2"/><ellipse cx="87" cy="64" rx="5" ry="7" class="av-huid2"/><ellipse cx="60" cy="62" rx="27" ry="31" class="av-huid2"/><g class="av-haar-grijs"><circle cx="33" cy="49" r="9"/><circle cx="29" cy="61" r="6.5"/><circle cx="87" cy="49" r="9"/><circle cx="91" cy="61" r="6.5"/><circle cx="43" cy="35" r="9"/><circle cx="77" cy="35" r="9"/><circle cx="60" cy="30" r="9.5"/></g><path d="M33 45 H87" class="av-band"/><circle cx="50" cy="45" r="7" class="av-lens"/><circle cx="70" cy="45" r="7" class="av-lens"/><path d="M42 56 q7 -3 13 0" class="av-lijn-grijs"/><path d="M65 56 q7 -3 13 0" class="av-lijn-grijs"/><g class="av-ogen"><circle cx="49" cy="64" r="2.9"/><circle cx="71" cy="64" r="2.9"/></g><circle cx="42" cy="75" r="4" class="av-wang"/><circle cx="78" cy="75" r="4" class="av-wang"/><path class="m m0" d="M51 84 Q60 90 69 84"/><ellipse class="m m1" cx="60" cy="86" rx="5.5" ry="3.5"/><path class="m m2" d="M50 83 Q60 97 70 83 Q60 86 50 83Z"/><ellipse class="m m3" cx="60" cy="87" rx="3.5" ry="5"/><path d="M46 80 Q53 74 60 78.5 Q67 74 74 80 Q67 82.5 60 80.5 Q53 82.5 46 80Z" class="av-snor"/></svg>` }
+};
+const TEMPO = { nieuw: 0.95, veel: 0.9, normaal: 1.0, weinig: 1.06 };
+let docent = "delta", gesprek = [], gesprekVan = "", bezig = false;
+
+// Hoeveel hulp nodig is, uit de laatste 10 sommen van dit onderwerp
+function steunNiveau() {
+  if (!onderwerp || $("oefen").classList.contains("hidden")) return "normaal";
+  const sc = scores[onderwerp.id] || {};
+  const r = sc.recent || [];
+  const n = r.length || Math.min(sc.tot || 0, 10);
+  if (n < 3) return "nieuw";
+  const deel = r.length ? r.reduce((a, b) => a + b, 0) / r.length : sc.goed / sc.tot;
+  return deel < 0.5 ? "veel" : deel < 0.8 ? "normaal" : "weinig";
+}
+
+function kiesDocent(wie) {
+  if (wie !== docent) { gesprek = []; $("chatlog").innerHTML = ""; }
+  docent = wie;
+  const d = DOCENT[wie];
+  $("chat-av").innerHTML = d.svg; $("chat-naam").textContent = d.naam; $("chat-vak").textContent = d.vak;
+  document.querySelectorAll("[data-docent]").forEach(b => b.setAttribute("aria-pressed", b.dataset.docent === wie));
+  vulStemkeuze();
+}
+
+function voegToe(soort, tekst) {
+  const div = document.createElement("div");
+  div.className = "msg " + soort; div.textContent = tekst;
+  if (soort === "prof" && kanSpreken) {
+    const b = document.createElement("button"); b.className = "lees"; b.textContent = "🔊 Voorlezen";
+    b.onclick = () => spreek(docent, tekst); div.appendChild(b);
+  }
+  $("chatlog").appendChild(div); $("chatlog").scrollTop = $("chatlog").scrollHeight;
+  return div;
+}
+
+async function stuurVraag() {
+  const vraag = $("vraagtekst").value.trim();
+  if (!vraag || bezig) return;
+  voegToe("ik", vraag); $("vraagtekst").value = ""; updateVraaglinks();
+  gesprek.push({ role: "user", content: vraag });
+  if (!CONFIG.workerUrl) {
+    const t = `Ik ben nog niet aangesloten, dus ik kan nog niet antwoorden. Stuur je vraag zolang naar ${CONFIG.begeleider} via "Liever aan ${CONFIG.begeleider} vragen?" hieronder.`;
+    voegToe("prof", t); gesprek.pop(); if ($("v-voorlezen").checked) spreek(docent, t); return;
+  }
+  bezig = true; $("v-stuur").disabled = true;
+  const wacht = voegToe("prof", ""); wacht.innerHTML = `<span class="typt">${DOCENT[docent].naam} denkt na…</span>`;
+  const steun = steunNiveau();
+  try {
+    const r = await fetch(CONFIG.workerUrl, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ docent, niveau: CONFIG.niveau, steun, bijnaam: CONFIG.bijnaam, context: context(), berichten: gesprek }) });
+    const data = await r.json().catch(() => ({}));
+    wacht.remove();
+    if (!r.ok || !data.antwoord) { voegToe("fout", data.fout || "De docent is even niet bereikbaar. Probeer het later opnieuw."); gesprek.pop(); }
+    else { gesprek.push({ role: "assistant", content: data.antwoord }); voegToe("prof", data.antwoord); if ($("v-voorlezen").checked) spreek(docent, data.antwoord); }
+  } catch (e) {
+    wacht.remove(); voegToe("fout", "Geen verbinding met de docent. Controleer je internet en probeer het opnieuw."); gesprek.pop();
+  }
+  bezig = false; $("v-stuur").disabled = false; $("vraagtekst").focus();
+}
+
+// ---------- stem (alleen stemmen die op het apparaat zitten) ----------
+const kanSpreken = typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
+const STEMSLEUTEL = "oefenschrift-stemkeuze"; // dezelfde sleutel als de stemtestpagina
+let nlStemmen = [], spraakId = 0, mondTimer = null;
+let stemKeuzes = (() => { try { return JSON.parse(localStorage.getItem(STEMSLEUTEL)) || {}; } catch (e) { return {}; } })();
+function stemScore(v) {
+  const n = v.name.toLowerCase();
+  let s = /^nl[-_]nl/i.test(v.lang) ? 3 : 2;
+  if (/natural|neural|online/.test(n)) s += 6;
+  if (/premium|enhanced|verbeterd/.test(n)) s += 5;
+  if (/google/.test(n)) s += 4;
+  if (/microsoft/.test(n)) s += 2;
+  if (!v.localService) s += 1;
+  if (/espeak|compact/.test(n)) s -= 6;
+  return s;
+}
+const MANNENSTEM = /frank|maarten|xander|arnaud|jelle|stefan|\bmale\b|\bman\b/i;
+function stemVoor(wie) {
+  const zoek = n => n && nlStemmen.find(v => v.name.toLowerCase().includes(n.toLowerCase()));
+  const eigen = zoek(stemKeuzes[wie]) || zoek(CONFIG.stemVoorkeur[wie]);
+  if (eigen) return eigen;
+  if (!nlStemmen.length) return null;
+  const volta = nlStemmen.find(v => MANNENSTEM.test(v.name)) || nlStemmen[0];
+  if (wie === "volta") return volta;
+  return nlStemmen.find(v => v !== volta) || volta;
+}
+function laadStemmen() {
+  nlStemmen = speechSynthesis.getVoices().filter(v => /^nl/i.test(v.lang)).sort((a, b) => stemScore(b) - stemScore(a));
+  vulStemkeuze();
+}
+function vulStemkeuze() {
+  const sel = $("v-stem"); if (!sel) return;
+  sel.innerHTML = "";
+  if (!nlStemmen.length) { sel.innerHTML = "<option>geen Nederlandse stem gevonden</option>"; sel.disabled = true; return; }
+  sel.disabled = false;
+  const huidig = stemVoor(docent);
+  nlStemmen.forEach(v => { const o = document.createElement("option"); o.value = v.name; o.textContent = v.name; o.selected = v === huidig; sel.appendChild(o); });
+}
+function voorUitspraak(t) {
+  return t.replace(/km\/h/g, " kilometer per uur").replace(/m\/s/g, " meter per seconde")
+    .replace(/Δ/g, "delta ").replace(/\//g, " gedeeld door ").replace(/[·×*]/g, " keer ").replace(/=/g, " is ")
+    .replace(/−/g, " min ").replace(/Ω/g, " ohm").replace(/\s+/g, " ");
+}
+function mond(aan) {
+  const box = $("chat-av"), s = box.querySelector("svg");
+  box.classList.toggle("praat", aan); clearInterval(mondTimer);
+  if (!s) return;
+  if (!aan) { s.dataset.mond = "0"; return; }
+  let vorige = 0;
+  mondTimer = setInterval(() => { let m; do { m = [0, 1, 1, 2, 2, 3][Math.floor(Math.random() * 6)]; } while (m === vorige && m !== 1); vorige = m; s.dataset.mond = m; }, 110);
+}
+function stopSpraak() { spraakId++; if (kanSpreken) speechSynthesis.cancel(); mond(false); }
+function spreek(wie, tekst) {
+  if (!kanSpreken) { $("v-status").textContent = "Deze browser kan niet voorlezen."; return; }
+  stopSpraak();
+  const mijn = spraakId, stem = stemVoor(wie);
+  const gedeeld = stemVoor("delta") && stemVoor("delta") === stemVoor("volta");
+  const tempo = (NIVEAUS[CONFIG.niveau] || NIVEAUS.havo3).tempo * TEMPO[steunNiveau()];
+  const zinnen = voorUitspraak(tekst).split(/(?<=[.!?])\s+/).filter(z => z.trim());
+  let over = zinnen.length, gestart = false;
+  const wacht = setTimeout(() => { if (mijn === spraakId && !gestart) { mond(false); $("v-status").textContent = "Er komt geen geluid. Zet het volume aan of kies een andere stem."; } }, 5000);
+  setTimeout(() => { // korte pauze na cancel(): anders slaat Chrome soms de eerste zin over
+    if (mijn !== spraakId) return;
+    speechSynthesis.resume();
+    for (const z of zinnen) {
+      const u = new SpeechSynthesisUtterance(z);
+      u.lang = stem ? stem.lang : "nl-NL"; if (stem) u.voice = stem;
+      u.rate = tempo; u.pitch = gedeeld ? DOCENT[wie].toonhoogte : 1;
+      u.onstart = () => { if (mijn === spraakId && !gestart) { gestart = true; clearTimeout(wacht); mond(true); $("v-status").textContent = ""; } };
+      u.onend = () => { if (mijn === spraakId && --over <= 0) mond(false); };
+      u.onerror = e => { if (mijn !== spraakId || e.error === "canceled" || e.error === "interrupted") return; clearTimeout(wacht); mond(false); $("v-status").textContent = `Voorlezen lukte niet (${e.error}). Kies een andere stem.`; };
+      speechSynthesis.speak(u);
+    }
+  }, 90);
+}
+
 function openVraag() {
   const ctx = context();
+  const sleutel = (onderwerp && ctx) ? onderwerp.id + "|" + som.vraag : "";
+  if (sleutel !== gesprekVan) { gesprek = []; $("chatlog").innerHTML = ""; gesprekVan = sleutel; }
+  const wie = ctx ? (onderwerp.vak === "nat" ? "volta" : "delta") : docent;
+  kiesDocent(wie);
+  if (!$("chatlog").children.length) {
+    voegToe("prof", ctx ? `Hoi! Ik ben ${DOCENT[wie].naam}. Ik zie de som waar je mee bezig bent. Wat snap je wel, en waar loop je vast?`
+      : `Hoi! Ik ben ${DOCENT[wie].naam}. Open eerst de som waar je vastloopt, dan kijk ik mee. Of stel hier je vraag.`);
+  }
   $("vraagcontext").textContent = ctx || "Tip: open eerst de som waar je vastloopt, dan wordt die automatisch meegestuurd.";
-  $("v-status").textContent = (!CONFIG.whatsapp && !CONFIG.email) ? `Kopieer je vraag en stuur hem in een appje naar ${CONFIG.begeleider}.` : "";
+  $("vraagcontext").classList.toggle("hidden", !ctx);
+  $("v-status").textContent = "";
   updateVraaglinks();
   $("vraagvenster").showModal();
   $("vraagtekst").focus();
@@ -854,11 +1079,32 @@ function init() {
   document.addEventListener("keydown", e => {
     if (e.key === "Enter" && !$("oefen").classList.contains("hidden") && e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON" && e.target.tagName !== "TEXTAREA" && afgerond) nieuweSom();
   });
-  if (CONFIG.vraagActief) $("vraagknop").onclick = openVraag;
+  const test = /[?&]test\b/.test(location.search);
+  if (test) document.body.insertAdjacentHTML("afterbegin", `<div class="testband">Testmodus${CONFIG.workerUrl ? "" : " · AI-docent nog niet gekoppeld (workerUrl leeg)"}</div>`);
+  if (CONFIG.vraagActief || test) $("vraagknop").onclick = openVraag;
   else { const k = $("vraagknop"); k.disabled = true; k.textContent = "Vraag stellen (binnenkort)"; k.title = "Deze functie komt binnenkort"; }
+  document.querySelectorAll(".begeleider").forEach(s => s.textContent = CONFIG.begeleider);
   $("vraagtekst").addEventListener("input", updateVraaglinks);
+  $("vraagtekst").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); stuurVraag(); } });
+  $("v-stuur").onclick = stuurVraag;
   $("v-kopieer").onclick = kopieer;
   $("v-sluit").onclick = () => $("vraagvenster").close();
+  $("vraagvenster").addEventListener("close", stopSpraak);
+  document.querySelectorAll("[data-docent]").forEach(b => b.onclick = () => {
+    kiesDocent(b.dataset.docent);
+    if (!$("chatlog").children.length) voegToe("prof", `Hoi! Ik ben ${DOCENT[docent].naam}. Waar kan ik je mee helpen?`);
+  });
+  try { $("v-voorlezen").checked = localStorage.getItem("oefenschrift-voorlezen") === "1"; } catch (e) {}
+  $("v-voorlezen").onchange = () => { try { localStorage.setItem("oefenschrift-voorlezen", $("v-voorlezen").checked ? "1" : "0"); } catch (e) {} };
+  $("v-stem").onchange = () => {
+    stemKeuzes[docent] = $("v-stem").value;
+    try { localStorage.setItem(STEMSLEUTEL, JSON.stringify(stemKeuzes)); } catch (e) {}
+    spreek(docent, `Hoi, ik ben ${DOCENT[docent].naam}. Zo klink ik.`);
+  };
+  $("v-stemtest").onclick = () => spreek(docent, `Hoi, ik ben ${DOCENT[docent].naam}. ${docent === "delta" ? "a = Δy / Δx." : "U = I · R."}`);
+  $("v-stop").onclick = stopSpraak;
+  if (kanSpreken) { laadStemmen(); speechSynthesis.onvoiceschanged = laadStemmen; }
+  else $("v-stem").closest(".stemrij").classList.add("hidden");
 }
 if (typeof document !== "undefined") init();
 if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij };
