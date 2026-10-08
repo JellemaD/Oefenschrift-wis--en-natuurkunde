@@ -71,9 +71,11 @@ details.hfst summary{cursor:pointer;font-weight:700;color:var(--ink);padding:.6r
 .h-info{display:block;font-weight:400;font-size:.88rem;color:var(--pencil);margin-left:1.6rem}
 details.hfst .schrift{margin:.2rem 0 .6rem}
 .h-vid-kop{margin:.6rem 0 .2rem}
-ol.videos{margin:0 0 .6rem;padding-left:1.6rem;font-size:.95rem}
-ol.videos li{margin:.15rem 0}
-ol.videos a,.videolink a{color:var(--ink)}
+ul.paragrafen{list-style:none;margin:.2rem 0 .6rem;padding:0;font-size:.95rem}
+ul.paragrafen li{padding:.35rem 0;border-top:1px solid var(--grid)}
+ul.paragrafen b{color:var(--ink);margin-right:.2rem}
+.vids{font-size:.88rem;margin-top:.15rem;line-height:1.7}
+.vids a,.videolink a,.h-vid-kop a{color:var(--ink)}
 .duur{color:var(--pencil);font-size:.85rem;white-space:nowrap}
 .videolink{margin:.8rem 0 .4rem}
 
@@ -210,12 +212,13 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <h1>Esra's oefenschrift</h1>
     <p class="intro">Wiskunde en natuurkunde voor havo 3. Kies een onderwerp en oefen zoveel je wilt: elke som is nieuw. Kom je er niet uit? Vraag een hint, bekijk de uitwerking of stel je vraag.</p>
 
-    <h2>Wiskunde havo 3</h2>
-    <p class="klein" style="margin-top:-.25rem">Per hoofdstuk van het boek (Getal &amp; Ruimte). Bij elk hoofdstuk staan uitlegvideo's van Math with Menno.</p>
+    <h2>Wiskunde</h2>
+    <p class="klein" style="margin-top:-.25rem">Zoals in je boek <i>Moderne Wiskunde</i> (13e editie, havo 3). Per paragraaf staan er uitlegfilmpjes.</p>
     <div id="lijst-wis"></div>
 
     <h2>Natuurkunde</h2>
-    <div class="schrift" id="lijst-nat"></div>
+    <p class="klein" style="margin-top:-.25rem">Zoals in je boek <i>Nova</i> (3 havo). Per paragraaf staan er uitlegfilmpjes.</p>
+    <div id="lijst-nat"></div>
 
     <h2>Alles op een rij</h2>
     <div class="schrift">
@@ -259,7 +262,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <div class="spiek">
       <h3>Lineaire formules</h3>
       <dl>
-        <dt><span class="formule">y = ax + b</span></dt><dd>a is de richtingscoëfficiënt (rc, ook wel hellingsgetal): per stap van x gaat y a omhoog. b is het begingetal: de y bij x = 0, waar de lijn de y-as snijdt</dd>
+        <dt><span class="formule">y = ax + b</span></dt><dd>a is de richtingscoëfficiënt (rc, ook wel hellingsgetal): per stap van x gaat y a omhoog. b is het startgetal: de y bij x = 0, waar de lijn de y-as snijdt</dd>
         <dt><span class="formule">a = Δy / Δx</span></dt><dd>hoeveel omhoog (of omlaag) gedeeld door hoeveel opzij</dd>
         <dt>a positief</dt><dd>lijn stijgt; a negatief: lijn daalt; a = 0: horizontaal</dd>
       </dl>
@@ -461,9 +464,9 @@ const ONDERWERPEN = [
   },
   {
     id: "rc-grafiek", vak: "wis", titel: "Formule aflezen uit een grafiek",
-    sub: "Richtingscoëfficiënt en begingetal aflezen",
+    sub: "Richtingscoëfficiënt en startgetal aflezen",
     uitleg: `<p>Zo vind je de formule ${F("y = ax + b")} bij een rechte lijn:</p>
-      <ul><li><b>b</b> is het begingetal: kijk waar de lijn de y-as (de verticale as) snijdt.</li>
+      <ul><li><b>b</b> is het startgetal: kijk waar de lijn de y-as (de verticale as) snijdt.</li>
       <li><b>a</b> is de richtingscoëfficiënt: kies twee punten die precies op een roosterpunt liggen. Ga van het linker punt naar rechts (Δx) en dan omhoog of omlaag (Δy). Omlaag is negatief.</li>
       <li>a = Δy / Δx: zoveel gaat y omhoog per stap naar rechts.</li></ul>`,
     gen() {
@@ -481,17 +484,17 @@ const ONDERWERPEN = [
         svg: vlakSVG({ a, b, P, Q }),
         svgUitw: vlakSVG({ a, b, P, Q, tri: true }),
         velden: [{ label: "a =", val: a, tol: EXACT, omgekeerd: true }, { label: "b =", val: b, tol: EXACT }],
-        hint: `Voor b (het begingetal): waar snijdt de lijn de verticale y-as? Voor a (de richtingscoëfficiënt): begin bij het linker punt. Tel hoeveel hokjes je naar rechts gaat (Δx) en hoeveel omhoog of omlaag (Δy) tot het andere punt. Omlaag telt als min.`,
+        hint: `Voor b (het startgetal): waar snijdt de lijn de verticale y-as? Voor a (de richtingscoëfficiënt): begin bij het linker punt. Tel hoeveel hokjes je naar rechts gaat (Δx) en hoeveel omhoog of omlaag (Δy) tot het andere punt. Omlaag telt als min.`,
         stappen: `Van het linker punt (${fmt(L[0])}, ${fmt(L[1])}) naar het rechter punt (${fmt(Rr[0])}, ${fmt(Rr[1])}):<br>Δx = ${fmt(Rr[0] - L[0])} naar rechts, Δy = ${fmt(Rr[1] - L[1])} ${Rr[1] - L[1] >= 0 ? "omhoog" : "(omlaag)"}<br>a = ${fmt(Rr[1] - L[1])} / ${fmt(Rr[0] - L[0])} = <b>${fmt(a)}</b><br>De lijn snijdt de y-as bij y = ${fmt(b)}, dus <b>b = ${fmt(b)}</b><br>Formule: <b>${formule(a, b)}</b><br>In de grafiek zie je nu de stap naar rechts en omhoog.`
       };
     }
   },
   {
     id: "tabel", vak: "wis", titel: "Formule bij een tabel",
-    sub: "Zoek de toename per stap en het begingetal",
+    sub: "Zoek de toename per stap en het startgetal",
     uitleg: `<p>Bij een lineaire formule gaat y bij elke gelijke stap in x met hetzelfde getal omhoog of omlaag.</p>
       <ul><li><b>a</b> is de richtingscoëfficiënt: de toename van y per stap van x. Dus hoeveel y verandert gedeeld door hoeveel x verandert. Is de stap in x 2, deel dan door 2.</li>
-      <li><b>b</b> is het begingetal: de y die hoort bij x = 0. Staat x = 0 niet in de tabel? Reken terug: b = y − a · x.</li></ul>`,
+      <li><b>b</b> is het startgetal: de y die hoort bij x = 0. Staat x = 0 niet in de tabel? Reken terug: b = y − a · x.</li></ul>`,
     gen() {
       const a = pick([-4, -3, -2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5]);
       const b = R(-6, 10), start = pick([0, 0, 1, 2]), stap = pick([1, 1, 2]);
@@ -505,7 +508,7 @@ const ONDERWERPEN = [
       return {
         vraag: `Bij deze tabel hoort een lineaire formule ${F("y = ax + b")}. Bepaal a en b.${tabel}`,
         velden: [{ label: "a =", val: a, tol: EXACT, omgekeerd: true }, { label: "b =", val: b, tol: EXACT }],
-        hint: `Hoeveel komt er bij y bij (of gaat eraf) per stap in x? Let op hoe groot de stap in x is. Voor b (het begingetal): welke y hoort bij x = 0?`,
+        hint: `Hoeveel komt er bij y bij (of gaat eraf) per stap in x? Let op hoe groot de stap in x is. Voor b (het startgetal): welke y hoort bij x = 0?`,
         stappen: st
       };
     }
@@ -515,7 +518,7 @@ const ONDERWERPEN = [
     sub: "Vast bedrag en 'per'",
     uitleg: `<p>In een verhaal herken je a en b zo:</p>
       <ul><li><b>a</b> hoort bij het woordje <i>per</i>: per km, per uur, per minuut. Wordt het minder? Dan is a negatief.</li>
-      <li><b>b</b> is het begingetal: wat er al is bij de start: een vast bedrag, een beginlengte, wat er al in zit.</li></ul>
+      <li><b>b</b> is het startgetal: wat er al is bij de start: een vast bedrag, een beginlengte, wat er al in zit.</li></ul>
       <p>Voorbeeld: een taxi kost €3 instap plus €2 per km. Dus K = 2d + 3.</p>`,
     gen() {
       const t = pick([
@@ -794,31 +797,28 @@ const ONDERWERPEN = [
   }
 ];
 
-// Hoofdstukken wiskunde havo 3 volgens Getal & Ruimte 13e editie, met de uitlegvideo's van Math with Menno (YouTube).
-const HOOFDSTUKKEN = [
-  { nr: 1, titel: "Lineaire problemen", playlist: "PLqmYEL-9zWjPrOYH8JgRmz7IYQ529T0gs", videos: [["67AA66Z_hIw", "De grafiek van een lineaire formule", "9:47"],["RpDZhdELvFY", "De formule y = ax + b", "8:38"],["PvmOG5SswVw", "Evenwijdige lijnen", "9:52"],["rFEA-kT63qQ", "Formules met andere letters dan x en y", "5:03"],["-yl6BWQ3ZQM", "Lineaire vergelijkingen oplossen", "8:37"],["1hKmkRoXBAo", "Lineaire vergelijkingen met haakjes", "6:04"],["LRgqvIRdjw0", "Lineaire vergelijkingen met breuken", "4:08"],["mm2AHIVb_L0", "Snijpunten met de x-as en de y-as", "4:52"],["Zlneq6od-BM", "Lineaire formules vergelijken", "6:57"],["016gEKebUGM", "Lineaire ongelijkheden oplossen met grafieken", "17:28"],["5l1zGO5-6NQ", "Lineaire ongelijkheden oplossen zonder grafieken", "4:15"],["QoExM-o8uGs", "Het omklappen van het ongelijkheidsteken", "6:01"],["fr2kg8fWaBU", "Getallenparen", "6:28"],["ao0c11rk_lE", "De vergelijking px + qy = r", "6:52"],["yPUP3-Yajw8", "Herleiden tot de vorm y = ax + b", "4:39"]] },
-  { nr: 2, titel: "Gelijkvormigheid", playlist: "PLqmYEL-9zWjMXwMpC8LeR4Mwo28SWRIBk", videos: [["t8xn6N4Cf3M", "Kruislings vermenigvuldigen", "6:09"],["SN5oycJWwpk", "Verhoudingstabellen met meer dan twee kolommen", "3:07"],["5fec_7LvtBs", "Projecties en verhoudingstabellen", "6:39"],["cVu2DqhSueY", "Gelijkvormigheid", "11:17"],["AUG0yTp8s3c", "Zijden berekenen bij gelijkvormigheid", "7:24"],["Nu3EUket9G0", "Gelijkvormige driehoeken en gelijke hoeken", "6:35"],["v82_TCJTSks", "Gelijkvormige driehoeken aantonen", "12:49"],["cqP_DHCfdy8", "Gelijke hoeken zoeken", "10:57"],["PdS3qjpN9gY", "Een lengte x stellen", "11:42"],["MGeexCYSuOI", "Gelijkvormigheid bij ruimtefiguren", "15:47"]] },
-  { nr: 3, titel: "Kwadratische problemen", playlist: "PLqmYEL-9zWjOglwe0ucD6CapQzXewmdh9", videos: [["fiS4kcrhq5g", "Functiewaarden berekenen", "7:07"],["mZgWh-jgdI8", "De functie f(x) = ax² + bx + c", "6:31"],["xZe-91tcMSc", "De grafiek van f(x) = ax² + bx + c tekenen", "8:21"],["1_misRbQ9CU", "Het berekenen van x-top en y-top", "5:22"],["QtWMWwmNfAA", "De regel van de x-top toepassen", "7:50"],["WG3moj6vfS8", "Ontbinden in factoren", "11:38"],["tkapcNIaDM0", "Kwadratische vergelijkingen oplossen", "8:55"],["j_NBwD23Exk", "Kwadratische vergelijkingen met haakjes", "7:29"],["7fl0cdLmNe4", "Kwadratische vergelijkingen vereenvoudigen", "11:45"],["8KZGXD5e6pk", "Snijpunten met de coördinaatassen", "7:15"],["N38oiZcNq3Q", "De functie f(x) = a(x - d)(x - e)", "8:57"],["TtzWzYMvDy0", "De grafiek van f(x) = a(x - d)(x - e)", "8:08"],["3H23ZmjVaKc", "De functie f(x) = a(x - p)² + q", "7:41"],["tTxbZ4qK8BY", "Verticaal verschuiven", "3:45"],["kZygNhv7H8w", "Horizontaal verschuiven", "7:54"],["49WgyboXTDI", "De top van de functie f(x) = a(x - p)² + q", "7:34"]] },
-  { nr: 4, titel: "Procenten en statistiek", playlist: "PLqmYEL-9zWjO_9zBsoqUZGW6DmTMPLpuc", videos: [["b0Y7EzRorT4", "Procentuele verandering", "8:45"],["euiNyjtWxgY", "Vermenigvuldigingsfactor", "6:29"],["9wXMLQuFmus", "Procent op procent", "7:44"],["kcf-xP_3JeQ", "Rekenen met grote getallen", "8:30"],["ZiJOXXOcj9I", "Oud berekenen bij procentuele toe- of afname", "6:52"],["ccOr9DBFrUU", "Van DEEL naar TOTAAL", "5:40"],["rAx6i4uWHI0", "Grafische verwerking", "8:53"],["GBPsDtFgJoQ", "Misleidende diagrammen", "3:53"],["EI8vAZMrIBA", "Interpoleren en extrapoleren", "10:22"]] },
-  { nr: 5, titel: "Algebraïsche vaardigheden", playlist: "PLqmYEL-9zWjOB9_RGg0aHFgjBTHG_O3lY", videos: [["sgGrFsaSYAU", "Regels om haakjes weg te werken", "6:32"],["jyCUyG-BbMo", "Haakjes wegwerken en merkwaardige producten", "7:13"],["Q327ZG6C6uc", "Breuken herleiden", "8:44"],["LgRf_17oBno", "Variabelen uit breuken halen", "10:16"],["VJJnJM2GGto", "Breuken vermenigvuldigen en delen", "12:07"],["XOCzmFckU7I", "Breuken optellen en aftrekken", "14:40"],["S8aPQD8hD08", "Machten vermenigvuldigen en optellen", "6:12"],["iqOpFnxRY90", "De macht van een macht en de macht van een product", "9:58"],["_bRsAxhtXgU", "Machten delen", "5:52"],["YJQh91fGATc", "Wortels vermenigvuldigen en optellen", "6:20"],["St-t_AF52KA", "Een factor voor het wortelteken brengen", "9:24"],["_pBe3m_Tahw", "Wortels delen", "6:48"]] },
-  { nr: 6, titel: "Goniometrie", playlist: "PLqmYEL-9zWjPdwCzJ9x9S1g53IBpG3EsK", videos: [["-j7nTz8IYKc", "Hellingsgetal berekenen", "7:13"],["LPhuHE9GaH4", "De tangens van een hellingshoek", "6:00"],["A8G4wnHah2c", "Tangens en verhoudingstabel", "6:43"],["3bOCcZxQaDE", "Van hellingsgetal naar hellingshoek", "5:49"],["UudpuJQ500U", "De tangens in een rechthoekige driehoek", "9:53"],["CvSUv9F70s8", "Hoeken berekenen met de tangens", "5:38"],["oCnF6mlhk7M", "Zijden berekenen in een rechthoekige driehoek", "7:47"],["AhoeKxotnHI", "De sinus in een rechthoekige driehoek", "7:25"],["LmZgBbJPeNk", "Zijden berekenen met de sinus", "4:14"],["iJw0wO0UH78", "De cosinus in een rechthoekige driehoek", "6:30"],["BK9-YcVMDhA", "SOSCASTOA", "10:44"],["ho6Avc34_Io", "Zijden berekenen met SOSCASTOA", "7:57"],["wbjEXpsaKI4", "Hulplijnen tekenen", "5:53"],["FZVG3f21g6I", "Hoeken berekenen in de ruimte", "7:19"]] },
-  { nr: 7, titel: "Kwadratische vergelijkingen en ongelijkheden", playlist: "PLqmYEL-9zWjPF6Yimmsym_SeRaDXtu41N", videos: [["7II2jjo8uuY", "Snijpunten van grafieken", "9:17"],["Y_IMuhjbcSc", "Oplossen met de abc-formule", "8:40"],["f3ypnglniPI", "Oplossingen benaderen met de abc-formule", "7:55"],["sBw1L7rMkFQ", "Aantal oplossingen van een kwadratische vergelijking", "11:24"],["6032QoC4Q04", "Vergelijkingen met een parameter", "4:34"],["08zAHlivh6A", "Kwadratische vergelijkingen oplossen", "19:10"],["A2SNYcguh8c", "Kwadratische vergelijkingen opstellen", "10:17"],["NelmW7RJlI0", "Intervallen", "8:47"],["8sparF9WnB4", "De ongelijkheden f(x) groter dan 0 en f(x) kleiner dan 0", "4:31"],["iMwd7p844aw", "Ongelijkheden en grafieken", "11:25"],["aKKvFsA5j2A", "Kwadratische ongelijkheden oplossen", "11:49"]] },
-  { nr: 8, titel: "Allerlei verbanden", playlist: "PLqmYEL-9zWjNjNbhON4gRZadpwXFPITzv", videos: [["eCvW53qSZ_4", "Formule voor exponentiële groei", "15:29"],["Mruve3mcWao", "Exponentiële afname", "6:35"],["Hfb92FmJQN4", "Procentuele toename", "14:07"],["eB2DIxLN9U4", "Procentuele afname", "4:32"],["Kh6ZdTAq1vU", "Tabel bij exponentiële groei", "7:14"],["124I3JSznHw", "Lineaire groei en exponentiële groei", "7:55"],["PsofqqQmaZo", "Periodieke verbanden", "10:24"],["M7VysBgZfe4", "Grafieken van machtsfuncties", "8:11"],["I8fs_8EjpIQ", "De vergelijkingen x² = c en x³ = c", "6:15"],["hfiYm6QvzZo", "De vergelijkingen ax² + bx = c en ax³ + bx = c", "4:53"],["FvRqcM260Cg", "De formule y = a/x", "4:15"]] },
-  { nr: 9, titel: "Spreiding, tellen en kans", playlist: "PLqmYEL-9zWjOocebo-e3PnjaCGs7atFyJ", videos: [["SErSe34Xfn4", "Steel-bladdiagram", "7:20"],["mjofuWMmmcg", "Klassenindeling", "3:01"],["FnPaPwYcTsA", "Centrummaten bij een klassenindeling", "6:58"],["k1kjqvi_WQo", "De vijfgetallensamenvatting", "8:34"],["uQrL5XwhLMA", "Spreidingsbreedte en kwartielafstand", "13:35"],["KsJ5V-AXhYk", "De boxplot", "7:07"],["pi-5FLBlA8k", "Een boxplot tekenen", "6:10"],["3InLrOfuzUs", "Mogelijkheden tellen met een rooster", "5:43"],["RPI05cHY3Eg", "Vermenigvuldigingsregel", "7:12"],["5Lje3foXXTo", "Met en zonder herhaling", "6:28"],["oFUCE6_3eeE", "Kans", "7:29"]] },
-];
+// Indeling van Esra's boeken (8-10-2026): Moderne Wiskunde 13e editie havo 3 (Noordhoff) en Nova Natuurkunde 3 havo MAX 5.1 (Malmberg).
+// Per paragraaf uitlegvideo's op YouTube: [id, kanaal/titel, duur]. sam = samenvatting van het hoofdstuk (Rekentube).
+const BOEKEN = {
+  wis: { boek: "Moderne Wiskunde 13e editie, havo 3", hoofdstukken: [{"nr": "1", "deel": "A", "titel": "Lineaire en exponentiële formules", "sam": ["Fr_q0R3lBa8", "15:28"], "par": [{"nr": "1.1", "titel": "Lineaire formules opstellen", "v": [["YJrQwzQG-Xo", "Hansie", "18:31"], ["RpDZhdELvFY", "Menno: De formule y = ax + b", "8:38"], ["67AA66Z_hIw", "Menno: De grafiek van een lineaire formule", "9:47"]]}, {"nr": "1.2", "titel": "Lijnen snijden", "v": [["LsBTPR1MHGE", "Hansie", "25:50"], ["Zlneq6od-BM", "Menno: Lineaire formules vergelijken", "6:57"], ["-yl6BWQ3ZQM", "Menno: Lineaire vergelijkingen oplossen", "8:37"]]}, {"nr": "1.3", "titel": "Formules substitueren", "v": [["kPZlDBw_PpI", "Hansie", "21:06"], ["rFEA-kT63qQ", "Menno: Formules met andere letters dan x en y", "5:03"], ["yPUP3-Yajw8", "Menno: Herleiden tot de vorm y = ax + b", "4:39"]]}, {"nr": "1.4", "titel": "Exponentiële groei", "v": [["kLo1KfR8fPg", "Hansie", "11:31"], ["eCvW53qSZ_4", "Menno: Formule voor exponentiële groei", "15:29"]]}, {"nr": "1.5", "titel": "Groeifactor en tijd", "v": [["yus-GCFnNAc", "Hansie", "16:04"], ["Kh6ZdTAq1vU", "Menno: Tabel bij exponentiële groei", "7:14"]]}]}, {"nr": "2", "deel": "A", "titel": "Parabolen", "sam": ["Ele8iVNx_QU", "13:17"], "par": [{"nr": "2.1", "titel": "Parabolen", "v": [["ZgvA8UdSLuM", "Hansie", "13:25"], ["mZgWh-jgdI8", "Menno: De functie f(x) = ax² + bx + c", "6:31"]]}, {"nr": "2.2", "titel": "Symmetrie en top", "v": [["CfrWBUtByf0", "Hansie", "19:10"], ["1_misRbQ9CU", "Menno: Het berekenen van x-top en y-top", "5:22"], ["QtWMWwmNfAA", "Menno: De regel van de x-top toepassen", "7:50"]]}, {"nr": "2.3", "titel": "Parabolen tekenen", "v": [["ozayMF5GlTw", "Hansie", "15:22"], ["xZe-91tcMSc", "Menno: De grafiek van f(x) = ax² + bx + c tekenen", "8:21"]]}, {"nr": "2.4", "titel": "De vorm en de ligging van de parabool", "v": [["M0ZuSZAB5H4", "Hansie", "11:47"]]}, {"nr": "2.5", "titel": "Drie vormen van kwadratische formules", "v": [["P0-0fDl_ljo", "Hansie", "18:58"], ["N38oiZcNq3Q", "Menno: De functie f(x) = a(x - d)(x - e)", "8:57"], ["3H23ZmjVaKc", "Menno: De functie f(x) = a(x - p)² + q", "7:41"]]}]}, {"nr": "3", "deel": "A", "titel": "Vlakke figuren", "sam": ["G-PrP7rH9YY", "11:10"], "par": [{"nr": "3.1", "titel": "F-hoeken en Z-hoeken", "v": [["-_P2L0Gwxho", "Hansie", "18:38"], ["PvmOG5SswVw", "Menno: Evenwijdige lijnen", "9:52"], ["cqP_DHCfdy8", "Menno: Gelijke hoeken zoeken", "10:57"]]}, {"nr": "3.2", "titel": "Spiegelen", "v": [["PCipAl2uBaE", "Hansie", "16:17"]]}, {"nr": "3.3", "titel": "Driehoeken tekenen", "v": [["lmAlp3zFjdI", "Hansie", "16:11"]]}, {"nr": "3.4", "titel": "Gelijkvormige driehoeken", "v": [["2LlBovHLMlQ", "Hansie", "21:00"], ["cVu2DqhSueY", "Menno: Gelijkvormigheid", "11:17"], ["Nu3EUket9G0", "Menno: Gelijkvormige driehoeken en gelijke hoeken", "6:35"]]}, {"nr": "3.5", "titel": "Rekenen met gelijkvormigheid", "v": [["ILgAV0JhrNw", "Hansie", "23:04"], ["AUG0yTp8s3c", "Menno: Zijden berekenen bij gelijkvormigheid", "7:24"], ["t8xn6N4Cf3M", "Menno: Kruislings vermenigvuldigen", "6:09"]]}]}, {"nr": "4", "deel": "A", "titel": "De abc-formule", "sam": ["FUUS0jZI3gk", "17:48"], "par": [{"nr": "4.1", "titel": "Ontbinden in factoren", "v": [["UasrK3ZC5hw", "Hansie", "15:21"], ["WG3moj6vfS8", "Menno: Ontbinden in factoren", "11:38"]]}, {"nr": "4.2", "titel": "De abc-formule", "v": [["msdAkOSqboA", "Hansie", "19:18"], ["Y_IMuhjbcSc", "Menno: Oplossen met de abc-formule", "8:40"], ["f3ypnglniPI", "Menno: Oplossingen benaderen met de abc-formule", "7:55"]]}, {"nr": "4.3", "titel": "De abc-formule ontbinden in factoren", "v": [["hX6jIZ5QY08", "Hansie", "14:06"]]}, {"nr": "4.4", "titel": "Kwadratische vergelijkingen", "v": [["FGyUkczLqx8", "Hansie", "19:18"], ["tkapcNIaDM0", "Menno: Kwadratische vergelijkingen oplossen", "8:55"], ["7fl0cdLmNe4", "Menno: Kwadratische vergelijkingen vereenvoudigen", "11:45"]]}]}, {"nr": "5", "deel": "A", "titel": "Nieuwe grafieken", "sam": ["mxd8Z2gBX2Y", "13:26"], "par": [{"nr": "5.1", "titel": "Periodieke grafieken", "v": [["t3uPyuxjil8", "Hansie", "19:19"], ["PsofqqQmaZo", "Menno: Periodieke verbanden", "10:24"]]}, {"nr": "5.2", "titel": "Verticaal verschuiven", "v": [["_ErzLHsrXfg", "Hansie", "15:26"], ["tTxbZ4qK8BY", "Menno: Verticaal verschuiven", "3:45"]]}, {"nr": "5.3", "titel": "Vermenigvuldigen ten opzichte van de x-as", "v": [["pQqxOspxy8c", "Hansie", "17:12"]]}, {"nr": "5.4", "titel": "Combineren", "v": [["C2eZhsfVOVo", "Hansie", "18:43"]]}, {"nr": "5.5", "titel": "Somformule en verschilformule", "v": [["CFXrTaqdGPA", "Hansie", "27:25"]]}]}, {"nr": "6", "deel": "A", "titel": "Goniometrie", "sam": ["JybAD46VN58", "12:14"], "par": [{"nr": "6.1", "titel": "Hellingshoek en hellingsgetal", "v": [["lPV5POnzKUE", "Hansie", "15:32"], ["-j7nTz8IYKc", "Menno: Hellingsgetal berekenen", "7:13"], ["3bOCcZxQaDE", "Menno: Van hellingsgetal naar hellingshoek", "5:49"]]}, {"nr": "6.2", "titel": "Tangens", "v": [["6jHAlaRiU28", "Hansie", "16:22"], ["LPhuHE9GaH4", "Menno: De tangens van een hellingshoek", "6:00"], ["UudpuJQ500U", "Menno: De tangens in een rechthoekige driehoek", "9:53"]]}, {"nr": "6.3", "titel": "Rekenen met de tangens", "v": [["QtSlh5k4GDw", "Hansie", "17:35"], ["CvSUv9F70s8", "Menno: Hoeken berekenen met de tangens", "5:38"]]}, {"nr": "6.4", "titel": "Sinus en cosinus", "v": [["3me7VDkOCno", "Hansie", "21:43"], ["AhoeKxotnHI", "Menno: De sinus in een rechthoekige driehoek", "7:25"], ["iJw0wO0UH78", "Menno: De cosinus in een rechthoekige driehoek", "6:30"]]}, {"nr": "6.5", "titel": "Rekenen in driehoeken", "v": [["-OV-iBT4_Ew", "Hansie", "22:26"], ["BK9-YcVMDhA", "Menno: SOSCASTOA", "10:44"], ["ho6Avc34_Io", "Menno: Zijden berekenen met SOSCASTOA", "7:57"]]}, {"nr": "6.6", "titel": "Hoeken in ruimtefiguren", "v": [["hdoh2GqmF6A", "Hansie", "24:02"], ["FZVG3f21g6I", "Menno: Hoeken berekenen in de ruimte", "7:19"]]}]}, {"nr": "7", "deel": "A", "titel": "Verbanden", "sam": ["kO3_lgD1vl4", "14:34"], "par": [{"nr": "7.1", "titel": "Kwadratische formules", "v": [["rwWv5-CrDPU", "Hansie", "15:28"]]}, {"nr": "7.2", "titel": "Recht evenredig en omgekeerd evenredig", "v": [["OOwqoxem92s", "Hansie", "20:41"], ["FvRqcM260Cg", "Menno: De formule y = a/x", "4:15"]]}, {"nr": "7.3", "titel": "Gebroken formules", "v": [["ybjt_cpznVU", "Hansie", "14:45"]]}, {"nr": "7.4", "titel": "Machtsformules", "v": [["ZaY6LhwJ8_Y", "Hansie", "17:52"], ["M7VysBgZfe4", "Menno: Grafieken van machtsfuncties", "8:11"]]}, {"nr": "7.5", "titel": "Wortelformules", "v": [["Po6AaJ_E4TY", "Hansie", "14:11"]]}, {"nr": "7.6", "titel": "Tabellen en formules", "v": [["cdZTUSIzvBs", "Hansie", "15:38"], ["124I3JSznHw", "Menno: Lineaire groei en exponentiële groei", "7:55"]]}]}, {"nr": "8", "deel": "B", "titel": "Statistiek", "sam": ["k1kjqvi_WQo", "8:34"], "par": [{"nr": "8.1", "titel": "Absoluut en relatief", "v": [["5nJSwBBbLTk", "Hansie", "14:41"]]}, {"nr": "8.2", "titel": "Indeling in klassen", "v": [["3JVnRuzKtOc", "Hansie", "12:43"], ["mjofuWMmmcg", "Menno: Klassenindeling", "3:01"], ["FnPaPwYcTsA", "Menno: Centrummaten bij een klassenindeling", "6:58"]]}, {"nr": "8.3", "titel": "Spreidingsmaten", "v": [["00wuhYVf-IQ", "Hansie", "13:06"], ["uQrL5XwhLMA", "Menno: Spreidingsbreedte en kwartielafstand", "13:35"]]}, {"nr": "8.4", "titel": "Boxplot", "v": [["2uGS1lpjSiw", "Hansie", "17:51"], ["KsJ5V-AXhYk", "Menno: De boxplot", "7:07"]]}, {"nr": "8.5", "titel": "Data verwerken", "v": [["UXKtdorW8Jk", "Hansie", "19:47"], ["rAx6i4uWHI0", "Menno: Grafische verwerking", "8:53"]]}]}, {"nr": "9", "deel": "B", "titel": "Rekenen met variabelen", "sam": ["FYgZc0tOB9c", "11:36"], "par": [{"nr": "9.1", "titel": "Rekenen met breuken", "v": [["qBBki_Oi8EE", "Hansie", "14:32"], ["XOCzmFckU7I", "Menno: Breuken optellen en aftrekken", "14:40"], ["VJJnJM2GGto", "Menno: Breuken vermenigvuldigen en delen", "12:07"]]}, {"nr": "9.2", "titel": "Rekenen met exponenten", "v": [["lKaiGOsoCZs", "Hansie", "19:02"]]}, {"nr": "9.3", "titel": "Rekenen met machten", "v": [["HZc4iWWeo8A", "Hansie", "16:06"], ["S8aPQD8hD08", "Menno: Machten vermenigvuldigen en optellen", "6:12"], ["iqOpFnxRY90", "Menno: De macht van een macht en de macht van een product", "9:58"]]}, {"nr": "9.4", "titel": "Rekenen met wortels", "v": [["x_kyzFV29U0", "Hansie", "16:01"], ["YJQh91fGATc", "Menno: Wortels vermenigvuldigen en optellen", "6:20"], ["St-t_AF52KA", "Menno: Een factor voor het wortelteken brengen", "9:24"]]}]}, {"nr": "10", "deel": "B", "titel": "Bijzondere lijnen in driehoeken", "sam": ["7TeGhZq6ZP4", "9:06"], "par": [{"nr": "10.1", "titel": "Middelloodlijn", "v": [["a5lcxD-DWNE", "Hansie", "18:45"]]}, {"nr": "10.2", "titel": "Hoogtelijn", "v": [["xgCRsV7N2wM", "Hansie", "16:09"]]}, {"nr": "10.3", "titel": "Deellijn", "v": [["jqO9_tKO61k", "Hansie", "10:06"]]}, {"nr": "10.4", "titel": "Zwaartelijn", "v": [["Js13zEmoCdI", "Hansie", "17:14"]]}, {"nr": "10.5", "titel": "Ingeschreven en omgeschreven cirkel", "v": [["t0C9G9rwp2Q", "Hansie", "12:31"]]}]}, {"nr": "11A", "deel": "B", "titel": "Vergelijkingen en ongelijkheden", "sam": ["-1jLVv0_DT0", "9:43"], "par": [{"nr": "11A.1", "titel": "Parabool en lijn", "v": [["TAKH-QDvkyE", "Hansie", "19:14"], ["7II2jjo8uuY", "Menno: Snijpunten van grafieken", "9:17"]]}, {"nr": "11A.2", "titel": "Intervallen", "v": [["71KX8wTOwzA", "Hansie", "19:10"], ["NelmW7RJlI0", "Menno: Intervallen", "8:47"]]}, {"nr": "11A.3", "titel": "Kwadratische ongelijkheden", "v": [["3y0slYrG8D0", "Hansie", "18:54"], ["8sparF9WnB4", "Menno: De ongelijkheden f(x) groter dan 0 en f(x) kleiner dan 0", "4:31"], ["aKKvFsA5j2A", "Menno: Kwadratische ongelijkheden oplossen", "11:49"]]}, {"nr": "11A.4", "titel": "Machtsvergelijkingen", "v": [["ByB-4ZSlMgI", "Hansie", "25:31"], ["I8fs_8EjpIQ", "Menno: De vergelijkingen x² = c en x³ = c", "6:15"]]}]}, {"nr": "11B", "deel": "B", "titel": "Vergelijkingen en ongelijkheden", "sam": ["-1jLVv0_DT0", "9:43"], "par": [{"nr": "11B.1", "titel": "Parabool en lijn", "v": [["7II2jjo8uuY", "Menno: Snijpunten van grafieken", "9:17"]]}, {"nr": "11B.2", "titel": "Intervallen", "v": [["NelmW7RJlI0", "Menno: Intervallen", "8:47"]]}, {"nr": "11B.3", "titel": "Kwadratische ongelijkheden", "v": [["8sparF9WnB4", "Menno: De ongelijkheden f(x) groter dan 0 en f(x) kleiner dan 0", "4:31"], ["aKKvFsA5j2A", "Menno: Kwadratische ongelijkheden oplossen", "11:49"]]}, {"nr": "11B.4", "titel": "Machtsvergelijkingen", "v": [["I8fs_8EjpIQ", "Menno: De vergelijkingen x² = c en x³ = c", "6:15"]]}]}, {"nr": "12A", "deel": "B", "titel": "Rekenen", "sam": ["CX-7haLw8uM", "8:47"], "par": [{"nr": "12A.1", "titel": "Volgorde bij berekeningen", "v": [["zLveCpbGjvI", "Hansie", "9:25"]]}, {"nr": "12A.2", "titel": "Verhoudingen", "v": [["ekPrw-hWc-Y", "Hansie", "10:35"]]}, {"nr": "12A.3", "titel": "Procenten en factor", "v": [["wdATvNBIBnI", "Hansie", "9:57"], ["euiNyjtWxgY", "Menno: Vermenigvuldigingsfactor", "6:29"], ["ccOr9DBFrUU", "Menno: Van DEEL naar TOTAAL", "5:40"]]}, {"nr": "12A.4", "titel": "Rekenen met tijd", "v": [["_zrOzDv_gks", "Hansie", "19:44"]]}]}, {"nr": "12B", "deel": "B", "titel": "Lijnen en cirkels", "sam": ["l-W0aa--mnc", "9:21"], "par": [{"nr": "12B.1", "titel": "De vergelijkingen van lijnen", "v": [["AoTPdVlZeo8", "Hansie", "15:10"], ["ao0c11rk_lE", "Menno: De vergelijking px + qy = r", "6:52"]]}, {"nr": "12B.2", "titel": "Vergelijking van een cirkel", "v": [["tLd9WU-eY7M", "Hansie", "17:42"]]}, {"nr": "12B.3", "titel": "De vorm x^2 + y^2 + px + qy + s = 0", "v": [["rAFkMEvM47I", "Hansie", "10:24"]]}, {"nr": "12B.4", "titel": "Cirkel en lijn", "v": [["62hXiA2U07g", "Hansie", "20:55"]]}]}] },
+  nat: { boek: "Nova Natuurkunde, 3 havo", hoofdstukken: [{"nr": "1", "deel": "A", "titel": "Elektriciteit", "sam": null, "par": [{"nr": "1.1", "titel": "Elektrische energie vervoeren", "v": [["eh4RN6gShWk", "Meneer van der Welle", "11:10"], ["LoCBKAJB9As", "Meneer Wietsma", "23:07"]]}, {"nr": "1.2", "titel": "Vermogen en energie", "v": [["tEdVi4KbQWA", "Meneer van der Welle", "9:46"], ["PReUYmApanQ", "Meneer Wietsma: Natuurkunde uitleg Elektriciteit 4: Vermogen", "7:04"]]}, {"nr": "1.3", "titel": "Elektriciteit in huis", "v": [["45CnBUA8aoU", "Meneer van der Welle", "8:56"], ["4hsR0w34qBA", "Mr Ruitenberg: H1.3 Elektriciteit in huis 3HAVO", "24:14"]]}, {"nr": "1.4", "titel": "Elektriciteit en veiligheid", "v": [["UntviW_IbRs", "Meneer van der Welle", "8:39"], ["4_wswux7XD4", "Mr Ruitenberg: H1.4 Elektriciteit en Veiligheid 3HAVO", "14:40"]]}]}, {"nr": "2", "deel": "A", "titel": "Krachten", "sam": null, "par": [{"nr": "2.1", "titel": "Soorten krachten", "v": [["gtXogRkND5M", "Meneer van der Welle", "10:34"], ["j8t4Mdqxmdc", "Meneer Wietsma", "17:03"]]}, {"nr": "2.2", "titel": "Meer dan één kracht", "v": [["Oxcr1SkQAiw", "Meneer van der Welle", "12:04"], ["CNOYmbnPNy8", "Mr Ruitenberg: H2.2 Meer dan een Kracht 3HAVO", "12:14"]]}, {"nr": "2.3", "titel": "Hefbomen", "v": [["_3n1S41Az3I", "Meneer van der Welle", "12:10"], ["V7kdnim8oJY", "Mr Ruitenberg: H2.3 Hefbomen 3HAVO", "14:24"]]}, {"nr": "2.4", "titel": "Werktuigen", "v": [["tCcIvDMMlSw", "Meneer van der Welle", "12:49"], ["itJriTCZTUw", "Mr Ruitenberg: H2.4 werktuigen 3HAVO", "12:12"]]}]}, {"nr": "3", "deel": "A", "titel": "Energie", "sam": null, "par": [{"nr": "3.1", "titel": "Energiebronnen", "v": [["6Acet2HKdlI", "Meneer van der Welle", "7:19"], ["9829QUz2x4s", "Meneer Wietsma", "14:01"]]}, {"nr": "3.2", "titel": "Verwarmen", "v": [["P2s0MNmJLBI", "Meneer van der Welle", "11:49"], ["6UXAyK2FBAM", "Mr Ruitenberg: H3.2 Verwarmen 3HAVO/ VWO", "21:46"]]}, {"nr": "3.3", "titel": "Isoleren", "v": [["YTKlUHd7kJo", "Meneer van der Welle", "9:41"], ["3tOLs9FV4IY", "Mr Ruitenberg: H3.3 Isoleren 3HAVO", "21:23"]]}, {"nr": "3.4", "titel": "Rendement", "v": [["Xv-AbrSj8TM", "Meneer van der Welle", "12:05"], ["IPLy6ziVZTY", "Mr Ruitenberg: H3.4 Rendement 3HAVO", "18:49"]]}]}, {"nr": "4", "deel": "B", "titel": "Kracht en beweging", "sam": null, "par": [{"nr": "4.1", "titel": "Voortstuwen en tegenwerken", "v": [["aNfIE51Cd8A", "Meneer van der Welle", "10:43"], ["KJOXEGnxuY8", "Meneer Wietsma", "15:30"]]}, {"nr": "4.2", "titel": "Versnellen en vertragen", "v": [["S32cRlKu1CI", "Meneer van der Welle", "13:25"], ["597Dgv0K11s", "Mr Ruitenberg: H4.2 Versnellen en Vertragen 3HAVO", "14:07"]]}, {"nr": "4.3", "titel": "Kracht, massa en versnelling", "v": [["a4nFYJieWJE", "Meneer van der Welle", "14:38"], ["1nEk0Hekvgo", "Mr Ruitenberg: H4.3 Kracht, Massa en Versnelling 3HAVO", "12:26"]]}, {"nr": "4.4", "titel": "Remmen en botsen", "v": [["OESxFAtVUbw", "Meneer van der Welle", "9:02"], ["TU8tiD3ui3U", "Mr Ruitenberg: H4.4 Remmen en Botsen 3HAVO", "16:00"]]}]}, {"nr": "5", "deel": "B", "titel": "Schakelingen", "sam": null, "par": [{"nr": "5.1", "titel": "Lading en spanning", "v": [["6ButCFwfeb0", "Meneer van der Welle", "6:56"], ["SioX0xo2Y4M", "Meneer Wietsma", "14:28"]]}, {"nr": "5.2", "titel": "Weerstand", "v": [["F-0wXQG1YVo", "Meneer van der Welle", "9:14"], ["niYEYtKFAHM", "Meneer Wietsma: Natuurkunde uitleg Elektriciteit 6: Weerstand", "8:14"]]}, {"nr": "5.3", "titel": "Werken met weerstanden", "v": [["sd2ahjSlvgM", "Meneer van der Welle", "7:04"]]}, {"nr": "5.4", "titel": "Automatische schakelingen", "v": [["8sJywlq22CU", "Meneer van der Welle", "8:39"], ["ZINBDjpRPsw", "Mr Ruitenberg: H5.4 Automatische Schakelingen 3H/V", "15:57"]]}]}, {"nr": "6", "deel": "B", "titel": "Straling", "sam": null, "par": [{"nr": "6.1", "titel": "Elektromagnetische straling", "v": [["pAcaZQwlOsg", "Meneer van der Welle", "8:35"]]}, {"nr": "6.2", "titel": "Licht en lenzen", "v": [["yqF9DOjnBt8", "Meneer van der Welle", "11:26"]]}, {"nr": "6.3", "titel": "Röntgenfoto's maken", "v": [["x-VxchKYnaQ", "Meneer van der Welle", "9:37"], ["EruOHl5Y3JE", "Mr Ruitenberg: H6.3 Röntgen foto's maken 3H", "17:29"]]}, {"nr": "6.4", "titel": "Werken met gammastraling", "v": [["kvrn3GTlPU4", "Meneer van der Welle", "8:25"], ["58cSn7wPH7M", "Mr Ruitenberg: H6.4 Werken met Gammastraling 3H en 3V", "14:49"]]}]}, {"nr": "V", "deel": "A+B", "titel": "Vaardigheden", "sam": null, "par": [{"nr": "V1", "titel": "Onderzoek doen", "v": []}, {"nr": "V2", "titel": "Werken met grootheden en eenheden", "v": []}, {"nr": "V3", "titel": "Werken met machten van 10", "v": []}, {"nr": "V4", "titel": "Werken met meetinstrumenten", "v": []}, {"nr": "V5", "titel": "Werken met formules", "v": []}, {"nr": "V6", "titel": "Formules herschrijven", "v": []}, {"nr": "V7", "titel": "Uitkomsten afronden", "v": []}, {"nr": "V8", "titel": "Werken met tabellen en grafieken", "v": []}, {"nr": "V9", "titel": "Verbanden meten", "v": []}, {"nr": "V10", "titel": "Een verslag schrijven", "v": []}]}] }
+};
 
-// Welk hoofdstuk en welke video van Menno bij een oefenonderwerp hoort
+// Bij welk hoofdstuk en welke paragraaf van het boek een oefenonderwerp hoort
 const KOPPELING = {
-  "rc-punten": { hfst: 1, video: "RpDZhdELvFY" },
-  "rc-grafiek": { hfst: 1, video: "RpDZhdELvFY" },
-  "tabel": { hfst: 1, video: "67AA66Z_hIw" },
-  "verhaal": { hfst: 1, video: "rFEA-kT63qQ" },
-  "vergelijking": { hfst: 1, video: "-yl6BWQ3ZQM" }
+  "rc-punten": { hfst: "1", par: "1.1" }, "rc-grafiek": { hfst: "1", par: "1.1" },
+  "tabel": { hfst: "1", par: "1.1" }, "verhaal": { hfst: "1", par: "1.1" }, "vergelijking": { hfst: "1", par: "1.2" },
+  "vermogen": { hfst: "1", par: "1.2" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" },
+  "snelheid": { hfst: "4" }, "ohm": { hfst: "5", par: "5.2" },
+  "omrekenen": { hfst: "V", par: "V2" }, "diagram": { hfst: "V", par: "V8" },
+  "dichtheid": { hfst: "herhaling" }
 };
 const yt = id => `https://www.youtube.com/watch?v=${id}`;
-function videoInfo(id) {
-  for (const h of HOOFDSTUKKEN) { const v = h.videos.find(v => v[0] === id); if (v) return v; }
-  return null;
+function paragraafVan(id) {
+  const o = ONDERWERPEN.find(o => o.id === id), k = KOPPELING[id];
+  if (!o || !k || !k.par) return null;
+  const h = BOEKEN[o.vak].hoofdstukken.find(h => h.nr === k.hfst);
+  return h && h.par.find(p => p.nr === k.par);
 }
 
 // ---------- scores ----------
@@ -843,26 +843,34 @@ function topicKnop(o) {
   const cls = sc && sc.tot >= 5 && sc.goed / sc.tot >= 0.8 ? "t-score goed" : "t-score";
   return `<button class="topic" data-id="${o.id}"><span class="t-main"><span class="t-title">${o.titel}</span><span class="t-sub">${o.sub}</span></span><span class="${cls}">${txt}</span></button>`;
 }
-function renderHome() {
-  $("lijst-nat").innerHTML = ONDERWERPEN.filter(o => o.vak === "nat").map(topicKnop).join("");
-  const open = new Set([...document.querySelectorAll("details.hfst[open]")].map(d => d.dataset.nr));
-  $("lijst-wis").innerHTML = HOOFDSTUKKEN.map(h => {
-    const oef = ONDERWERPEN.filter(o => KOPPELING[o.id] && KOPPELING[o.id].hfst === h.nr);
-    const isOpen = open.size ? open.has(String(h.nr)) : h.nr === 1;
-    return `<details class="hfst" data-nr="${h.nr}"${isOpen ? " open" : ""}>
-      <summary><span class="h-nr">H${h.nr}</span> ${h.titel}<span class="h-info">${oef.length ? oef.length + " oefenonderwerpen · " : ""}${h.videos.length} video's</span></summary>
-      ${oef.length ? `<div class="schrift">${oef.map(topicKnop).join("")}</div>` : `<p class="klein">Oefensommen voor dit hoofdstuk volgen nog. Bekijk zolang de video's.</p>`}
-      <p class="klein h-vid-kop">▶ Uitleg van Math with Menno (opent YouTube) · <a href="https://www.youtube.com/playlist?list=${h.playlist}" target="_blank" rel="noopener">hele hoofdstuk</a></p>
-      <ol class="videos">${h.videos.map(v => `<li><a href="${yt(v[0])}" target="_blank" rel="noopener">${v[1]}</a> <span class="duur">${v[2]}</span></li>`).join("")}</ol>
-    </details>`;
-  }).join("");
+function videoLinks(lijst) {
+  return lijst.map(v => `<a href="${yt(v[0])}" target="_blank" rel="noopener">▶ ${v[1]}</a> <span class="duur">${v[2]}</span>`).join(" · ");
 }
-
+function renderHome() {
+  const open = new Set([...document.querySelectorAll("details.hfst[open]")].map(d => d.dataset.key));
+  for (const vak of ["wis", "nat"]) {
+    const boek = BOEKEN[vak];
+    const groepen = boek.hoofdstukken.map(h => ({ ...h, oef: ONDERWERPEN.filter(o => o.vak === vak && KOPPELING[o.id] && KOPPELING[o.id].hfst === h.nr) }));
+    const rest = ONDERWERPEN.filter(o => o.vak === vak && KOPPELING[o.id] && KOPPELING[o.id].hfst === "herhaling");
+    if (rest.length) groepen.push({ nr: "", deel: "", titel: "Herhaling uit klas 2", par: [], oef: rest });
+    const eerste = groepen.find(g => g.oef.length);
+    $("lijst-" + vak).innerHTML = groepen.map(h => {
+      const key = vak + h.nr + h.titel;
+      const isOpen = open.size ? open.has(key) : h === eerste;
+      return `<details class="hfst" data-key="${key}"${isOpen ? " open" : ""}>
+      <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}<span class="h-info">${h.deel ? "deel " + h.deel + " · " : ""}${h.oef.length ? h.oef.length + " oefenonderwerp" + (h.oef.length > 1 ? "en" : "") : "oefensommen volgen"}</span></summary>
+      ${h.oef.length ? `<div class="schrift">${h.oef.map(topicKnop).join("")}</div>` : ""}
+      ${h.sam ? `<p class="klein h-vid-kop"><a href="${yt(h.sam[0])}" target="_blank" rel="noopener">▶ Samenvatting van het hele hoofdstuk</a> <span class="duur">(Rekentube, ${h.sam[1]})</span></p>` : ""}
+      ${h.par.length ? `<ul class="paragrafen">${h.par.map(p => `<li><b>${p.nr}</b> ${p.titel}${p.v.length ? `<div class="vids">${videoLinks(p.v)}</div>` : ""}</li>`).join("")}</ul>` : ""}
+    </details>`;
+    }).join("");
+  }
+}
 function start(id) {
   onderwerp = ONDERWERPEN.find(o => o.id === id);
   $("o-titel").textContent = onderwerp.titel;
-  const k = KOPPELING[id], v = k && videoInfo(k.video);
-  $("o-uitlegtekst").innerHTML = onderwerp.uitleg + (v ? `<p class="videolink">▶ <a href="${yt(v[0])}" target="_blank" rel="noopener">Liever een filmpje? ${v[1]}</a> <span class="duur">(Math with Menno, ${v[2]})</span></p>` : "");
+  const par = paragraafVan(id);
+  $("o-uitlegtekst").innerHTML = onderwerp.uitleg + (par && par.v.length ? `<p class="videolink">Liever een filmpje? Uitleg bij paragraaf ${par.nr} ${par.titel} van je boek:<br>${videoLinks(par.v)}</p>` : "");
   $("o-uitleg").open = !(scores[id] && scores[id].tot);
   toon("oefen");
   nieuweSom();
