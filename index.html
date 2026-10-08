@@ -998,7 +998,7 @@ function vulStemkeuze() {
 }
 function voorUitspraak(t) {
   return t.replace(/km\/h/g, " kilometer per uur").replace(/m\/s/g, " meter per seconde")
-    .replace(/Δ/g, "delta ").replace(/\//g, " gedeeld door ").replace(/[·×*]/g, " keer ").replace(/=/g, " is ")
+    .replace(/Δ/g, "delta ").replace(/\b[yY]\b/g, "ei").replace(/\//g, " gedeeld door ").replace(/[·×*]/g, " keer ").replace(/=/g, " is ")
     .replace(/−/g, " min ").replace(/Ω/g, " ohm").replace(/\s+/g, " ");
 }
 function mond(aan) {
