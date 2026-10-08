@@ -299,11 +299,13 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
   </div>
   <div class="stemrij">
     <label><input type="checkbox" id="v-voorlezen"> Antwoorden voorlezen</label>
-    <label for="v-stem">Stem:</label><select id="v-stem"></select>
-    <button class="btn klein2" id="v-stemtest" type="button">▶ Test</button>
-    <button class="btn klein2" id="v-stop" type="button">■ Stop</button>
+    <!-- Stemkeuze, test en stop: verborgen, code blijft werken. Weghalen van class="hidden" zet ze terug. -->
+    <label for="v-stem" class="hidden">Stem:</label><select id="v-stem" class="hidden"></select>
+    <button class="btn klein2 hidden" id="v-stemtest" type="button">▶ Test</button>
+    <button class="btn klein2 hidden" id="v-stop" type="button">■ Stop</button>
   </div>
-  <details class="klein">
+  <!-- "Liever aan Durk vragen?": verborgen, code blijft werken. -->
+  <details class="klein hidden">
     <summary>Liever aan <span class="begeleider">Durk</span> vragen?</summary>
     <div class="knoppen" style="margin-top:.5rem">
       <a class="btn hidden" id="v-whatsapp" target="_blank" rel="noopener">Stuur via WhatsApp</a>
@@ -994,14 +996,15 @@ function stemScore(v) {
   return s;
 }
 const MANNENSTEM = /frank|maarten|xander|arnaud|jelle|stefan|\bmale\b|\bman\b/i;
+// Delta (wiskunde) spreekt Nederlands-Nederlands, Volta (natuurkunde) Belgisch-Nederlands.
+// Geen Belgische stem op het apparaat? Dan deelt Volta de NL-stem en klinkt hij lager (toonhoogte).
+const STEMTAAL = { delta: /^nl[-_]NL/i, volta: /^nl[-_]BE/i };
 function stemVoor(wie) {
   const zoek = n => n && nlStemmen.find(v => v.name.toLowerCase().includes(n.toLowerCase()));
-  const eigen = zoek(stemKeuzes[wie]) || zoek(CONFIG.stemVoorkeur[wie]);
+  const eigen = zoek(CONFIG.stemVoorkeur[wie]);
   if (eigen) return eigen;
   if (!nlStemmen.length) return null;
-  const volta = nlStemmen.find(v => MANNENSTEM.test(v.name)) || nlStemmen[0];
-  if (wie === "volta") return volta;
-  return nlStemmen.find(v => v !== volta) || volta;
+  return nlStemmen.find(v => STEMTAAL[wie].test(v.lang)) || nlStemmen.find(v => STEMTAAL.delta.test(v.lang)) || nlStemmen[0];
 }
 function laadStemmen() {
   nlStemmen = speechSynthesis.getVoices().filter(v => /^nl/i.test(v.lang)).sort((a, b) => stemScore(b) - stemScore(a));
