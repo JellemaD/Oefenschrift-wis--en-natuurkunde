@@ -245,7 +245,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <div class="spiek">
       <h3>Lineaire formules</h3>
       <dl>
-        <dt><span class="formule">y = ax + b</span></dt><dd>a is de richtingscoëfficiënt (helling), b is het startgetal (snijpunt met de y-as)</dd>
+        <dt><span class="formule">y = ax + b</span></dt><dd>a is de richtingscoëfficiënt (rc, ook wel hellingsgetal): per stap van x gaat y a omhoog. b is het begingetal: de y bij x = 0, waar de lijn de y-as snijdt</dd>
         <dt><span class="formule">a = Δy / Δx</span></dt><dd>hoeveel omhoog (of omlaag) gedeeld door hoeveel opzij</dd>
         <dt>a positief</dt><dd>lijn stijgt; a negatief: lijn daalt; a = 0: horizontaal</dd>
       </dl>
@@ -424,7 +424,7 @@ const ONDERWERPEN = [
   {
     id: "rc-punten", vak: "wis", titel: "Richtingscoëfficiënt uit twee punten",
     sub: "a = Δy / Δx met coördinaten",
-    uitleg: `<p>De richtingscoëfficiënt a vertelt hoe steil een lijn is: hoeveel y verandert als x één stap groter wordt.</p>
+    uitleg: `<p>De richtingscoëfficiënt a (afgekort rc, ook wel hellingsgetal) vertelt hoe steil een lijn is: per stap van x gaat y a omhoog (of omlaag).</p>
       <p>${F("a = Δy / Δx")}</p>
       <ul><li>Δy = y van het tweede punt min y van het eerste punt</li>
       <li>Δx = x van het tweede punt min x van het eerste punt</li>
@@ -447,11 +447,11 @@ const ONDERWERPEN = [
   },
   {
     id: "rc-grafiek", vak: "wis", titel: "Formule aflezen uit een grafiek",
-    sub: "Hellingsdriehoek en startgetal",
+    sub: "Richtingscoëfficiënt en begingetal aflezen",
     uitleg: `<p>Zo vind je de formule ${F("y = ax + b")} bij een rechte lijn:</p>
-      <ul><li><b>b</b>: kijk waar de lijn de y-as (de verticale as) snijdt.</li>
-      <li><b>a</b>: kies twee punten die precies op een roosterpunt liggen. Ga van het linker punt naar rechts (Δx) en dan omhoog of omlaag (Δy). Omlaag is negatief.</li>
-      <li>a = Δy / Δx. Dit heet de hellingsdriehoek.</li></ul>`,
+      <ul><li><b>b</b> is het begingetal: kijk waar de lijn de y-as (de verticale as) snijdt.</li>
+      <li><b>a</b> is de richtingscoëfficiënt: kies twee punten die precies op een roosterpunt liggen. Ga van het linker punt naar rechts (Δx) en dan omhoog of omlaag (Δy). Omlaag is negatief.</li>
+      <li>a = Δy / Δx: zoveel gaat y omhoog per stap naar rechts.</li></ul>`,
     gen() {
       const a = pick(HELLINGEN), q = Number.isInteger(a) ? 1 : 2, b = R(-4, 4);
       let P, Q;
@@ -467,17 +467,17 @@ const ONDERWERPEN = [
         svg: vlakSVG({ a, b, P, Q }),
         svgUitw: vlakSVG({ a, b, P, Q, tri: true }),
         velden: [{ label: "a =", val: a, tol: EXACT, omgekeerd: true }, { label: "b =", val: b, tol: EXACT }],
-        hint: `Voor b: waar snijdt de lijn de verticale y-as? Voor a: begin bij het linker punt. Tel hoeveel hokjes je naar rechts gaat (Δx) en hoeveel omhoog of omlaag (Δy) tot het andere punt. Omlaag telt als min.`,
-        stappen: `Van het linker punt (${fmt(L[0])}, ${fmt(L[1])}) naar het rechter punt (${fmt(Rr[0])}, ${fmt(Rr[1])}):<br>Δx = ${fmt(Rr[0] - L[0])} naar rechts, Δy = ${fmt(Rr[1] - L[1])} ${Rr[1] - L[1] >= 0 ? "omhoog" : "(omlaag)"}<br>a = ${fmt(Rr[1] - L[1])} / ${fmt(Rr[0] - L[0])} = <b>${fmt(a)}</b><br>De lijn snijdt de y-as bij y = ${fmt(b)}, dus <b>b = ${fmt(b)}</b><br>Formule: <b>${formule(a, b)}</b><br>In de grafiek zie je nu de hellingsdriehoek.`
+        hint: `Voor b (het begingetal): waar snijdt de lijn de verticale y-as? Voor a (de richtingscoëfficiënt): begin bij het linker punt. Tel hoeveel hokjes je naar rechts gaat (Δx) en hoeveel omhoog of omlaag (Δy) tot het andere punt. Omlaag telt als min.`,
+        stappen: `Van het linker punt (${fmt(L[0])}, ${fmt(L[1])}) naar het rechter punt (${fmt(Rr[0])}, ${fmt(Rr[1])}):<br>Δx = ${fmt(Rr[0] - L[0])} naar rechts, Δy = ${fmt(Rr[1] - L[1])} ${Rr[1] - L[1] >= 0 ? "omhoog" : "(omlaag)"}<br>a = ${fmt(Rr[1] - L[1])} / ${fmt(Rr[0] - L[0])} = <b>${fmt(a)}</b><br>De lijn snijdt de y-as bij y = ${fmt(b)}, dus <b>b = ${fmt(b)}</b><br>Formule: <b>${formule(a, b)}</b><br>In de grafiek zie je nu de stap naar rechts en omhoog.`
       };
     }
   },
   {
     id: "tabel", vak: "wis", titel: "Formule bij een tabel",
-    sub: "Zoek de vaste stap en het startgetal",
+    sub: "Zoek de toename per stap en het begingetal",
     uitleg: `<p>Bij een lineaire formule gaat y bij elke gelijke stap in x met hetzelfde getal omhoog of omlaag.</p>
-      <ul><li><b>a</b> = hoeveel y verandert gedeeld door hoeveel x verandert. Is de stap in x 2, deel dan door 2.</li>
-      <li><b>b</b> = de y die hoort bij x = 0. Staat x = 0 niet in de tabel? Reken terug: b = y − a · x.</li></ul>`,
+      <ul><li><b>a</b> is de richtingscoëfficiënt: de toename van y per stap van x. Dus hoeveel y verandert gedeeld door hoeveel x verandert. Is de stap in x 2, deel dan door 2.</li>
+      <li><b>b</b> is het begingetal: de y die hoort bij x = 0. Staat x = 0 niet in de tabel? Reken terug: b = y − a · x.</li></ul>`,
     gen() {
       const a = pick([-4, -3, -2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5]);
       const b = R(-6, 10), start = pick([0, 0, 1, 2]), stap = pick([1, 1, 2]);
@@ -491,7 +491,7 @@ const ONDERWERPEN = [
       return {
         vraag: `Bij deze tabel hoort een lineaire formule ${F("y = ax + b")}. Bepaal a en b.${tabel}`,
         velden: [{ label: "a =", val: a, tol: EXACT, omgekeerd: true }, { label: "b =", val: b, tol: EXACT }],
-        hint: `Hoeveel komt er bij y bij (of gaat eraf) per stap in x? Let op hoe groot de stap in x is. Voor b: welke y hoort bij x = 0?`,
+        hint: `Hoeveel komt er bij y bij (of gaat eraf) per stap in x? Let op hoe groot de stap in x is. Voor b (het begingetal): welke y hoort bij x = 0?`,
         stappen: st
       };
     }
@@ -501,7 +501,7 @@ const ONDERWERPEN = [
     sub: "Vast bedrag en 'per'",
     uitleg: `<p>In een verhaal herken je a en b zo:</p>
       <ul><li><b>a</b> hoort bij het woordje <i>per</i>: per km, per uur, per minuut. Wordt het minder? Dan is a negatief.</li>
-      <li><b>b</b> is wat er al is bij de start: een vast bedrag, een beginlengte, wat er al in zit.</li></ul>
+      <li><b>b</b> is het begingetal: wat er al is bij de start: een vast bedrag, een beginlengte, wat er al in zit.</li></ul>
       <p>Voorbeeld: een taxi kost €3 instap plus €2 per km. Dus K = 2d + 3.</p>`,
     gen() {
       const t = pick([
@@ -526,9 +526,9 @@ const ONDERWERPEN = [
     }
   },
   {
-    id: "vergelijking", vak: "wis", titel: "x uitrekenen",
-    sub: "Terugrekenen met de balansmethode",
-    uitleg: `<p>Je weet y en zoekt x. Doe aan beide kanten van het =-teken hetzelfde:</p>
+    id: "vergelijking", vak: "wis", titel: "Vergelijking oplossen",
+    sub: "x uitrekenen met de balansmethode",
+    uitleg: `<p>Je weet y en zoekt x. Dat doe je met de balansmethode: wat je aan de ene kant van het =-teken doet, doe je ook aan de andere kant.</p>
       <ul><li>Haal eerst b weg (min b, of plus b als b negatief is).</li>
       <li>Deel daarna door a.</li></ul>
       <p>Voorbeeld: 3x + 4 = 19 → 3x = 15 → x = 5.</p>`,
