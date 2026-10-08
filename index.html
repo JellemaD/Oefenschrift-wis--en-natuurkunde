@@ -145,6 +145,13 @@ footer{max-width:760px;margin:0 auto;padding:0 1rem 2rem;font-size:.85rem;color:
 .msg.fout{align-self:flex-start;background:var(--red-soft);color:var(--red)}
 .msg .lees{display:block;margin-top:.3rem;background:none;border:0;color:var(--ink);cursor:pointer;font-weight:700;font-size:.85rem;padding:0}
 .typt{font-family:var(--hand);color:var(--pencil)}
+.msg b{color:var(--ink)}
+#vraagtekst{min-height:4.5rem}
+@media (max-width:540px){
+  dialog{padding:1rem;max-height:94dvh}
+  .chatlog{max-height:52dvh}
+  #chat-av{width:52px;height:52px}
+}
 .stemrij{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.6rem 0;font-size:.9rem}
 .stemrij select{max-width:100%;padding:.3rem;border:2px solid var(--pencil);border-radius:6px;background:var(--paper);color:var(--text);font:inherit}
 .btn.klein2{padding:.3rem .7rem;font-size:.9rem}
@@ -922,9 +929,21 @@ function kiesDocent(wie) {
   vulStemkeuze();
 }
 
+// Opmaak van het model (**vet**, kopjes, opsommingen) netjes tonen in plaats van met sterretjes
+function opmaak(tekst) {
+  return tekst.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]))
+    .replace(/^#{1,6}\s*(.+)$/gm, "<b>$1</b>")
+    .replace(/^\s*[-*]\s+/gm, "• ")
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    .replace(/__(.+?)__/g, "<b>$1</b>")
+    .replace(/\n{3,}/g, "\n\n");
+}
+const zonderOpmaak = t => t.replace(/\*\*|__|^#{1,6}\s*/gm, "").replace(/^\s*[-*]\s+/gm, "");
+
 function voegToe(soort, tekst) {
   const div = document.createElement("div");
-  div.className = "msg " + soort; div.textContent = tekst;
+  div.className = "msg " + soort;
+  if (soort === "prof") div.innerHTML = opmaak(tekst); else div.textContent = tekst;
   if (soort === "prof" && kanSpreken) {
     const b = document.createElement("button"); b.className = "lees"; b.textContent = "🔊 Voorlezen";
     b.onclick = () => spreek(docent, tekst); div.appendChild(b);
@@ -1016,7 +1035,7 @@ function spreek(wie, tekst) {
   const mijn = spraakId, stem = stemVoor(wie);
   const gedeeld = stemVoor("delta") && stemVoor("delta") === stemVoor("volta");
   const tempo = (NIVEAUS[CONFIG.niveau] || NIVEAUS.havo3).tempo * TEMPO[steunNiveau()];
-  const zinnen = voorUitspraak(tekst).split(/(?<=[.!?])\s+/).filter(z => z.trim());
+  const zinnen = voorUitspraak(zonderOpmaak(tekst)).split(/(?<=[.!?])\s+/).filter(z => z.trim());
   let over = zinnen.length, gestart = false;
   const wacht = setTimeout(() => { if (mijn === spraakId && !gestart) { mond(false); $("v-status").textContent = "Er komt geen geluid. Zet het volume aan of kies een andere stem."; } }, 5000);
   setTimeout(() => { // korte pauze na cancel(): anders slaat Chrome soms de eerste zin over
