@@ -64,6 +64,19 @@ button,input,textarea{font:inherit}
   .t-score{width:100%}
 }
 
+/* Hoofdstukken wiskunde */
+details.hfst{background:var(--card);border:1px solid var(--grid-strong);border-radius:6px;margin:0 0 .6rem;padding:.2rem 1rem .4rem}
+details.hfst summary{cursor:pointer;font-weight:700;color:var(--ink);padding:.6rem 0;list-style-position:outside}
+.h-nr{font-family:var(--hand);font-size:1.15rem;color:var(--pencil);margin-right:.25rem}
+.h-info{display:block;font-weight:400;font-size:.88rem;color:var(--pencil);margin-left:1.6rem}
+details.hfst .schrift{margin:.2rem 0 .6rem}
+.h-vid-kop{margin:.6rem 0 .2rem}
+ol.videos{margin:0 0 .6rem;padding-left:1.6rem;font-size:.95rem}
+ol.videos li{margin:.15rem 0}
+ol.videos a,.videolink a{color:var(--ink)}
+.duur{color:var(--pencil);font-size:.85rem;white-space:nowrap}
+.videolink{margin:.8rem 0 .4rem}
+
 .linkbtn{background:none;border:0;color:var(--ink);cursor:pointer;padding:.25rem 0;font-weight:700}
 .linkbtn:hover{text-decoration:underline}
 
@@ -197,8 +210,9 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <h1>Esra's oefenschrift</h1>
     <p class="intro">Wiskunde en natuurkunde voor havo 3. Kies een onderwerp en oefen zoveel je wilt: elke som is nieuw. Kom je er niet uit? Vraag een hint, bekijk de uitwerking of stel je vraag.</p>
 
-    <h2>Wiskunde: lineaire formules</h2>
-    <div class="schrift" id="lijst-wis"></div>
+    <h2>Wiskunde havo 3</h2>
+    <p class="klein" style="margin-top:-.25rem">Per hoofdstuk van het boek (Getal &amp; Ruimte). Bij elk hoofdstuk staan uitlegvideo's van Math with Menno.</p>
+    <div id="lijst-wis"></div>
 
     <h2>Natuurkunde</h2>
     <div class="schrift" id="lijst-nat"></div>
@@ -780,6 +794,33 @@ const ONDERWERPEN = [
   }
 ];
 
+// Hoofdstukken wiskunde havo 3 volgens Getal & Ruimte 13e editie, met de uitlegvideo's van Math with Menno (YouTube).
+const HOOFDSTUKKEN = [
+  { nr: 1, titel: "Lineaire problemen", playlist: "PLqmYEL-9zWjPrOYH8JgRmz7IYQ529T0gs", videos: [["67AA66Z_hIw", "De grafiek van een lineaire formule", "9:47"],["RpDZhdELvFY", "De formule y = ax + b", "8:38"],["PvmOG5SswVw", "Evenwijdige lijnen", "9:52"],["rFEA-kT63qQ", "Formules met andere letters dan x en y", "5:03"],["-yl6BWQ3ZQM", "Lineaire vergelijkingen oplossen", "8:37"],["1hKmkRoXBAo", "Lineaire vergelijkingen met haakjes", "6:04"],["LRgqvIRdjw0", "Lineaire vergelijkingen met breuken", "4:08"],["mm2AHIVb_L0", "Snijpunten met de x-as en de y-as", "4:52"],["Zlneq6od-BM", "Lineaire formules vergelijken", "6:57"],["016gEKebUGM", "Lineaire ongelijkheden oplossen met grafieken", "17:28"],["5l1zGO5-6NQ", "Lineaire ongelijkheden oplossen zonder grafieken", "4:15"],["QoExM-o8uGs", "Het omklappen van het ongelijkheidsteken", "6:01"],["fr2kg8fWaBU", "Getallenparen", "6:28"],["ao0c11rk_lE", "De vergelijking px + qy = r", "6:52"],["yPUP3-Yajw8", "Herleiden tot de vorm y = ax + b", "4:39"]] },
+  { nr: 2, titel: "Gelijkvormigheid", playlist: "PLqmYEL-9zWjMXwMpC8LeR4Mwo28SWRIBk", videos: [["t8xn6N4Cf3M", "Kruislings vermenigvuldigen", "6:09"],["SN5oycJWwpk", "Verhoudingstabellen met meer dan twee kolommen", "3:07"],["5fec_7LvtBs", "Projecties en verhoudingstabellen", "6:39"],["cVu2DqhSueY", "Gelijkvormigheid", "11:17"],["AUG0yTp8s3c", "Zijden berekenen bij gelijkvormigheid", "7:24"],["Nu3EUket9G0", "Gelijkvormige driehoeken en gelijke hoeken", "6:35"],["v82_TCJTSks", "Gelijkvormige driehoeken aantonen", "12:49"],["cqP_DHCfdy8", "Gelijke hoeken zoeken", "10:57"],["PdS3qjpN9gY", "Een lengte x stellen", "11:42"],["MGeexCYSuOI", "Gelijkvormigheid bij ruimtefiguren", "15:47"]] },
+  { nr: 3, titel: "Kwadratische problemen", playlist: "PLqmYEL-9zWjOglwe0ucD6CapQzXewmdh9", videos: [["fiS4kcrhq5g", "Functiewaarden berekenen", "7:07"],["mZgWh-jgdI8", "De functie f(x) = ax² + bx + c", "6:31"],["xZe-91tcMSc", "De grafiek van f(x) = ax² + bx + c tekenen", "8:21"],["1_misRbQ9CU", "Het berekenen van x-top en y-top", "5:22"],["QtWMWwmNfAA", "De regel van de x-top toepassen", "7:50"],["WG3moj6vfS8", "Ontbinden in factoren", "11:38"],["tkapcNIaDM0", "Kwadratische vergelijkingen oplossen", "8:55"],["j_NBwD23Exk", "Kwadratische vergelijkingen met haakjes", "7:29"],["7fl0cdLmNe4", "Kwadratische vergelijkingen vereenvoudigen", "11:45"],["8KZGXD5e6pk", "Snijpunten met de coördinaatassen", "7:15"],["N38oiZcNq3Q", "De functie f(x) = a(x - d)(x - e)", "8:57"],["TtzWzYMvDy0", "De grafiek van f(x) = a(x - d)(x - e)", "8:08"],["3H23ZmjVaKc", "De functie f(x) = a(x - p)² + q", "7:41"],["tTxbZ4qK8BY", "Verticaal verschuiven", "3:45"],["kZygNhv7H8w", "Horizontaal verschuiven", "7:54"],["49WgyboXTDI", "De top van de functie f(x) = a(x - p)² + q", "7:34"]] },
+  { nr: 4, titel: "Procenten en statistiek", playlist: "PLqmYEL-9zWjO_9zBsoqUZGW6DmTMPLpuc", videos: [["b0Y7EzRorT4", "Procentuele verandering", "8:45"],["euiNyjtWxgY", "Vermenigvuldigingsfactor", "6:29"],["9wXMLQuFmus", "Procent op procent", "7:44"],["kcf-xP_3JeQ", "Rekenen met grote getallen", "8:30"],["ZiJOXXOcj9I", "Oud berekenen bij procentuele toe- of afname", "6:52"],["ccOr9DBFrUU", "Van DEEL naar TOTAAL", "5:40"],["rAx6i4uWHI0", "Grafische verwerking", "8:53"],["GBPsDtFgJoQ", "Misleidende diagrammen", "3:53"],["EI8vAZMrIBA", "Interpoleren en extrapoleren", "10:22"]] },
+  { nr: 5, titel: "Algebraïsche vaardigheden", playlist: "PLqmYEL-9zWjOB9_RGg0aHFgjBTHG_O3lY", videos: [["sgGrFsaSYAU", "Regels om haakjes weg te werken", "6:32"],["jyCUyG-BbMo", "Haakjes wegwerken en merkwaardige producten", "7:13"],["Q327ZG6C6uc", "Breuken herleiden", "8:44"],["LgRf_17oBno", "Variabelen uit breuken halen", "10:16"],["VJJnJM2GGto", "Breuken vermenigvuldigen en delen", "12:07"],["XOCzmFckU7I", "Breuken optellen en aftrekken", "14:40"],["S8aPQD8hD08", "Machten vermenigvuldigen en optellen", "6:12"],["iqOpFnxRY90", "De macht van een macht en de macht van een product", "9:58"],["_bRsAxhtXgU", "Machten delen", "5:52"],["YJQh91fGATc", "Wortels vermenigvuldigen en optellen", "6:20"],["St-t_AF52KA", "Een factor voor het wortelteken brengen", "9:24"],["_pBe3m_Tahw", "Wortels delen", "6:48"]] },
+  { nr: 6, titel: "Goniometrie", playlist: "PLqmYEL-9zWjPdwCzJ9x9S1g53IBpG3EsK", videos: [["-j7nTz8IYKc", "Hellingsgetal berekenen", "7:13"],["LPhuHE9GaH4", "De tangens van een hellingshoek", "6:00"],["A8G4wnHah2c", "Tangens en verhoudingstabel", "6:43"],["3bOCcZxQaDE", "Van hellingsgetal naar hellingshoek", "5:49"],["UudpuJQ500U", "De tangens in een rechthoekige driehoek", "9:53"],["CvSUv9F70s8", "Hoeken berekenen met de tangens", "5:38"],["oCnF6mlhk7M", "Zijden berekenen in een rechthoekige driehoek", "7:47"],["AhoeKxotnHI", "De sinus in een rechthoekige driehoek", "7:25"],["LmZgBbJPeNk", "Zijden berekenen met de sinus", "4:14"],["iJw0wO0UH78", "De cosinus in een rechthoekige driehoek", "6:30"],["BK9-YcVMDhA", "SOSCASTOA", "10:44"],["ho6Avc34_Io", "Zijden berekenen met SOSCASTOA", "7:57"],["wbjEXpsaKI4", "Hulplijnen tekenen", "5:53"],["FZVG3f21g6I", "Hoeken berekenen in de ruimte", "7:19"]] },
+  { nr: 7, titel: "Kwadratische vergelijkingen en ongelijkheden", playlist: "PLqmYEL-9zWjPF6Yimmsym_SeRaDXtu41N", videos: [["7II2jjo8uuY", "Snijpunten van grafieken", "9:17"],["Y_IMuhjbcSc", "Oplossen met de abc-formule", "8:40"],["f3ypnglniPI", "Oplossingen benaderen met de abc-formule", "7:55"],["sBw1L7rMkFQ", "Aantal oplossingen van een kwadratische vergelijking", "11:24"],["6032QoC4Q04", "Vergelijkingen met een parameter", "4:34"],["08zAHlivh6A", "Kwadratische vergelijkingen oplossen", "19:10"],["A2SNYcguh8c", "Kwadratische vergelijkingen opstellen", "10:17"],["NelmW7RJlI0", "Intervallen", "8:47"],["8sparF9WnB4", "De ongelijkheden f(x) groter dan 0 en f(x) kleiner dan 0", "4:31"],["iMwd7p844aw", "Ongelijkheden en grafieken", "11:25"],["aKKvFsA5j2A", "Kwadratische ongelijkheden oplossen", "11:49"]] },
+  { nr: 8, titel: "Allerlei verbanden", playlist: "PLqmYEL-9zWjNjNbhON4gRZadpwXFPITzv", videos: [["eCvW53qSZ_4", "Formule voor exponentiële groei", "15:29"],["Mruve3mcWao", "Exponentiële afname", "6:35"],["Hfb92FmJQN4", "Procentuele toename", "14:07"],["eB2DIxLN9U4", "Procentuele afname", "4:32"],["Kh6ZdTAq1vU", "Tabel bij exponentiële groei", "7:14"],["124I3JSznHw", "Lineaire groei en exponentiële groei", "7:55"],["PsofqqQmaZo", "Periodieke verbanden", "10:24"],["M7VysBgZfe4", "Grafieken van machtsfuncties", "8:11"],["I8fs_8EjpIQ", "De vergelijkingen x² = c en x³ = c", "6:15"],["hfiYm6QvzZo", "De vergelijkingen ax² + bx = c en ax³ + bx = c", "4:53"],["FvRqcM260Cg", "De formule y = a/x", "4:15"]] },
+  { nr: 9, titel: "Spreiding, tellen en kans", playlist: "PLqmYEL-9zWjOocebo-e3PnjaCGs7atFyJ", videos: [["SErSe34Xfn4", "Steel-bladdiagram", "7:20"],["mjofuWMmmcg", "Klassenindeling", "3:01"],["FnPaPwYcTsA", "Centrummaten bij een klassenindeling", "6:58"],["k1kjqvi_WQo", "De vijfgetallensamenvatting", "8:34"],["uQrL5XwhLMA", "Spreidingsbreedte en kwartielafstand", "13:35"],["KsJ5V-AXhYk", "De boxplot", "7:07"],["pi-5FLBlA8k", "Een boxplot tekenen", "6:10"],["3InLrOfuzUs", "Mogelijkheden tellen met een rooster", "5:43"],["RPI05cHY3Eg", "Vermenigvuldigingsregel", "7:12"],["5Lje3foXXTo", "Met en zonder herhaling", "6:28"],["oFUCE6_3eeE", "Kans", "7:29"]] },
+];
+
+// Welk hoofdstuk en welke video van Menno bij een oefenonderwerp hoort
+const KOPPELING = {
+  "rc-punten": { hfst: 1, video: "RpDZhdELvFY" },
+  "rc-grafiek": { hfst: 1, video: "RpDZhdELvFY" },
+  "tabel": { hfst: 1, video: "67AA66Z_hIw" },
+  "verhaal": { hfst: 1, video: "rFEA-kT63qQ" },
+  "vergelijking": { hfst: 1, video: "-yl6BWQ3ZQM" }
+};
+const yt = id => `https://www.youtube.com/watch?v=${id}`;
+function videoInfo(id) {
+  for (const h of HOOFDSTUKKEN) { const v = h.videos.find(v => v[0] === id); if (v) return v; }
+  return null;
+}
+
 // ---------- scores ----------
 const OPSLAG = "oefenschrift-esra-v1";
 function laadScores() { try { return JSON.parse(localStorage.getItem(OPSLAG)) || {}; } catch (e) { return {}; } }
@@ -796,21 +837,32 @@ function toon(sectie) {
   window.scrollTo(0, 0);
 }
 
+function topicKnop(o) {
+  const sc = scores[o.id];
+  const txt = sc && sc.tot ? `${sc.goed} van ${sc.tot} goed` : "nog niet geoefend";
+  const cls = sc && sc.tot >= 5 && sc.goed / sc.tot >= 0.8 ? "t-score goed" : "t-score";
+  return `<button class="topic" data-id="${o.id}"><span class="t-main"><span class="t-title">${o.titel}</span><span class="t-sub">${o.sub}</span></span><span class="${cls}">${txt}</span></button>`;
+}
 function renderHome() {
-  for (const vak of ["wis", "nat"]) {
-    $("lijst-" + vak).innerHTML = ONDERWERPEN.filter(o => o.vak === vak).map(o => {
-      const sc = scores[o.id];
-      const txt = sc && sc.tot ? `${sc.goed} van ${sc.tot} goed` : "nog niet geoefend";
-      const cls = sc && sc.tot >= 5 && sc.goed / sc.tot >= 0.8 ? "t-score goed" : "t-score";
-      return `<button class="topic" data-id="${o.id}"><span class="t-main"><span class="t-title">${o.titel}</span><span class="t-sub">${o.sub}</span></span><span class="${cls}">${txt}</span></button>`;
-    }).join("");
-  }
+  $("lijst-nat").innerHTML = ONDERWERPEN.filter(o => o.vak === "nat").map(topicKnop).join("");
+  const open = new Set([...document.querySelectorAll("details.hfst[open]")].map(d => d.dataset.nr));
+  $("lijst-wis").innerHTML = HOOFDSTUKKEN.map(h => {
+    const oef = ONDERWERPEN.filter(o => KOPPELING[o.id] && KOPPELING[o.id].hfst === h.nr);
+    const isOpen = open.size ? open.has(String(h.nr)) : h.nr === 1;
+    return `<details class="hfst" data-nr="${h.nr}"${isOpen ? " open" : ""}>
+      <summary><span class="h-nr">H${h.nr}</span> ${h.titel}<span class="h-info">${oef.length ? oef.length + " oefenonderwerpen · " : ""}${h.videos.length} video's</span></summary>
+      ${oef.length ? `<div class="schrift">${oef.map(topicKnop).join("")}</div>` : `<p class="klein">Oefensommen voor dit hoofdstuk volgen nog. Bekijk zolang de video's.</p>`}
+      <p class="klein h-vid-kop">▶ Uitleg van Math with Menno (opent YouTube) · <a href="https://www.youtube.com/playlist?list=${h.playlist}" target="_blank" rel="noopener">hele hoofdstuk</a></p>
+      <ol class="videos">${h.videos.map(v => `<li><a href="${yt(v[0])}" target="_blank" rel="noopener">${v[1]}</a> <span class="duur">${v[2]}</span></li>`).join("")}</ol>
+    </details>`;
+  }).join("");
 }
 
 function start(id) {
   onderwerp = ONDERWERPEN.find(o => o.id === id);
   $("o-titel").textContent = onderwerp.titel;
-  $("o-uitlegtekst").innerHTML = onderwerp.uitleg;
+  const k = KOPPELING[id], v = k && videoInfo(k.video);
+  $("o-uitlegtekst").innerHTML = onderwerp.uitleg + (v ? `<p class="videolink">▶ <a href="${yt(v[0])}" target="_blank" rel="noopener">Liever een filmpje? ${v[1]}</a> <span class="duur">(Math with Menno, ${v[2]})</span></p>` : "");
   $("o-uitleg").open = !(scores[id] && scores[id].tot);
   toon("oefen");
   nieuweSom();
