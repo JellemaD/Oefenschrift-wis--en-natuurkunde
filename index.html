@@ -878,9 +878,9 @@ const ONDERWERPEN = [
         ["In welke eenheid meet je de spanning?", "1 = ampère, 2 = volt", 2, "Spanning U meet je in volt (V)."],
         ["Waarom gebruik je hoogspanning om energie te vervoeren?", "1 = dan is de stroom klein en gaat er minder energie verloren, 2 = dan gaat de stroom sneller", 1, "Bij hoge spanning is de stroom klein. Een kleine stroom maakt de draden minder warm, dus minder verlies."]
       ];
-      const [vr, opties, a, uit] = pick(V);
+      const [vr, opties, a, uit] = pick(V), reden = uit.split(". ").length > 1 ? uit.split(". ")[0] + "." : "Kijk nog eens in de uitleg bij deze paragraaf.";
       return { vraag: `${vr}<br>Vul in: ${opties.replace(/(\d) =/g, "<b>$1</b> =")}.`,
-        velden: [{ label: "antwoord =", val: a, tol: EXACT, tips: [[3 - a, "Nog niet. " + uit]] }],
+        velden: [{ label: "antwoord =", val: a, tol: EXACT, tips: [[3 - a, "Nog niet. " + reden]] }],
         hint: `Stroommeter: in serie, meet ampère. Spanningsmeter: parallel, meet volt. Stroom loopt alleen in een gesloten kring.`, stappen: `Antwoord <b>${a}</b>. ${uit}` };
     }
   },
@@ -932,9 +932,9 @@ const ONDERWERPEN = [
         ["Een föhn heeft een plastic behuizing en het symbool met twee vierkantjes. Heeft hij randaarde nodig?", "1 = ja, 2 = nee, hij is dubbel geïsoleerd", 2, "Een dubbel geïsoleerd apparaat heeft geen randaarde nodig."],
         ["Welke draad staat onder spanning en is daarom het gevaarlijkst?", "1 = fasedraad, 2 = nuldraad, 3 = aardedraad", 1, "De fasedraad staat onder spanning."]
       ];
-      const [vr, opties, a, uit] = pick(V), n = (opties.match(/\d =/g) || []).length;
+      const [vr, opties, a, uit] = pick(V), n = (opties.match(/\d =/g) || []).length, reden = uit.split(". ").length > 1 ? uit.split(". ")[0] + "." : "Kijk nog eens in de uitleg bij deze paragraaf.";
       return { vraag: `${vr}<br>Vul in: ${opties.replace(/(\d) =/g, "<b>$1</b> =")}.`,
-        velden: [{ label: "antwoord =", val: a, tol: EXACT, tips: Array.from({ length: n }, (_, i) => i + 1).filter(x => x !== a).map(x => [x, "Nog niet. " + uit]) }],
+        velden: [{ label: "antwoord =", val: a, tol: EXACT, tips: Array.from({ length: n }, (_, i) => i + 1).filter(x => x !== a).map(x => [x, "Nog niet. " + reden]) }],
         hint: `Bedenk eerst wat er misgaat: een te grote stroom, of stroom die weglekt?`, stappen: `Antwoord <b>${a}</b>. ${uit}` };
     }
   },
