@@ -526,7 +526,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.09-3";
+const VERSIE = "2026.10.09-5";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 const lijnF = (a, L, b) => `${coef(a)}${L}${b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : ""}`;
 const tabelHTML = (xs, ys, kx = "x", ky = "y") => `<div class="tabelwrap"><table class="tabel"><tr><th>${kx}</th>${xs.map(x => `<td>${typeof x === "number" ? fmt(x) : x}</td>`).join("")}</tr><tr><th>${ky}</th>${ys.map(y => `<td>${typeof y === "number" ? fmt(y) : y}</td>`).join("")}</tr></table></div>`;
@@ -1181,6 +1181,52 @@ const ONDERWERPEN = [
     }
   },
   {
+    id: "energiebronnen", vak: "nat", titel: "Bronnen en energiesoorten",
+    sub: "Fossiel of duurzaam, welke omzetting",
+    uitleg: `<ul><li><b>Fossiel</b> (raakt op, CO₂ bij verbranden): aardolie, aardgas, steenkool.</li>
+      <li><b>Duurzaam</b> (raakt niet op): zon, wind, water, biomassa, aardwarmte.</li>
+      <li>Energiesoorten: chemische energie (brandstof, voedsel, batterij), bewegingsenergie, elektrische energie, warmte, stralingsenergie (licht).</li>
+      <li>Een apparaat zet energie om: bijvoorbeeld elektrische energie → bewegingsenergie in een motor.</li></ul>`,
+    gen() {
+      const V = [
+        ["Is aardgas een fossiele of een duurzame energiebron?", "1 = fossiel, 2 = duurzaam", 1, "Aardgas is miljoenen jaren geleden ontstaan en raakt op. Daarom is het fossiel."],
+        ["Is windenergie een fossiele of een duurzame energiebron?", "1 = fossiel, 2 = duurzaam", 2, "Wind raakt niet op. Daarom is het duurzaam."],
+        ["Is steenkool een fossiele of een duurzame energiebron?", "1 = fossiel, 2 = duurzaam", 1, "Steenkool is ontstaan uit plantenresten van miljoenen jaren geleden en raakt op. Daarom is het fossiel."],
+        ["Is zonne-energie een fossiele of een duurzame energiebron?", "1 = fossiel, 2 = duurzaam", 2, "De zon blijft schijnen. Daarom is het duurzaam."],
+        ["Is biomassa (hout, plantenresten) een fossiele of een duurzame energiebron?", "1 = fossiel, 2 = duurzaam", 2, "Biomassa groeit steeds opnieuw aan. Daarom telt het als duurzaam."],
+        ["Welke energie zit in de brandstof van een auto?", "1 = chemische energie, 2 = bewegingsenergie, 3 = elektrische energie", 1, "Brandstof bevat chemische energie. De motor zet die om in bewegingsenergie en warmte."],
+        ["Een elektromotor draait. Welke energie maakt de motor nuttig?", "1 = chemische energie, 2 = bewegingsenergie, 3 = warmte", 2, "Een motor zet elektrische energie om in bewegingsenergie (en wat warmte)."],
+        ["Een zonnepaneel vangt zonlicht op. Welke energie levert het?", "1 = chemische energie, 2 = bewegingsenergie, 3 = elektrische energie", 3, "Een zonnepaneel zet stralingsenergie om in elektrische energie."],
+        ["Wat doet de generator in een centrale?", "1 = bewegingsenergie omzetten in elektrische energie, 2 = chemische energie omzetten in warmte", 1, "De generator draait mee met de turbine en zet bewegingsenergie om in elektrische energie."]
+      ];
+      const [vr, opties, a, uit] = pick(V), n = (opties.match(/\d =/g) || []).length, reden = uit.split(". ").length > 1 ? uit.split(". ")[0] + "." : "Kijk nog eens in de uitleg bij deze paragraaf.";
+      return { vraag: `${vr}<br>Vul in: ${opties.replace(/(\d) =/g, "<b>$1</b> =")}.`,
+        velden: [{ label: "antwoord =", val: a, tol: EXACT, tips: Array.from({ length: n }, (_, i) => i + 1).filter(x => x !== a).map(x => [x, "Nog niet. " + reden]) }],
+        hint: `Fossiel: ontstaan in miljoenen jaren en raakt op. Duurzaam: raakt niet op. Bij een omzetting: wat gaat erin, wat komt eruit?`,
+        stappen: `Antwoord <b>${a}</b>. ${uit}` };
+    }
+  },
+  {
+    id: "isoleren", vak: "nat", titel: "Isoleren: wat helpt waartegen?",
+    sub: "Maatregel tegen geleiding, stroming of straling",
+    uitleg: `<ul><li>Tegen <b>geleiding</b>: een slecht geleidende laag (isolatiemateriaal, lucht tussen twee ruiten).</li>
+      <li>Tegen <b>stroming</b>: kieren dichten (tochtstrips, deur dicht).</li>
+      <li>Tegen <b>straling</b>: een glanzend oppervlak dat de straling terugkaatst (folie).</li></ul>`,
+    gen() {
+      const S = [
+        ["Tochtstrips langs de deur.", 2], ["Een kier onder het raam dichtkitten.", 2], ["De voordeur dichthouden.", 2],
+        ["Spouwmuurisolatie in de muur.", 1], ["Dakisolatie onder de dakpannen.", 1], ["Dubbel glas: lucht tussen twee ruiten.", 1], ["Een wollen muts op.", 1],
+        ["Glanzende folie achter de radiator.", 3], ["Een glimmende reddingsdeken om een marathonloper.", 3]
+      ];
+      const [zin, a] = pick(S), naam = ["", "geleiding", "stroming", "straling"];
+      const uitleg = { 1: "Een slecht geleidende laag houdt geleiding tegen.", 2: "Kieren dichten houdt stromende lucht tegen.", 3: "Een glanzend oppervlak kaatst warmtestraling terug." };
+      return { vraag: `${zin}<br>Welk warmtetransport gaat deze maatregel vooral tegen? Vul in: <b>1</b> = geleiding, <b>2</b> = stroming, <b>3</b> = straling.`,
+        velden: [{ label: "antwoord =", val: a, tol: EXACT, tips: [1, 2, 3].filter(x => x !== a).map(x => [x, `Niet ${naam[x]}. Bedenk: is het een laag die slecht geleidt, een kier die dicht gaat, of iets glimmends?`]) }],
+        hint: `Laag die slecht geleidt → geleiding. Kier dicht → stroming. Glimmend → straling.`,
+        stappen: `Antwoord <b>${a} = ${naam[a]}</b>. ${uitleg[a]}` };
+    }
+  },
+  {
     id: "energiebehoud", vak: "nat", titel: "Energie wordt omgezet",
     sub: "Wat erin gaat, komt er ook weer uit",
     uitleg: `<p>Energie kan niet verdwijnen en niet uit het niets ontstaan. Een apparaat <b>zet energie om</b>.</p>
@@ -1218,7 +1264,7 @@ const ONDERWERPEN = [
       <li>m: massa in kg (gram eerst delen door 1000)</li><li>ΔT: temperatuurstijging = eindtemperatuur − begintemperatuur</li>
       <li>Aardgas: verbrandingswarmte ongeveer 32 MJ per m³, dus ${F("E = 32 · V")} in MJ.</li></ul>`,
     gen() {
-      const c = 4180, v = pick(["Q", "Q", "dT", "m", "gas"]);
+      const c = 4180, v = pick(this.alleen || ["Q", "Q", "dT", "m", "gas"]);
       if (v === "Q") {
         const m = pick([0.5, 1, 1.5, 2, 5]), T1 = pick([10, 15, 20]), T2 = pick([40, 60, 80, 100]), dT = T2 - T1, Q = c * m * dT;
         return { vraag: `Je verwarmt ${fmt(m)} kg water van ${T1} °C tot ${T2} °C. Bereken hoeveel warmte Q daarvoor nodig is. (c water = 4180 J/(kg·°C))`,
@@ -1241,6 +1287,9 @@ const ONDERWERPEN = [
           stappen: `m = Q / (c · ΔT) = ${fmt(Q)} / (4180 · ${dT}) = <b>${fmt(m)} kg</b>` };
       }
       const V = pick([0.5, 1, 1.5, 2, 3, 4]), E = 32 * V;
+      if (Math.random() < 0.5) return { vraag: `Om een bad te verwarmen is ${fmt(E)} MJ warmte nodig. De verbrandingswarmte van aardgas is 32 MJ per m³. Hoeveel m³ aardgas moet de ketel verbranden?`,
+        velden: [{ label: "V =", val: V, tol: AFRONDEN, eenheid: "m³", tips: [[E * 32, "Andersom: elke m³ geeft 32 MJ. Deel de energie door 32."]] }],
+        hint: `Hoe vaak past 32 MJ in ${fmt(E)} MJ?`, stappen: `V = ${fmt(E)} / 32 = <b>${fmt(V)} m³</b>` };
       return { vraag: `Een cv-ketel verbrandt ${fmt(V)} m³ aardgas. De verbrandingswarmte van aardgas is 32 MJ per m³. Hoeveel MJ warmte komt er vrij?`,
         velden: [{ label: "E =", val: E, tol: AFRONDEN, eenheid: "MJ" }],
         hint: `Per m³ komt 32 MJ vrij. Doe 32 keer het aantal m³.`,
@@ -1278,7 +1327,7 @@ const ONDERWERPEN = [
       <li>Het rendement is altijd kleiner dan 100%.</li>
       <li>Zoek je de nuttige energie? ${F("E_nuttig = rendement / 100 · E_in")}</li></ul>`,
     gen() {
-      const v = pick(["eta", "eta", "P", "nuttig", "in"]);
+      const v = pick(this.alleen || ["eta", "eta", "P", "nuttig", "in"]);
       if (v === "eta") {
         const in_ = pick([100, 200, 500, 1000, 2000]), r = pick([5, 10, 25, 40, 60, 80, 90]), n = in_ * r / 100;
         const ding = pick(["Een lamp", "Een motor", "Een zonnepaneel", "Een ketel"]);
@@ -1586,6 +1635,8 @@ const BOEKEN = {
     ["veiligheid", { titel: "Zekering, aardlek of randaarde", sub: "Wat beschermt je?", alleen: "beveiliging" }, { id: "draden", titel: "Draden en isolatie", sub: "Fase, nul, aarde; dubbel geïsoleerd", alleen: "draden" }],
     ["resulterend", { titel: "Resulterende kracht", sub: "Optellen, aftrekken, evenwicht", alleen: ["op", "af", "even"] }, { id: "krachtenschaal", titel: "Krachtenschaal", sub: "Pijllengte en kracht", alleen: ["schaal", "schaalN"] }],
     ["hefboom", { titel: "Hefboomwet", sub: "F₁ · r₁ = F₂ · r₂", alleen: ["F", "r"] }, { id: "moment", titel: "Moment M = F · r", sub: "Kracht keer arm", alleen: ["M"] }, true],
+    ["verwarmen", { titel: "Warmte om te verwarmen", sub: "Q = c · m · ΔT", alleen: ["Q", "Q", "dT", "m"] }, { id: "verbranding", titel: "Verbrandingswarmte aardgas", sub: "32 MJ per m³", alleen: ["gas"] }],
+    ["rendement", { titel: "Rendement berekenen", sub: "nuttig gedeeld door erin, keer 100%", alleen: ["eta", "eta", "P"] }, { id: "rendement-terug", titel: "Terugrekenen met rendement", sub: "Nuttige energie of wat erin ging", alleen: ["nuttig", "in"] }],
     ["werktuig", { titel: "Koevoet", sub: "Een hefboom als werktuig", alleen: ["koevoet"] }, { id: "katrol", titel: "Katrol en takel", sub: "Kracht kleiner, touw langer", alleen: ["los", "takel", "touw", "massa"] }]
   ];
   for (const [id, oud, nieuw, ervoor] of S) {
@@ -1599,7 +1650,7 @@ const KOPPELING = {
   "tabel": { hfst: "1", par: "1.1" }, "verhaal": { hfst: "1", par: "1.1" }, "vergelijking": { hfst: "1", par: "1.2" }, "snijpunt": { hfst: "1", par: "1.2" }, "subst-formule": { hfst: "1", par: "1.3" }, "subst-waarde": { hfst: "1", par: "1.3" }, "groeifactor": { hfst: "1", par: "1.4" }, "exp-formule": { hfst: "1", par: "1.4" }, "groeitijd": { hfst: "1", par: "1.5" }, "verdubbeling": { hfst: "1", par: "1.5" },
   "par-invullen": { hfst: "2", par: "2.1" }, "par-dalberg": { hfst: "2", par: "2.1" }, "par-tabel": { hfst: "2", par: "2.3" }, "par-tabeltop": { hfst: "2", par: "2.3" }, "par-vorm": { hfst: "2", par: "2.4" }, "par-smal": { hfst: "2", par: "2.4" }, "par-snijpunten": { hfst: "2", par: "2.5" }, "par-symmetrie": { hfst: "2", par: "2.2" },
   "par-top": { hfst: "2", par: "2.2" }, "par-vormen": { hfst: "2", par: "2.5" },
-"stroomkring": { hfst: "1", par: "1.1" }, "omrekenen-el": { hfst: "1", par: "1.1" }, "energie-kosten": { hfst: "1", par: "1.2" }, "groep-max": { hfst: "1", par: "1.3" }, "draden": { hfst: "1", par: "1.4" }, "krachtenschaal": { hfst: "2", par: "2.2" }, "moment": { hfst: "2", par: "2.3" }, "katrol": { hfst: "2", par: "2.4" }, "vermogen": { hfst: "1", par: "1.2" }, "huisinstallatie": { hfst: "1", par: "1.3" }, "veiligheid": { hfst: "1", par: "1.4" }, "energiebehoud": { hfst: "3", par: "3.1" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" }, "resulterend": { hfst: "2", par: "2.2" }, "hefboom": { hfst: "2", par: "2.3" }, "werktuig": { hfst: "2", par: "2.4" },
+"stroomkring": { hfst: "1", par: "1.1" }, "omrekenen-el": { hfst: "1", par: "1.1" }, "energie-kosten": { hfst: "1", par: "1.2" }, "groep-max": { hfst: "1", par: "1.3" }, "draden": { hfst: "1", par: "1.4" }, "krachtenschaal": { hfst: "2", par: "2.2" }, "moment": { hfst: "2", par: "2.3" }, "katrol": { hfst: "2", par: "2.4" }, "vermogen": { hfst: "1", par: "1.2" }, "huisinstallatie": { hfst: "1", par: "1.3" }, "veiligheid": { hfst: "1", par: "1.4" }, "energiebehoud": { hfst: "3", par: "3.1" }, "energiebronnen": { hfst: "3", par: "3.1" }, "verbranding": { hfst: "3", par: "3.2" }, "isoleren": { hfst: "3", par: "3.3" }, "rendement-terug": { hfst: "3", par: "3.4" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" }, "resulterend": { hfst: "2", par: "2.2" }, "hefboom": { hfst: "2", par: "2.3" }, "werktuig": { hfst: "2", par: "2.4" },
   "snelheid": { hfst: "4", par: "4.2" }, "ohm": { hfst: "5", par: "5.2" },
   "omrekenen": { hfst: "V", par: "V2" }, "diagram": { hfst: "V", par: "V8" },
   "dichtheid": { hfst: "herhaling" }
@@ -1693,21 +1744,20 @@ function renderHome() {
     const later = groepen.filter(h => !metInhoud.includes(h));
     let laatst = null; try { laatst = JSON.parse(localStorage.getItem("oefenschrift-laatst")); } catch (e) {}
     // Volgorde: wat de leerling zelf als "nu in de klas" koos, dan het laatst geoefende, dan de instelling
-    const openNr = gekozenKlas(vak) || (laatst && laatst.vak === vak ? laatst.hfst : CONFIG.nuInDeKlas[vak]);
+    const openNr = laatst && laatst.vak === vak ? laatst.hfst : CONFIG.nuInDeKlas[vak];
     const standaard = metInhoud.find(h => h.nr === openNr) || metInhoud[0];
     const hfst = (h, kanOpen) => {
       const key = vak + h.nr + h.titel;
       const isOpen = kanOpen && (open.size ? open.has(key) : h === standaard);
       const n = h.oef.length;
       return `<details class="hfst" data-key="${key}"${isOpen ? " open" : ""}>
-      <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}${h.nr && h.nr === klas ? `<span class="nu-klas">📍 nu in de klas</span>` : ""}<span class="h-info">${n ? n + " oefening" + (n > 1 ? "en" : "") : "alleen filmpjes"}</span></summary>
+      <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}<span class="h-info">${n ? n + " oefening" + (n > 1 ? "en" : "") : "alleen filmpjes"}</span></summary>
       ${paragraafBlokken(vak, h, h.oef)}
-      ${h.nr && h.nr !== klas ? `<button type="button" class="linkbtn klas-kies" data-klas="${vak}|${h.nr}">📍 Dit hebben we nu in de klas</button>` : ""}
+
       ${h.par.some(p => p.v.length) ? `<details class="filmpjes"><summary>YouTube-filmpjes bij dit hoofdstuk</summary><ul class="paragrafen">${h.par.filter(p => p.v.length).map(p => `<li><b>${p.nr}</b> ${p.titel} · ${filmpje(p.v[0])}</li>`).join("")}</ul></details>` : ""}
     </details>`;
     };
-    $("lijst-" + vak).innerHTML = metInhoud.map(h => hfst(h, true)).join("")
-      + (later.length ? `<details class="later"><summary>Later dit jaar · ${later.length} hoofdstukken</summary>${later.map(h => hfst(h, false)).join("")}</details>` : "");
+    $("lijst-" + vak).innerHTML = groepen.map(h => hfst(h, true)).join("");
   }
   // 1. kaart "Verder waar je was"
   let laatst = null; try { laatst = JSON.parse(localStorage.getItem("oefenschrift-laatst")); } catch (e) {}
