@@ -76,6 +76,9 @@ svg.uitleg-plot{max-width:380px}
 .u-zelf{display:block;margin:1rem auto 0;font-size:1.15rem}
 .spelerbalk{display:flex;align-items:center;gap:.35rem;margin:1rem auto .4rem;max-width:560px;background:var(--card);border:2px solid var(--grid-strong);border-radius:999px;padding:.3rem .5rem}
 .ikoon.speel{width:3rem;height:3rem}
+#u-vraag{width:3rem;height:3rem;background:var(--marker);color:#1F2733;border:2px solid #1F2733;box-shadow:2px 2px 0 #1F2733}
+#u-vraag svg{width:1.6rem;height:1.6rem}
+#u-vraag:hover{filter:brightness(1.05)}
 .ikoon:disabled{opacity:.35;cursor:default;background:transparent}
 .u-balk{flex:1;height:6px;background:var(--grid-strong);border-radius:3px;overflow:hidden;margin:0 .3rem}
 #u-balk{height:100%;width:0;background:var(--ink);transition:width .5s linear}
@@ -183,13 +186,17 @@ footer{max-width:760px;margin:0 auto;padding:0 1rem 2rem;font-size:.85rem;color:
 .msg.ik{align-self:flex-end;background:var(--marker-soft);color:var(--text)}
 .msg.prof{align-self:flex-start;background:var(--paper);border:1px solid var(--grid-strong)}
 .msg.fout{align-self:flex-start;background:var(--red-soft);color:var(--red)}
-.msg .lees{display:block;margin-top:.3rem;background:none;border:0;color:var(--ink);cursor:pointer;font-weight:700;font-size:.85rem;padding:0}
+.leesbalk{display:flex;align-items:center;gap:.3rem;margin-top:.35rem}
+.leesbalk button{width:2rem;height:2rem;border-radius:50%;border:2px solid var(--ink);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}
+.leesbalk button svg{width:1rem;height:1rem}
+.leesbalk.actief .lk-speel{background:var(--ink);color:var(--paper)}
+.lk-tekst{font-size:.85rem;font-weight:700;color:var(--ink);margin-left:.2rem}
 .typt{font-family:var(--hand);color:var(--pencil)}
 .msg b{color:var(--ink)}
 /* Invulbalk zoals een chat-app */
 .composer{display:flex;align-items:flex-end;gap:.3rem;border:2px solid var(--grid-strong);border-radius:16px;padding:.3rem .35rem .3rem .9rem;background:var(--paper);margin-top:.4rem}
 .composer:focus-within{border-color:var(--ink)}
-dialog .composer textarea#vraagtekst{flex:1;width:auto;min-height:0;height:2.5rem;max-height:160px;border:0;border-radius:0;background:transparent;padding:.5rem 0;resize:none;outline:none;line-height:1.4}
+dialog .composer textarea#vraagtekst{flex:1;width:auto;min-height:0;height:2.5rem;max-height:160px;border:0;border-radius:0;background:transparent;padding:.5rem 0;resize:none;outline:none;line-height:1.4;overflow-x:hidden;overflow-wrap:anywhere}
 .ikoon{width:2.6rem;height:2.6rem;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;flex:none;background:transparent;color:var(--ink)}
 .ikoon svg{width:1.35rem;height:1.35rem}
 .ikoon:hover{background:var(--marker-soft)}
@@ -200,7 +207,7 @@ dialog .composer textarea#vraagtekst{flex:1;width:auto;min-height:0;height:2.5re
 .sluitknop{margin-left:auto;align-self:flex-start;background:none;border:0;font-size:1.4rem;line-height:1;color:var(--pencil);cursor:pointer;padding:.35rem .5rem;border-radius:8px}
 .sluitknop:hover{background:var(--grid);color:var(--ink)}
 .chatkop h2{font-size:1.4rem}
-.context{max-height:5.5rem}
+.context{max-height:5.5rem;overflow-x:hidden;overflow-wrap:anywhere}
 .hervat{margin-left:auto;align-self:center;border:0;background:var(--ink);color:var(--paper);border-radius:999px;padding:.45rem 1rem;font-weight:700;cursor:pointer;white-space:nowrap}
 @media (max-width:540px){
   dialog{padding:1rem;max-height:94dvh}
@@ -1188,13 +1195,36 @@ function opmaak(tekst) {
 }
 const zonderOpmaak = t => t.replace(/\*\*|__|^#{1,6}\s*/gm, "").replace(/^\s*[-*]\s+/gm, "");
 
+// Voorlezen van een antwoord: afspelen, pauze (onthoudt de zin) en een zin terug
+const IK_SPEEL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>';
+const IK_PAUZE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg>';
+const IK_TERUG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>';
+let actieveLees = null;
+function toonLees(st) {
+  const b = st.balk.querySelector(".lk-speel");
+  b.innerHTML = st.speelt ? IK_PAUZE : IK_SPEEL;
+  b.setAttribute("aria-label", st.speelt ? "Pauze" : "Voorlezen"); b.title = b.getAttribute("aria-label");
+  st.balk.querySelector(".lk-terug").classList.toggle("hidden", !st.speelt && st.zin === 0);
+  st.balk.querySelector(".lk-tekst").textContent = st.speelt ? "Voorlezen…" : st.zin ? "Gepauzeerd" : "Voorlezen";
+  st.balk.classList.toggle("actief", st.speelt);
+}
+function startLees(st, vanaf) {
+  if (actieveLees && actieveLees !== st) { actieveLees.speelt = false; actieveLees.zin = 0; toonLees(actieveLees); }
+  actieveLees = st; st.speelt = true; st.zin = vanaf; toonLees(st);
+  spreek(st.wie, st.tekst, { start: vanaf, opZin: i => { st.zin = i; }, klaar: () => { st.speelt = false; st.zin = 0; toonLees(st); } });
+}
+function pauzeerLees(st) { st.speelt = false; stopSpraak(); toonLees(st); }
 function voegToe(soort, tekst) {
   const div = document.createElement("div");
   div.className = "msg " + soort;
   if (soort === "prof") div.innerHTML = opmaak(tekst); else div.textContent = tekst;
   if (soort === "prof" && kanSpreken) {
-    const b = document.createElement("button"); b.className = "lees"; b.textContent = "🔊 Voorlezen";
-    b.onclick = () => spreek(docent, tekst); div.appendChild(b);
+    const st = { tekst, wie: docent, zin: 0, speelt: false, balk: document.createElement("div") };
+    st.balk.className = "leesbalk";
+    st.balk.innerHTML = `<button type="button" class="lk-terug hidden" aria-label="Zin terug" title="Zin terug">${IK_TERUG}</button><button type="button" class="lk-speel" aria-label="Voorlezen" title="Voorlezen">${IK_SPEEL}</button><span class="lk-tekst">Voorlezen</span>`;
+    st.balk.querySelector(".lk-speel").onclick = () => (st.speelt ? pauzeerLees(st) : startLees(st, st.zin));
+    st.balk.querySelector(".lk-terug").onclick = () => startLees(st, Math.max(0, st.zin - 1));
+    div.appendChild(st.balk); div._lees = st;
   }
   $("chatlog").appendChild(div); $("chatlog").scrollTop = $("chatlog").scrollHeight;
   return div;
@@ -1207,7 +1237,7 @@ async function stuurVraag() {
   gesprek.push({ role: "user", content: vraag });
   if (!CONFIG.workerUrl) {
     const t = `Ik ben nog niet aangesloten, dus ik kan nog niet antwoorden. Stuur je vraag zolang naar ${CONFIG.begeleider} via "Liever aan ${CONFIG.begeleider} vragen?" hieronder.`;
-    voegToe("prof", t); gesprek.pop(); if ($("v-voorlezen").checked) spreek(docent, t); return;
+    const m = voegToe("prof", t); gesprek.pop(); if ($("v-voorlezen").checked && m._lees) startLees(m._lees, 0); return;
   }
   bezig = true; $("v-stuur").disabled = true;
   const wacht = voegToe("prof", ""); wacht.innerHTML = `<span class="typt">${DOCENT[docent].naam} denkt na…</span>`;
@@ -1218,7 +1248,7 @@ async function stuurVraag() {
     const data = await r.json().catch(() => ({}));
     wacht.remove();
     if (!r.ok || !data.antwoord) { voegToe("fout", data.fout || "De docent is even niet bereikbaar. Probeer het later opnieuw."); gesprek.pop(); }
-    else { gesprek.push({ role: "assistant", content: data.antwoord }); voegToe("prof", data.antwoord); if ($("v-voorlezen").checked) spreek(docent, data.antwoord); }
+    else { gesprek.push({ role: "assistant", content: data.antwoord }); const m = voegToe("prof", data.antwoord); if ($("v-voorlezen").checked && m._lees) startLees(m._lees, 0); }
   } catch (e) {
     wacht.remove(); voegToe("fout", "Geen verbinding met de docent. Controleer je internet en probeer het opnieuw."); gesprek.pop();
   }
@@ -1288,20 +1318,23 @@ function spreek(wie, tekst, opt = {}) {
   const gedeeld = stemVoor("delta") && stemVoor("delta") === stemVoor("volta");
   const tempo = (NIVEAUS[CONFIG.niveau] || NIVEAUS.havo3).tempo * TEMPO[steunNiveau()];
   const zinnen = voorUitspraak(zonderOpmaak(tekst)).split(/(?<=[.!?])\s+/).filter(z => z.trim());
-  let over = zinnen.length, gestart = false;
+  let i = Math.max(0, Math.min(opt.start || 0, zinnen.length - 1)), gestart = false;
   const wacht = setTimeout(() => { if (mijn === spraakId && !gestart) { beweeg(false); status.textContent = "Er komt geen geluid. Zet het volume aan."; klaar(); } }, 5000);
+  // Zin voor zin: zo kan voorlezen gepauzeerd worden en een zin terug
+  const volgende = () => {
+    if (mijn !== spraakId) return;
+    if (i >= zinnen.length) { beweeg(false); klaar(); return; }
+    const u = new SpeechSynthesisUtterance(zinnen[i]);
+    u.lang = stem ? stem.lang : "nl-NL"; if (stem) u.voice = stem;
+    u.rate = tempo; u.pitch = gedeeld ? DOCENT[wie].toonhoogte : 1;
+    u.onstart = () => { if (mijn !== spraakId) return; if (opt.opZin) opt.opZin(i); if (!gestart) { gestart = true; clearTimeout(wacht); beweeg(true); status.textContent = ""; } };
+    u.onend = () => { if (mijn === spraakId) { i++; volgende(); } };
+    u.onerror = e => { if (mijn !== spraakId || e.error === "canceled" || e.error === "interrupted") return; clearTimeout(wacht); beweeg(false); status.textContent = `Voorlezen lukte niet (${e.error}).`; klaar(); };
+    speechSynthesis.speak(u);
+  };
   setTimeout(() => { // korte pauze na cancel(): anders slaat Chrome soms de eerste zin over
     if (mijn !== spraakId) return;
-    speechSynthesis.resume();
-    for (const z of zinnen) {
-      const u = new SpeechSynthesisUtterance(z);
-      u.lang = stem ? stem.lang : "nl-NL"; if (stem) u.voice = stem;
-      u.rate = tempo; u.pitch = gedeeld ? DOCENT[wie].toonhoogte : 1;
-      u.onstart = () => { if (mijn === spraakId && !gestart) { gestart = true; clearTimeout(wacht); beweeg(true); status.textContent = ""; } };
-      u.onend = () => { if (mijn === spraakId && --over <= 0) { beweeg(false); klaar(); } };
-      u.onerror = e => { if (mijn !== spraakId || e.error === "canceled" || e.error === "interrupted") return; clearTimeout(wacht); beweeg(false); status.textContent = `Voorlezen lukte niet (${e.error}).`; klaar(); };
-      speechSynthesis.speak(u);
-    }
+    speechSynthesis.resume(); volgende();
   }, 90);
 }
 
@@ -1503,6 +1536,7 @@ function init() {
   $("v-hervat").onclick = () => $("vraagvenster").close();
   $("vraagvenster").addEventListener("close", () => {
     stopSpraak();
+    if (actieveLees) { actieveLees.speelt = false; actieveLees.zin = 0; toonLees(actieveLees); }
     if (inUitleg() && hervatNaVraag) { hervatNaVraag = false; uSpeelt = true; toonStap(uStap); }
   });
   document.querySelectorAll("[data-docent]").forEach(b => b.onclick = () => {
