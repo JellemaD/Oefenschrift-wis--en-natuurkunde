@@ -1744,7 +1744,7 @@ function ketenSVG(st) {
   const bx = [50, 170, 290], by = 70;
   let s = `<svg viewBox="0 0 340 250" class="plot uitleg-plot" role="img" aria-label="Keten van formules: n naar a naar P">`;
   const vak = (x, letter, waarde) => `<rect x="${x - 26}" y="${by - 26}" width="52" height="52" rx="10" style="fill:var(--paper);stroke:var(--ink);stroke-width:2.5"/><text x="${x}" y="${by + 9}" text-anchor="middle" style="font:700 26px var(--hand);fill:var(--ink)">${letter}</text>${waarde !== undefined ? `<text x="${x}" y="${by - 34}" text-anchor="middle" style="font:700 17px var(--body);fill:var(--red)">${waarde}</text>` : ""}`;
-  const pijl = (x1, x2, y, tekst, kleur = "var(--ink)") => `<line x1="${x1}" y1="${y}" x2="${x2 - 6}" y2="${y}" style="stroke:${kleur};stroke-width:2.5"/><path d="M${x2},${y} l-10,-6 v12 Z" style="fill:${kleur}"/><text x="${(x1 + x2) / 2}" y="${y + 22}" text-anchor="middle" style="font:700 15px var(--body);fill:${kleur}">${tekst}</text>`;
+  const pijl = (x1, x2, y, tekst, kleur = "var(--ink)") => `<line x1="${x1}" y1="${y}" x2="${x2 - 6}" y2="${y}" style="stroke:${kleur};stroke-width:2.5"/><path d="M${x2},${y} l-10,-6 v12 Z" style="fill:${kleur}"/><text x="${(x1 + x2) / 2}" y="${y + 50}" text-anchor="middle" style="font:700 14px var(--body);fill:${kleur}">${tekst}</text>`;
   const w = st.waarden;
   s += vak(bx[0], "n", w ? 2 : undefined);
   if (!st.alleenN) {
