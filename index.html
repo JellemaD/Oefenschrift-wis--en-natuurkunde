@@ -131,6 +131,9 @@ details.later>summary{cursor:pointer;color:var(--pencil);font-weight:700;padding
 .tabs{display:flex;gap:.4rem;margin:1.5rem 0 .75rem;border-bottom:2px solid var(--ink)}
 .tabs button{flex:1;max-width:14rem;border:2px solid var(--ink);border-bottom:0;border-radius:8px 8px 0 0;background:var(--card);color:var(--ink);font-family:var(--hand);font-size:1.3rem;font-weight:700;padding:.45rem 1rem;cursor:pointer;margin-bottom:-2px}
 .tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.tabs button[aria-selected="false"]{background:transparent;color:var(--pencil);border-color:var(--grid-strong);border-bottom:0}
+.spieklink{margin-left:.4rem;font-size:inherit;white-space:nowrap}
+.tabs button[aria-selected="false"]:hover{color:var(--ink);border-color:var(--ink)}
 
 /* Hoofdstukken wiskunde */
 details.hfst{background:var(--card);border:1px solid var(--grid-strong);border-radius:6px;margin:0 0 .6rem;padding:.2rem 1rem .4rem}
@@ -334,11 +337,11 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
       <button type="button" role="tab" id="tab-nat" data-tab="nat" aria-selected="false">Natuurkunde</button>
     </div>
     <div class="tabpaneel" id="paneel-wis" role="tabpanel" aria-labelledby="tab-wis">
-      <p class="klein">Zoals in je boek <i>Moderne Wiskunde</i> (13e editie, havo 3).</p>
+      <p class="klein">Zoals in je boek <i>Moderne Wiskunde</i> (13e editie, havo 3). <button class="linkbtn spieklink" data-spiek="wis">📄 Spiekbrief wiskunde</button></p>
       <div id="lijst-wis"></div>
     </div>
     <div class="tabpaneel hidden" id="paneel-nat" role="tabpanel" aria-labelledby="tab-nat">
-      <p class="klein">Zoals in je boek <i>Nova</i> (3 havo).</p>
+      <p class="klein">Zoals in je boek <i>Nova</i> (3 havo). <button class="linkbtn spieklink" data-spiek="nat">📄 Spiekbrief natuurkunde</button></p>
       <div id="lijst-nat"></div>
     </div>
 
@@ -586,11 +589,14 @@ const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 function fmt(n, d = 3) {
   if (!isFinite(n)) return "?";
   const r = Math.round(n * 10 ** d) / 10 ** d;
-  return (Object.is(r, -0) ? 0 : r).toLocaleString("nl-NL", { maximumFractionDigits: d, useGrouping: false }).replace("-", "−");
+  const t = (Object.is(r, -0) ? 0 : r).toLocaleString("nl-NL", { maximumFractionDigits: d, useGrouping: false }).replace("-", "−");
+  return Math.abs(r) >= 10000 ? t.replace(/^(−?)(\d+)/, (_, m, g) => m + g.replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f")) : t;
 }
 const par = n => (n < 0 ? `(${fmt(n)})` : fmt(n));
 function parseNum(s) {
-  s = String(s).trim().replace(/\s/g, "").replace(/[−–]/g, "-").replace(/,/g, ".");
+  s = String(s).trim().replace(/[\s\u202f]/g, "").replace(/[−–]/g, "-");
+  if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, ""); // 1.000 of 668.800: duizendtallen
+  s = s.replace(/,/g, ".");
   if (!s) return NaN;
   if (/^-?\d+(\.\d+)?\/-?\d+(\.\d+)?$/.test(s)) {
     const [p, q] = s.split("/").map(Number);
@@ -609,8 +615,10 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.09-7";
+const VERSIE = "2026.10.09-8";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
+// " + 3" of " − 3" achter een term; niets bij 0
+const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
 const lijnF = (a, L, b) => `${coef(a)}${L}${b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : ""}`;
 const tabelHTML = (xs, ys, kx = "x", ky = "y") => `<div class="tabelwrap"><table class="tabel"><tr><th>${kx}</th>${xs.map(x => `<td>${typeof x === "number" ? fmt(x) : x}</td>`).join("")}</tr><tr><th>${ky}</th>${ys.map(y => `<td>${typeof y === "number" ? fmt(y) : y}</td>`).join("")}</tr></table></div>`;
 // Kwadratische formules netjes schrijven
@@ -755,7 +763,7 @@ const ONDERWERPEN = [
       let st = `Stap in x: ${fmt(stap)}. Stap in y: ${fmt(ys[1])} − ${par(ys[0])} = ${fmt(ys[1] - ys[0])}<br>a = ${fmt(ys[1] - ys[0])} / ${fmt(stap)} = <b>${fmt(a)}</b><br>`;
       st += start === 0
         ? `Bij x = 0 hoort y = ${fmt(b)}, dus <b>b = ${fmt(b)}</b><br>`
-        : `x = 0 staat niet in de tabel. Reken terug met het eerste punt: b = y − a · x = ${fmt(ys[0])} − ${fmt(a)} · ${fmt(xs[0])} = <b>${fmt(b)}</b><br>`;
+        : `x = 0 staat niet in de tabel. Reken terug met het eerste punt: b = y − a · x = ${fmt(ys[0])} − ${par(a)} · ${par(xs[0])} = <b>${fmt(b)}</b><br>`;
       st += `Formule: <b>${formule(a, b)}</b>`;
       return {
         vraag: `Bij deze tabel hoort een lineaire formule ${F("y = ax + b")}. Bepaal a en b.${tabel}`,
@@ -826,7 +834,7 @@ const ONDERWERPEN = [
         vraag: `Bereken het snijpunt van de lijnen ${F(formule(a1, b1))} en ${F(formule(a2, b2))}.`,
         velden: [{ label: "x =", val: x, tol: EXACT }, { label: "y =", val: y, tol: EXACT }],
         hint: `Stel de formules gelijk: ${formule(a1, b1).slice(4)} = ${formule(a2, b2).slice(4)}. Breng alle x-en naar één kant en alle getallen naar de andere kant.`,
-        stappen: `${formule(a1, b1).slice(4)} = ${formule(a2, b2).slice(4)}<br>${fmt(a1 - a2)}x = ${fmt(b2 - b1)}<br>x = ${fmt(b2 - b1)} / ${par(a1 - a2)} = <b>${fmt(x)}</b><br>y = ${fmt(a1)} · ${par(x)} ${b1 < 0 ? "−" : "+"} ${fmt(Math.abs(b1))} = <b>${fmt(y)}</b><br>Controle: ${fmt(a2)} · ${par(x)} ${b2 < 0 ? "−" : "+"} ${fmt(Math.abs(b2))} = ${fmt(y)} ✓`
+        stappen: `${formule(a1, b1).slice(4)} = ${formule(a2, b2).slice(4)}<br>${formule(a1 - a2, 0).slice(4)} = ${fmt(b2 - b1)}<br>${a1 - a2 === 1 ? "" : `x = ${fmt(b2 - b1)} / ${par(a1 - a2)} = `}<b>x = ${fmt(x)}</b><br>y = ${fmt(a1)} · ${par(x)}${staart(b1)} = <b>${fmt(y)}</b><br>Controle: ${fmt(a2)} · ${par(x)}${staart(b2)} = ${fmt(y)} ✓`
       };
     }
   },
@@ -861,7 +869,7 @@ const ONDERWERPEN = [
         vraag: `Gegeven zijn ${F(`${L} = ${lijnF(a, M, b)}`)} en ${F(`${M} = ${lijnF(c, N, d)}`)}. Bereken ${M} en ${L} als ${N} = ${n}.`,
         velden: [{ label: `${M} =`, val: tus, tol: EXACT }, { label: `${L} =`, val: eind, tol: EXACT, tips: [[a * n + b, `Je hebt ${N} in de formule van ${L} gezet. Vul daar ${M} in.`]] }],
         hint: `Eerst ${M}: vul ${N} = ${n} in ${lijnF(c, N, d)}. Vul die uitkomst daarna in voor ${M}.`,
-        stappen: `${M} = ${fmt(c)} · ${n} ${d < 0 ? "−" : "+"} ${fmt(Math.abs(d))} = <b>${fmt(tus)}</b><br>${L} = ${fmt(a)} · ${par(tus)} + ${b} = <b>${fmt(eind)}</b>`
+        stappen: `${M} = ${fmt(c)} · ${n}${staart(d)} = <b>${fmt(tus)}</b><br>${L} = ${fmt(a)} · ${par(tus)} + ${b} = <b>${fmt(eind)}</b>`
       };
     }
   },
@@ -1021,8 +1029,8 @@ const ONDERWERPEN = [
           { label: "x =", val: d, tol: EXACT, tips: [[-d, "Let op het teken: welke x maakt het stuk tussen haakjes 0?"], [-e, "Let op het teken: welke x maakt het stuk tussen haakjes 0?"]] },
           { label: "en x =", val: e, tol: EXACT, tips: [[-e, "Let op het teken: welke x maakt het stuk tussen haakjes 0?"], [-d, "Let op het teken: welke x maakt het stuk tussen haakjes 0?"]] }
         ],
-        hint: `Op de x-as is y = 0. Een product is 0 als één van de stukken 0 is. Wanneer is (${lin(-d)}) = 0, en wanneer (${lin(-e)}) = 0?`,
-        stappen: `y = 0 als (${lin(-d)}) = 0 of (${lin(-e)}) = 0<br>(${lin(-d)}) = 0 geeft <b>x = ${fmt(d)}</b><br>(${lin(-e)}) = 0 geeft <b>x = ${fmt(e)}</b><br>De snijpunten met de x-as zijn (${fmt(d)}, 0) en (${fmt(e)}, 0).`
+        hint: `Op de x-as is y = 0. Een product is 0 als één van de stukken 0 is. Wanneer is ${fac(-d)} = 0, en wanneer ${fac(-e)} = 0?`,
+        stappen: `y = 0 als ${fac(-d)} = 0 of ${fac(-e)} = 0<br>${fac(-d)} = 0 geeft <b>x = ${fmt(d)}</b><br>${fac(-e)} = 0 geeft <b>x = ${fmt(e)}</b><br>De snijpunten met de x-as zijn (${fmt(d)}, 0) en (${fmt(e)}, 0).`
       };
     }
   },
@@ -1067,7 +1075,7 @@ const ONDERWERPEN = [
       return { vraag: `Bij een parabool hoort deze tabel. Wat is de top?${tabelHTML(xs, xs.map(f))}`,
         velden: [{ label: "x-top =", val: p, tol: EXACT }, { label: "y-top =", val: q, tol: EXACT }],
         hint: `Zoek twee kolommen met dezelfde y. De top ligt precies in het midden.`,
-        stappen: `f(${fmt(p - 1)}) = f(${fmt(p + 1)}) = ${fmt(f(p - 1))}, dus de top ligt bij <b>x = ${fmt(p)}</b><br>y-top = <b>${fmt(q)}</b>` };
+        stappen: `Bij x = ${fmt(p - 1)} en x = ${fmt(p + 1)} is y allebei ${fmt(f(p - 1))}. De top ligt in het midden: <b>x = ${fmt(p)}</b><br>y-top = <b>${fmt(q)}</b>` };
     }
   },
   {
@@ -3056,7 +3064,7 @@ function toonTijd() {
   $("u-rest").textContent = uitleg.stappen[uStap].eind ? "klaar" : `nog ${Math.floor(r / 60)}:${String(r % 60).padStart(2, "0")}`;
   $("u-balk").style.width = `${Math.round(100 * (1 - rest / totaal))}%`;
 }
-function uitlegDuur(u) { return Math.max(1, Math.ceil(u.stappen.reduce((n, s) => n + stapSec(s), 0) / 60)); }
+function uitlegDuur(u) { return Math.max(1, Math.round(u.stappen.reduce((n, s) => n + stapSec(s), 0) / 60)); }
 let uHerkomst = "home";
 function startUitleg(key) {
   uitleg = UITLEGGEN[key]; if (!uitleg) return;
@@ -3215,15 +3223,20 @@ function init() {
     };
   }
   $("v-kopieer").onclick = kopieer;
-  $("v-sluit").onclick = () => $("vraagvenster").close();
   let hervatNaVraag = false;
   $("u-vraag").onclick = () => { hervatNaVraag = uSpeelt; uSpeelt = false; toonStap(uStap); openVraag(); };
-  $("v-hervat").onclick = () => $("vraagvenster").close();
-  $("vraagvenster").addEventListener("close", () => {
+  // Na het sluiten: voorlezen stoppen en de uitleg hervatten. De knoppen doen dit zelf; het close-event
+  // (bijv. Escape) vangt de rest op, zonder het twee keer te doen.
+  let alAfgehandeld = false;
+  const naSluiten = () => {
     stopSpraak();
     if (actieveLees) { actieveLees.speelt = false; actieveLees.zin = 0; toonLees(actieveLees); }
     if (inUitleg() && hervatNaVraag) { hervatNaVraag = false; uSpeelt = true; toonStap(uStap); }
-  });
+  };
+  const sluitVraag = () => { alAfgehandeld = true; $("vraagvenster").close(); naSluiten(); };
+  $("v-hervat").onclick = sluitVraag;
+  $("v-sluit").onclick = sluitVraag;
+  $("vraagvenster").addEventListener("close", () => { if (alAfgehandeld) { alAfgehandeld = false; return; } naSluiten(); });
   document.querySelectorAll("[data-docent]").forEach(b => b.onclick = () => {
     kiesDocent(b.dataset.docent);
     if (!$("chatlog").children.length) voegToe("prof", `Hoi! Ik ben ${DOCENT[docent].naam}. Waar kan ik je mee helpen?`);
