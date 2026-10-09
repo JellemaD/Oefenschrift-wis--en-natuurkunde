@@ -75,6 +75,10 @@ svg.uitleg-plot{max-width:380px}
 .u-ondertitel{text-align:center;margin:.6rem 0 0}
 .u-knoppen{justify-content:center;margin:1rem 0 .5rem}
 .u-zelf{display:block;margin:1rem auto 0;font-size:1.15rem}
+.u-tijd{display:flex;align-items:center;gap:.6rem;max-width:420px;margin:0 auto}
+.u-balk{flex:1;height:8px;background:var(--grid-strong);border-radius:4px;overflow:hidden}
+#u-balk{height:100%;width:0;background:var(--ink);transition:width .5s linear}
+#u-rest{min-width:4.5rem;text-align:right;font-variant-numeric:tabular-nums}
 @media (max-width:540px){#u-av{width:84px;height:84px}.u-tekst{font-size:1.2rem}}
 /* Microfoon bij de vraag */
 .vraagrij{display:flex;gap:.5rem;align-items:stretch}
@@ -297,10 +301,11 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
       <p class="klein u-ondertitel" id="u-ondertitel"></p>
     </div>
     <div class="knoppen u-knoppen">
-      <button class="btn" id="u-terug">◀ Terug</button>
+      <button class="btn" id="u-terug">◀ Vorige</button>
       <button class="btn hoofd" id="u-pauze">❚❚ Pauze</button>
-      <button class="btn" id="u-verder">Verder ▶</button>
+      <button class="btn" id="u-verder">Volgende ▶</button>
     </div>
+    <div class="u-tijd"><div class="u-balk"><div id="u-balk"></div></div><span class="klein" id="u-rest"></span></div>
     <p class="klein" id="u-status" aria-live="polite"></p>
     <button class="btn hoofd u-zelf hidden" id="u-zelf">Probeer het zelf →</button>
   </section>
@@ -1338,6 +1343,18 @@ function parabSVG(st) {
 }
 
 let uitleg = null, uStap = 0, uSpeelt = false, uId = 0;
+// Geschatte spreektijd per stap in seconden (ongeveer 12 tekens per seconde plus een korte pauze)
+const stapSec = st => st.zeg.length / 12 + 1;
+let uStart = 0, uKlok = null;
+function toonTijd() {
+  if (!uitleg) return;
+  const sec = uitleg.stappen.map(stapSec), totaal = sec.reduce((a, b) => a + b, 0);
+  const bezig = uSpeelt ? Math.min(sec[uStap], (Date.now() - uStart) / 1000) : 0;
+  const rest = Math.max(0, sec.slice(uStap).reduce((a, b) => a + b, 0) - bezig);
+  const r = Math.round(rest);
+  $("u-rest").textContent = uitleg.stappen[uStap].eind ? "klaar" : `nog ${Math.floor(r / 60)}:${String(r % 60).padStart(2, "0")}`;
+  $("u-balk").style.width = `${Math.round(100 * (1 - rest / totaal))}%`;
+}
 function uitlegDuur(u) { return Math.max(1, Math.ceil((u.stappen.reduce((n, s) => n + s.zeg.length, 0) / 12 + u.stappen.length) / 60)); }
 function startUitleg(key) {
   uitleg = UITLEGGEN[key]; if (!uitleg) return;
@@ -1357,8 +1374,10 @@ function toonStap(i) {
   $("u-voortgang").textContent = `stap ${uStap + 1} van ${uitleg.stappen.length}`;
   $("u-terug").disabled = uStap === 0;
   $("u-verder").disabled = uStap === uitleg.stappen.length - 1;
-  $("u-pauze").textContent = uSpeelt ? "❚❚ Pauze" : "▶ Verder";
+  $("u-pauze").textContent = uSpeelt ? "❚❚ Pauze" : "▶ Afspelen";
   $("u-zelf").classList.toggle("hidden", !st.eind);
+  uStart = Date.now(); clearInterval(uKlok); toonTijd();
+  if (uSpeelt) uKlok = setInterval(() => { if ($("uitleg").classList.contains("hidden")) clearInterval(uKlok); else toonTijd(); }, 500);
   if (!uSpeelt) { stopSpraak(); return; }
   spreek(uitleg.docent, st.zeg, { box: $("u-av"), status: $("u-status"), klaar: () => {
     if (mijn === uId && uSpeelt && !st.eind) setTimeout(() => { if (mijn === uId && uSpeelt) toonStap(uStap + 1); }, 700);
