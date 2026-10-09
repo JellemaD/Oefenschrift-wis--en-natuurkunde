@@ -72,6 +72,8 @@ button,input,textarea{font:inherit}
 .u-tekst{font-family:var(--hand);font-size:1.45rem;color:var(--ink);text-align:center;min-height:4.2rem;margin-bottom:.5rem}
 .u-tekst .formule{font-size:1.3rem}
 svg.uitleg-plot{max-width:380px}
+.u-tab{margin:.3rem auto 0;font-family:var(--body);font-size:1rem}
+.u-tab th,.u-tab td{padding:.25rem .5rem}
 .u-ondertitel{text-align:center;margin:.6rem 0 0}
 .u-zelf{display:block;margin:1rem auto 0;font-size:1.15rem}
 .spelerbalk{display:flex;align-items:center;gap:.35rem;margin:1rem auto .4rem;max-width:560px;background:var(--card);border:2px solid var(--grid-strong);border-radius:999px;padding:.3rem .5rem}
@@ -1049,7 +1051,7 @@ function renderHome() {
       const isOpen = open.size ? open.has(key) : h === eerste;
       return `<details class="hfst" data-key="${key}"${isOpen ? " open" : ""}>
       <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}<span class="h-info">${h.deel ? "deel " + h.deel + " · " : ""}${h.oef.length ? h.oef.length + " oefenonderwerp" + (h.oef.length > 1 ? "en" : "") : "oefensommen volgen"}</span></summary>
-      ${(() => { const ul = Object.entries(UITLEGGEN).filter(([k, u]) => u.vak === vak && u.hfst === h.nr);
+      ${(() => { const ul = Object.entries(UITLEGGEN).filter(([k, u]) => u.vak === vak && u.hfst === h.nr).sort((x, y) => x[0].localeCompare(y[0], "nl", { numeric: true }));
         const knoppen = ul.map(([k, u]) => `<button class="topic uitlegknop" data-uitleg="${k}"><span class="t-main"><span class="t-title">🎬 Uitleg ${k}: ${u.titel}</span><span class="t-sub">${DOCENT[u.docent].naam} legt het uit · ongeveer ${uitlegDuur(u)} min</span></span></button>`).join("");
         return h.oef.length || knoppen ? `<div class="schrift">${knoppen}${h.oef.map(topicKnop).join("")}</div>` : ""; })()}
       ${h.par.some(p => p.v.length) ? `<details class="filmpjes"><summary>Filmpjes bij dit hoofdstuk</summary><ul class="paragrafen">${h.par.filter(p => p.v.length).map(p => `<li><b>${p.nr}</b> ${p.titel} · ${filmpje(p.v[0])}</li>`).join("")}</ul></details>` : ""}
@@ -1348,6 +1350,52 @@ function spreek(wie, tekst, opt = {}) {
 // Elke uitleg is een reeks stappen: wat de professor zegt (zeg), wat er groot in beeld staat (tekst)
 // en wat er in de tekening staat (teken). Maximaal ongeveer 4 minuten, één idee per uitleg.
 const UITLEGGEN = {
+  "2.1": {
+    vak: "wis", hfst: "2", docent: "delta", titel: "Parabolen", oefen: "par-invullen",
+    teken: st => parabSVG(st),
+    stappen: [
+      { tekst: `Wat is een parabool?<br>${F("y = x² − 6x + 5")}`, teken: {},
+        zeg: "Hoi! Dit is paragraaf 2.1: parabolen. Een formule met x kwadraat, zoals y is x kwadraat min 6 x plus 5, heet een kwadratische formule. De grafiek is geen rechte lijn maar een boog: een parabool." },
+      { tekst: `${F("y = ax² + bx + c")}<br>hier: a = 1, b = −6, c = 5`, teken: {},
+        zeg: "Zo'n formule schrijf je in de vorm y is a x kwadraat plus b x plus c. In ons voorbeeld is a gelijk aan 1, b is min 6, en c is 5." },
+      { tekst: "a positief → dalparabool", teken: { top: true, toplabel: "laagste punt" },
+        zeg: "Is a positief, dan krijg je een dalparabool. Hij gaat aan beide kanten omhoog, net als een dal. De top is het laagste punt." },
+      { tekst: `a negatief → bergparabool<br>${F("y = −x² + 6x − 5")}`, teken: { berg: true },
+        zeg: "Is a negatief, dan krijg je een bergparabool. Kijk naar y is min x kwadraat plus 6 x min 5. Die gaat aan beide kanten omlaag, net als een berg. De top is dan het hoogste punt." },
+      { tekst: `Invullen: x = −1<br>${F("y = (−1)² − 6 · (−1) + 5 = 12")}`, teken: {},
+        zeg: "Punten van de parabool vind je door x in te vullen. Neem x is min 1. Min 1 kwadraat is 1. Min 6 keer min 1 is plus 6. Plus 5. Samen is dat 12." },
+      { tekst: "Let op: (−1)² = (−1) · (−1) = 1", teken: {},
+        zeg: "Let op, hier gaat het vaak mis. Zet haakjes om een negatief getal. Min 1 kwadraat is min 1 keer min 1, en dat is plus 1. Een kwadraat is nooit negatief." },
+      { tekst: `<table class="tabel u-tab"><tr><th>x</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td></tr><tr><th>y</th><td>5</td><td>0</td><td>−3</td><td>−4</td><td>−3</td><td>0</td><td>5</td></tr></table>`, teken: { tabel: true },
+        zeg: "Vul je meer x-waarden in, dan krijg je een tabel. Zet je die punten in een assenstelsel en verbind je ze met een vloeiende boog, dan heb je de parabool." },
+      { tekst: "c is het snijpunt met de y-as", teken: { yas: true },
+        zeg: "Een handige regel: vul je x is 0 in, dan blijft alleen c over. De parabool snijdt de y-as dus altijd bij y is c. Hier is dat bij 5." },
+      { tekst: "Nu jij!", teken: { top: true, yas: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf, en reken y uit voor een paar x-waarden. Succes!" }
+    ]
+  },
+  "2.5": {
+    vak: "wis", hfst: "2", docent: "delta", titel: "Drie vormen van kwadratische formules", oefen: "par-vormen",
+    teken: st => parabSVG(st),
+    stappen: [
+      { tekst: "Eén parabool, drie formules", teken: {},
+        zeg: "Hoi! Dit is paragraaf 2.5: drie vormen van kwadratische formules. Je kunt dezelfde parabool op drie manieren opschrijven. Elke vorm laat je iets anders direct zien." },
+      { tekst: `Vorm 1: ${F("y = x² − 6x + 5")}<br>c = 5 → snijpunt met de y-as`, teken: { yas: true },
+        zeg: "Vorm 1 ken je al: y is x kwadraat min 6 x plus 5. Hier zie je direct c. De parabool snijdt de y-as bij 5." },
+      { tekst: `Vorm 2: ${F("y = (x − 3)² − 4")}<br>top (3, −4)`, teken: { as: true, aslabel: true, top: true },
+        zeg: "Vorm 2: y is, tussen haakjes, x min 3, in het kwadraat, min 4. Dit is de vorm y is a keer x min p kwadraat plus q. De top is het punt p komma q. Hier is dat 3 komma min 4." },
+      { tekst: "Let op het teken:<br>(x − 3)² → p = 3 &nbsp; (x + 3)² → p = −3", teken: { as: true, aslabel: true, top: true },
+        zeg: "Let op het teken. Bij x min 3 hoort p is 3. Bij x plus 3 hoort p is min 3. Vraag je steeds af: welke x maakt het stuk tussen haakjes nul?" },
+      { tekst: `Vorm 3: ${F("y = (x − 1)(x − 5)")}<br>snijpunten x = 1 en x = 5`, teken: { punten: true },
+        zeg: "Vorm 3: y is x min 1 keer x min 5. Op de x-as is y nul. Een product is nul als één van de stukken nul is. Dus x is 1 of x is 5. Dat zijn de snijpunten met de x-as." },
+      { tekst: "Alles in één plaatje", teken: { as: true, top: true, punten: true, yas: true },
+        zeg: "Alle drie de vormen horen bij dezelfde parabool. Vorm 1 geeft het snijpunt met de y-as, vorm 2 de top, en vorm 3 de snijpunten met de x-as. Kies de vorm die past bij wat je zoekt." },
+      { tekst: `Controle: ${F("(x − 3)² − 4 = x² − 6x + 9 − 4 = x² − 6x + 5")} ✓`, teken: { as: true, top: true, punten: true, yas: true },
+        zeg: "Wil je controleren of het klopt? Werk de haakjes weg. x min 3, in het kwadraat, is x kwadraat min 6 x plus 9. Daar gaat 4 af. Dan krijg je weer x kwadraat min 6 x plus 5: vorm 1." },
+      { tekst: "Nu jij!", teken: { as: true, top: true, punten: true, yas: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf, en lees de top of de snijpunten af. Succes!" }
+    ]
+  },
   "2.2": {
     vak: "wis", hfst: "2", docent: "delta", titel: "Symmetrie en top", oefen: "par-symmetrie",
     teken: st => parabSVG(st),
@@ -1379,7 +1427,7 @@ const UITLEGGEN = {
 // Parabool y = x² − 6x + 5 (top (3, −4)) in een assenstelsel, met de onderdelen die een stap aanzet
 function parabSVG(st) {
   const U = 30, X = x => 50 + U * (x + 1), Y = y => 20 + U * (9 - y);
-  let s = `<svg viewBox="0 0 400 470" class="plot uitleg-plot" role="img" aria-label="Parabool y = x² − 6x + 5">`;
+  let s = `<svg viewBox="0 0 400 470" class="plot uitleg-plot" role="img" aria-label="Parabool y = x² − 6x + 5"><defs><clipPath id="u-clip"><rect x="${X(-1)}" y="${Y(9)}" width="${10 * U}" height="${15 * U}"/></clipPath></defs>`;
   for (let i = -1; i <= 9; i++) s += `<line class="g-grid" x1="${X(i)}" y1="${Y(9)}" x2="${X(i)}" y2="${Y(-6)}"/>`;
   for (let j = -6; j <= 9; j++) s += `<line class="g-grid" x1="${X(-1)}" y1="${Y(j)}" x2="${X(9)}" y2="${Y(j)}"/>`;
   s += `<line class="g-axis" x1="${X(0)}" y1="${Y(9)}" x2="${X(0)}" y2="${Y(-6)}"/><line class="g-axis" x1="${X(-1)}" y1="${Y(0)}" x2="${X(9)}" y2="${Y(0)}"/>`;
@@ -1388,7 +1436,17 @@ function parabSVG(st) {
   s += `<text class="g-name" x="${X(9) - 2}" y="${Y(0) - 6}" text-anchor="end">x</text><text class="g-name" x="${X(0) + 6}" y="${Y(9) + 14}">y</text>`;
   let d = "";
   for (let x = -0.6; x <= 6.6; x += 0.1) d += `${d ? "L" : "M"}${X(x).toFixed(1)},${Y(x * x - 6 * x + 5).toFixed(1)}`;
-  s += `<path class="g-line" d="${d}"/>`;
+  s += `<path class="g-line" clip-path="url(#u-clip)" d="${d}"/>`;
+  if (st.berg) {
+    let d2 = "";
+    for (let x = -0.6; x <= 6.6; x += 0.1) d2 += `${d2 ? "L" : "M"}${X(x).toFixed(1)},${Y(-x * x + 6 * x - 5).toFixed(1)}`;
+    s += `<path class="g-line" clip-path="url(#u-clip)" d="${d2}" style="stroke:var(--red);stroke-dasharray:7 4"/>`;
+    s += `<circle class="g-pt" cx="${X(3)}" cy="${Y(4)}" r="6"/><text class="g-ptl" x="${X(3) + 10}" y="${Y(4) - 6}">top (3, 4): hoogste punt</text>`;
+    s += `<text class="g-tril" x="${X(6.6)}" y="${Y(-5.5)}" text-anchor="end" style="fill:var(--red)">bergparabool</text>`;
+    s += `<text class="g-tril" x="${X(6.8)}" y="${Y(8.4)}" text-anchor="end">dalparabool</text>`;
+  }
+  if (st.tabel) for (const x of [0, 1, 2, 3, 4, 5, 6]) s += `<circle class="g-pt" cx="${X(x)}" cy="${Y(x * x - 6 * x + 5)}" r="5"/>`;
+  if (st.yas) s += `<circle class="g-pt" cx="${X(0)}" cy="${Y(5)}" r="6"/><text class="g-ptl" x="${X(0) + 10}" y="${Y(5) + 5}">(0, 5)</text>`;
   if (st.as) s += `<line class="g-help" x1="${X(3)}" y1="${Y(9)}" x2="${X(3)}" y2="${Y(-6)}" style="stroke-width:2.4"/><text class="g-tril" x="${X(3) + 6}" y="${Y(8.4)}">symmetrieas${st.aslabel ? ": x = 3" : ""}</text>`;
   if (st.spiegel) {
     s += `<line class="g-help" x1="${X(0)}" y1="${Y(5)}" x2="${X(6)}" y2="${Y(5)}"/>`;
@@ -1396,7 +1454,7 @@ function parabSVG(st) {
   }
   if (st.punten) for (const x of [1, 5]) s += `<circle class="g-pt" cx="${X(x)}" cy="${Y(0)}" r="5"/><text class="g-ptl" x="${X(x)}" y="${Y(0) - 10}" text-anchor="middle">(${x}, 0)</text>`;
   if (st.afstand) for (const [a, b] of [[1, 3], [3, 5]]) s += `<path class="g-tri" d="M${X(a)},${Y(-1)} L${X(b)},${Y(-1)}" style="fill:none;stroke-width:3"/><text class="g-tril" x="${X((a + b) / 2)}" y="${Y(-1) + 18}" text-anchor="middle">2</text>`;
-  if (st.top) s += `<circle class="g-pt" cx="${X(3)}" cy="${Y(-4)}" r="6"/><text class="g-ptl" x="${X(3) + 10}" y="${Y(-4) + 5}">top (3, −4)</text>`;
+  if (st.top) s += `<circle class="g-pt" cx="${X(3)}" cy="${Y(-4)}" r="6"/><text class="g-ptl" x="${X(3) + 10}" y="${Y(-4) + 5}">top (3, −4)${st.toplabel ? ": " + st.toplabel : ""}</text>`;
   return s + "</svg>";
 }
 
