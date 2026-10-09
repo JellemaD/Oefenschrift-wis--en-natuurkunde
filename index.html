@@ -305,6 +305,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
       <button class="btn hoofd" id="u-pauze">❚❚ Pauze</button>
       <button class="btn" id="u-verder">Volgende ▶</button>
     </div>
+    <p style="text-align:center;margin:.2rem 0 .6rem"><button class="btn" id="u-vraag">✋ Stel een vraag</button></p>
     <div class="u-tijd"><div class="u-balk"><div id="u-balk"></div></div><span class="klein" id="u-rest"></span></div>
     <p class="klein" id="u-status" aria-live="polite"></p>
     <button class="btn hoofd u-zelf hidden" id="u-zelf">Probeer het zelf →</button>
@@ -368,6 +369,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
   <div class="knoppen" style="margin-top:.6rem">
     <button class="btn hoofd" id="v-stuur">Vraag de professor</button>
     <button class="btn" id="v-sluit">Sluiten</button>
+    <button class="btn hidden" id="v-hervat">Verder met de uitleg ▶</button>
   </div>
   <div class="stemrij">
     <label><input type="checkbox" id="v-voorlezen"> Antwoorden voorlezen</label>
@@ -1114,7 +1116,12 @@ function uitwerking() {
 
 // ---------- vraag stellen ----------
 function tekstVan(html) { const d = document.createElement("div"); d.innerHTML = html.replace(/<br>/g, "\n"); return d.textContent.trim(); }
+function inUitleg() { return uitleg && !$("uitleg").classList.contains("hidden"); }
 function context() {
+  if (inUitleg()) {
+    const st = uitleg.stappen[uStap];
+    return `Uitleg van paragraaf ${Object.keys(UITLEGGEN).find(k => UITLEGGEN[k] === uitleg)} ${uitleg.titel}, stap ${uStap + 1} van ${uitleg.stappen.length}\nIn beeld: ${tekstVan(st.tekst)}\nDe professor zei: ${st.zeg}`;
+  }
   if (!onderwerp || $("oefen").classList.contains("hidden")) return "";
   const antw = som.velden.map((v, i) => `${v.label} ${$("f" + i).value || "(leeg)"} ${v.eenheid || ""}`.trim()).join("; ");
   return `Onderwerp: ${onderwerp.titel}\nOpgave: ${tekstVan(som.vraag)}${som.svg ? " (met grafiek)" : ""}\nMijn antwoord: ${antw}`;
@@ -1386,17 +1393,19 @@ function toonStap(i) {
 
 function openVraag() {
   const ctx = context();
-  const sleutel = (onderwerp && ctx) ? onderwerp.id + "|" + som.vraag : "";
+  const sleutel = inUitleg() ? "uitleg|" + uitleg.titel : (onderwerp && ctx) ? onderwerp.id + "|" + som.vraag : "";
   if (sleutel !== gesprekVan) { gesprek = []; $("chatlog").innerHTML = ""; gesprekVan = sleutel; }
-  const wie = ctx ? (onderwerp.vak === "nat" ? "volta" : "delta") : docent;
+  const wie = inUitleg() ? uitleg.docent : ctx ? (onderwerp.vak === "nat" ? "volta" : "delta") : docent;
   kiesDocent(wie);
   if (!$("chatlog").children.length) {
-    voegToe("prof", ctx ? `Hoi! Ik ben ${DOCENT[wie].naam}. Ik zie de som waar je mee bezig bent. Wat snap je wel, en waar loop je vast?`
+    voegToe("prof", inUitleg() ? `Goede vraag! Ik heb de uitleg even op pauze gezet. Wat wil je weten?`
+      : ctx ? `Hoi! Ik ben ${DOCENT[wie].naam}. Ik zie de som waar je mee bezig bent. Wat snap je wel, en waar loop je vast?`
       : `Hoi! Ik ben ${DOCENT[wie].naam}. Open eerst de som waar je vastloopt, dan kijk ik mee. Of stel hier je vraag.`);
   }
   $("vraagcontext").textContent = ctx || "Tip: open eerst de som waar je vastloopt, dan wordt die automatisch meegestuurd.";
   $("vraagcontext").classList.toggle("hidden", !ctx);
   $("v-status").textContent = "";
+  $("v-hervat").classList.toggle("hidden", !inUitleg());
   updateVraaglinks();
   $("vraagvenster").showModal();
   $("vraagtekst").focus();
@@ -1470,7 +1479,13 @@ function init() {
   }
   $("v-kopieer").onclick = kopieer;
   $("v-sluit").onclick = () => $("vraagvenster").close();
-  $("vraagvenster").addEventListener("close", stopSpraak);
+  let hervatNaVraag = false;
+  $("u-vraag").onclick = () => { hervatNaVraag = uSpeelt; uSpeelt = false; toonStap(uStap); openVraag(); };
+  $("v-hervat").onclick = () => $("vraagvenster").close();
+  $("vraagvenster").addEventListener("close", () => {
+    stopSpraak();
+    if (inUitleg() && hervatNaVraag) { hervatNaVraag = false; uSpeelt = true; toonStap(uStap); }
+  });
   document.querySelectorAll("[data-docent]").forEach(b => b.onclick = () => {
     kiesDocent(b.dataset.docent);
     if (!$("chatlog").children.length) voegToe("prof", `Hoi! Ik ben ${DOCENT[docent].naam}. Waar kan ik je mee helpen?`);
