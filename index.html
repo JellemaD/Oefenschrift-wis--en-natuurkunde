@@ -106,6 +106,10 @@ details.hfst summary{cursor:pointer;font-weight:700;color:var(--ink);padding:.6r
 .h-info{display:block;font-weight:400;font-size:.88rem;color:var(--pencil);margin-left:1.6rem}
 details.hfst .schrift{margin:.2rem 0 .6rem}
 .par-blok{margin:.5rem 0 .2rem}
+.par-rij .t-title{font-size:1.02rem}
+.o-keuze{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .8rem}
+.keuze{border:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;padding:.3rem .85rem;font-weight:700;font-size:.9rem;cursor:pointer}
+.keuze[aria-selected="true"]{background:var(--ink);color:var(--paper)}
 .par-kop{font-weight:700;color:var(--ink);font-size:.98rem;margin:.6rem 0 .3rem}
 .par-nr{font-family:var(--hand);color:var(--pencil);margin-right:.45rem;font-size:1.1rem}
 .t-nr{font-family:var(--hand);color:var(--pencil);font-weight:400;margin-right:.45rem}
@@ -318,7 +322,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <div id="o-uitlegknop"></div>
     <details class="uitleg" id="o-uitleg"><summary id="o-uitlegkop">Uitleg</summary><div id="o-uitlegtekst"></div></details>
 
-    <div class="o-onderwerp"><h3 id="o-onderwerp"></h3><p class="klein" id="o-sub"></p></div>
+    <div class="o-onderwerp"><div class="o-keuze" id="o-keuze" role="tablist" aria-label="Kies een oefening"></div><h3 id="o-onderwerp"></h3><p class="klein" id="o-sub"></p></div>
     <div class="opgave">
       <p class="vraag" id="o-vraag"></p>
       <div class="plotwrap" id="o-plot"></div>
@@ -753,7 +757,7 @@ const ONDERWERPEN = [
       if (Math.random() < 0.5) {
         const p = R(-6, 6) || 2, q = R(-8, 8);
         return {
-          vraag: `Gegeven is ${F(`y = ${coef(a)}(${lin(-p)})² ${q < 0 ? "−" : "+"} ${fmt(Math.abs(q))}`)}. Wat is de top van de parabool?`,
+          vraag: `Gegeven is ${F(`y = ${coef(a)}(${lin(-p)})²${q ? ` ${q < 0 ? "−" : "+"} ${fmt(Math.abs(q))}` : ""}`)}. Wat is de top van de parabool?`,
           velden: [{ label: "x-top =", val: p, tol: EXACT, tips: [[-p, "Let op: welke x maakt het stuk tussen haakjes 0? Die x is de x-top."]] }, { label: "y-top =", val: q, tol: EXACT }],
           hint: `Dit is de vorm y = a(x − p)² + q. De top is (p, q). Welke x maakt (${lin(-p)}) gelijk aan 0?`,
           stappen: `Vorm y = a(x − p)² + q met top (p, q).<br>(${lin(-p)}) = 0 als x = ${fmt(p)}, dus <b>x-top = ${fmt(p)}</b><br>Het getal erachter is q, dus <b>y-top = ${fmt(q)}</b><br>De top is (${fmt(p)}, ${fmt(q)}).`
@@ -1075,7 +1079,14 @@ function paragraafBlokken(vak, h, oef) {
   }
   const los = oef.filter(t => !h.par.some(p => p.nr === KOPPELING[t.id].par));
   if (los.length) { los.forEach((t, i) => { NUMMER[t.id] = `${h.nr ? h.nr + "." : "K2."}${i + 1}`; }); blokken.push({ nr: "", titel: h.par.length ? "Overig" : "", u: null, o: los }); }
-  return blokken.map(b => `<div class="par-blok" data-par="${vak}-${b.nr}">${b.titel ? `<div class="par-kop">${b.nr ? `<span class="par-nr">${b.nr}</span>` : ""}${b.titel}</div>` : ""}<div class="schrift">${b.u ? uitlegKnop(b.nr, b.u) : ""}${b.o.map(topicKnop).join("")}</div></div>`).join("");
+  const rijen = blokken.map(b => {
+    if (!b.nr) return b.o.map(topicKnop).join("");
+    const goed = b.o.reduce((n, t) => n + ((scores[t.id] || {}).goed || 0), 0), tot = b.o.reduce((n, t) => n + ((scores[t.id] || {}).tot || 0), 0);
+    const score = tot ? `${goed} van ${tot} goed` : "nog niet geoefend";
+    const wat = [b.u ? "🎬 uitleg" : "", b.o.length ? `${b.o.length} oefening${b.o.length > 1 ? "en" : ""}` : ""].filter(Boolean).join(" · ");
+    return `<button class="topic par-rij" data-open="${vak}|${b.nr}" data-par="${vak}-${b.nr}"><span class="t-main"><span class="t-title"><span class="t-nr">${b.nr}</span>${b.titel}</span><span class="t-sub">${wat}</span></span><span class="${tot >= 5 && goed / tot >= 0.8 ? "t-score goed" : "t-score"}">${score}</span></button>`;
+  }).join("");
+  return rijen ? `<div class="schrift">${rijen}</div>` : "";
 }
 // Eén filmpje per paragraaf: dat van de docent die het boek volgt
 const filmpje = v => `<a href="${yt(v[0])}" target="_blank" rel="noopener">▶ filmpje</a> <span class="duur">${v[2]}</span>`;
@@ -1107,6 +1118,8 @@ function start(id) {
   $("o-titel").textContent = par ? `${par.nr} ${par.titel}` : onderwerp.titel;
   $("o-onderwerp").textContent = (NUMMER[id] ? NUMMER[id] + " " : "") + onderwerp.titel;
   $("o-sub").textContent = onderwerp.sub;
+  const broers = par ? ONDERWERPEN.filter(o => o.vak === onderwerp.vak && KOPPELING[o.id] && KOPPELING[o.id].par === par.nr) : [];
+  $("o-keuze").innerHTML = broers.length > 1 ? broers.map(o => `<button type="button" role="tab" class="keuze" data-id="${o.id}" aria-selected="${o.id === id}">${NUMMER[o.id]} ${o.titel}</button>`).join("") : "";
   $("o-uitlegkop").textContent = par ? `Uitleg bij ${par.nr}` : "Uitleg";
   const eigen = Object.entries(UITLEGGEN).find(([kk, u]) => u.oefen === id || (par && kk === par.nr && u.vak === onderwerp.vak));
   $("o-uitlegknop").innerHTML = eigen ? `<button class="uitlegbalk" data-uitleg="${eigen[0]}"><span class="ub-icoon" aria-hidden="true">▶</span><span><b>Uitleg van ${DOCENT[eigen[1].docent].naam}</b><span class="klein">Paragraaf ${eigen[0]} in ongeveer ${uitlegDuur(eigen[1])} minuten</span></span></button>` : "";
@@ -1590,6 +1603,13 @@ function init() {
   renderHome();
   document.addEventListener("click", e => {
     const u = e.target.closest("[data-uitleg]"); if (u) { startUitleg(u.dataset.uitleg); return; }
+    const po = e.target.closest("[data-open]");
+    if (po) {
+      const [vak, nr] = po.dataset.open.split("|");
+      const eerste = ONDERWERPEN.find(o => o.vak === vak && KOPPELING[o.id] && KOPPELING[o.id].par === nr);
+      if (eerste) start(eerste.id); else if (UITLEGGEN[nr]) startUitleg(nr);
+      return;
+    }
     const t = e.target.closest("[data-id]"); if (t) { start(t.dataset.id); return; }
     if (e.target.closest("[data-home]")) { if (som && geprobeerd && !afgerond) telMee(false); som = null; renderHome(); toon("home"); }
   });
@@ -1615,7 +1635,7 @@ function init() {
       $("tab-" + v).setAttribute("aria-selected", v === uitleg.vak);
       $("paneel-" + v).classList.toggle("hidden", v !== uitleg.vak);
     }
-    const blok = document.querySelector(`.par-blok[data-par="${uitleg.vak}-${key}"]`);
+    const blok = document.querySelector(`[data-par="${uitleg.vak}-${key}"]`);
     if (blok) { const d = blok.closest("details.hfst"); if (d) d.open = true; blok.scrollIntoView({ block: "start" }); window.scrollBy(0, -12); }
   };
   const kiesTab = vak => {
