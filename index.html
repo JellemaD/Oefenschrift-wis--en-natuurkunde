@@ -104,6 +104,11 @@ details.hfst summary{cursor:pointer;font-weight:700;color:var(--ink);padding:.6r
 .h-nr{font-family:var(--hand);font-size:1.15rem;color:var(--pencil);margin-right:.25rem}
 .h-info{display:block;font-weight:400;font-size:.88rem;color:var(--pencil);margin-left:1.6rem}
 details.hfst .schrift{margin:.2rem 0 .6rem}
+.par-blok{margin:.5rem 0 .2rem}
+.par-kop{font-weight:700;color:var(--ink);font-size:.98rem;margin:.6rem 0 .3rem}
+.par-nr{font-family:var(--hand);color:var(--pencil);margin-right:.45rem;font-size:1.1rem}
+.t-nr{font-family:var(--hand);color:var(--pencil);font-weight:400;margin-right:.45rem}
+.uitlegknop{background:var(--marker-soft)}
 .h-vid-kop{margin:.6rem 0 .2rem}
 details.filmpjes{margin:.2rem 0 .4rem;font-size:.9rem;color:var(--pencil)}
 details.filmpjes summary{cursor:pointer;padding:.3rem 0}
@@ -661,8 +666,8 @@ const ONDERWERPEN = [
   // ================= NATUURKUNDE =================
   // ---------- Wiskunde H2 Parabolen (Moderne Wiskunde 13e havo 3) ----------
   {
-    id: "par-invullen", vak: "wis", titel: "Parabolen: y uitrekenen",
-    sub: "Invullen in y = ax² + bx + c",
+    id: "par-invullen", vak: "wis", titel: "y uitrekenen",
+    sub: "Invullen in y = ax² + bx + c; dal- of bergparabool",
     uitleg: `<p>Een formule als ${F("y = ax² + bx + c")} heet een kwadratische formule. De grafiek is een <b>parabool</b>.</p>
       <ul><li>Is a positief, dan is het een <b>dalparabool</b> (een dal, de top is het laagste punt).</li>
       <li>Is a negatief, dan is het een <b>bergparabool</b> (een berg, de top is het hoogste punt).</li></ul>
@@ -681,8 +686,8 @@ const ONDERWERPEN = [
     }
   },
   {
-    id: "par-symmetrie", vak: "wis", titel: "Symmetrie en top",
-    sub: "De top ligt precies in het midden",
+    id: "par-symmetrie", vak: "wis", titel: "Top in het midden",
+    sub: "Twee punten met dezelfde y: x-top is het midden",
     uitleg: `<p>Een parabool is <b>symmetrisch</b>: links en rechts van de top is hij elkaars spiegelbeeld. De verticale lijn door de top heet de <b>symmetrieas</b>.</p>
       <p>Hebben twee punten van de parabool dezelfde y, dan ligt de top precies in het midden:</p>
       <p>${F("x-top = (x₁ + x₂) / 2")}</p>
@@ -699,7 +704,7 @@ const ONDERWERPEN = [
     }
   },
   {
-    id: "par-top", vak: "wis", titel: "Top van een parabool berekenen",
+    id: "par-top", vak: "wis", titel: "Top berekenen",
     sub: "x-top = −b / 2a, daarna y-top",
     uitleg: `<p>Bij ${F("y = ax² + bx + c")} bereken je de top in twee stappen:</p>
       <ul><li><b>x-top</b> = −b / 2a. Let op het min-teken: is b negatief, dan wordt −b positief.</li>
@@ -720,8 +725,8 @@ const ONDERWERPEN = [
     }
   },
   {
-    id: "par-vormen", vak: "wis", titel: "Drie vormen van kwadratische formules",
-    sub: "Top of snijpunten met de x-as aflezen",
+    id: "par-vormen", vak: "wis", titel: "Top en snijpunten aflezen",
+    sub: "Uit a(x − p)² + q en a(x − d)(x − e)",
     uitleg: `<p>Een kwadratische formule kun je op drie manieren schrijven. Elke vorm laat iets anders direct zien:</p>
       <ul><li>${F("y = ax² + bx + c")}: c is het snijpunt met de y-as.</li>
       <li>${F("y = a(x − p)² + q")}: de top is (p, q). Let op: bij (x + 3)² is p = −3.</li>
@@ -1000,7 +1005,7 @@ const KOPPELING = {
   "par-invullen": { hfst: "2", par: "2.1" }, "par-symmetrie": { hfst: "2", par: "2.2" },
   "par-top": { hfst: "2", par: "2.2" }, "par-vormen": { hfst: "2", par: "2.5" },
   "vermogen": { hfst: "1", par: "1.2" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" },
-  "snelheid": { hfst: "4" }, "ohm": { hfst: "5", par: "5.2" },
+  "snelheid": { hfst: "4", par: "4.2" }, "ohm": { hfst: "5", par: "5.2" },
   "omrekenen": { hfst: "V", par: "V2" }, "diagram": { hfst: "V", par: "V8" },
   "dichtheid": { hfst: "herhaling" }
 };
@@ -1030,11 +1035,31 @@ function toon(sectie) {
   window.scrollTo(0, 0);
 }
 
+// Nummer per oefenonderwerp: paragraaf + volgnummer, bijvoorbeeld 2.2.1
+const NUMMER = {};
 function topicKnop(o) {
   const sc = scores[o.id];
   const txt = sc && sc.tot ? `${sc.goed} van ${sc.tot} goed` : "nog niet geoefend";
   const cls = sc && sc.tot >= 5 && sc.goed / sc.tot >= 0.8 ? "t-score goed" : "t-score";
-  return `<button class="topic" data-id="${o.id}"><span class="t-main"><span class="t-title">${o.titel}</span><span class="t-sub">${o.sub}</span></span><span class="${cls}">${txt}</span></button>`;
+  const nr = NUMMER[o.id] ? `<span class="t-nr">${NUMMER[o.id]}</span>` : "";
+  return `<button class="topic" data-id="${o.id}"><span class="t-main"><span class="t-title">${nr}${o.titel}</span><span class="t-sub">${o.sub}</span></span><span class="${cls}">${txt}</span></button>`;
+}
+function uitlegKnop(k, u) {
+  return `<button class="topic uitlegknop" data-uitleg="${k}"><span class="t-main"><span class="t-title">🎬 Uitleg</span><span class="t-sub">${DOCENT[u.docent].naam} legt het uit · ongeveer ${uitlegDuur(u)} min</span></span></button>`;
+}
+// Per paragraaf van het boek: eerst de uitleg, dan de oefenonderwerpen
+function paragraafBlokken(vak, h, oef) {
+  const blokken = [];
+  for (const p of h.par) {
+    const o = oef.filter(t => KOPPELING[t.id].par === p.nr);
+    const u = UITLEGGEN[p.nr] && UITLEGGEN[p.nr].vak === vak && UITLEGGEN[p.nr].hfst === h.nr ? UITLEGGEN[p.nr] : null;
+    if (!o.length && !u) continue;
+    o.forEach((t, i) => { NUMMER[t.id] = `${p.nr}.${i + 1}`; });
+    blokken.push({ nr: p.nr, titel: p.titel, u, o });
+  }
+  const los = oef.filter(t => !h.par.some(p => p.nr === KOPPELING[t.id].par));
+  if (los.length) { los.forEach((t, i) => { NUMMER[t.id] = `${h.nr ? h.nr + "." : "K2."}${i + 1}`; }); blokken.push({ nr: "", titel: h.par.length ? "Overig" : "", u: null, o: los }); }
+  return blokken.map(b => `<div class="par-blok">${b.titel ? `<div class="par-kop">${b.nr ? `<span class="par-nr">${b.nr}</span>` : ""}${b.titel}</div>` : ""}<div class="schrift">${b.u ? uitlegKnop(b.nr, b.u) : ""}${b.o.map(topicKnop).join("")}</div></div>`).join("");
 }
 // Eén filmpje per paragraaf: dat van de docent die het boek volgt
 const filmpje = v => `<a href="${yt(v[0])}" target="_blank" rel="noopener">▶ filmpje</a> <span class="duur">${v[2]}</span>`;
@@ -1051,9 +1076,7 @@ function renderHome() {
       const isOpen = open.size ? open.has(key) : h === eerste;
       return `<details class="hfst" data-key="${key}"${isOpen ? " open" : ""}>
       <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}<span class="h-info">${h.deel ? "deel " + h.deel + " · " : ""}${h.oef.length ? h.oef.length + " oefenonderwerp" + (h.oef.length > 1 ? "en" : "") : "oefensommen volgen"}</span></summary>
-      ${(() => { const ul = Object.entries(UITLEGGEN).filter(([k, u]) => u.vak === vak && u.hfst === h.nr).sort((x, y) => x[0].localeCompare(y[0], "nl", { numeric: true }));
-        const knoppen = ul.map(([k, u]) => `<button class="topic uitlegknop" data-uitleg="${k}"><span class="t-main"><span class="t-title">🎬 Uitleg ${k}: ${u.titel}</span><span class="t-sub">${DOCENT[u.docent].naam} legt het uit · ongeveer ${uitlegDuur(u)} min</span></span></button>`).join("");
-        return h.oef.length || knoppen ? `<div class="schrift">${knoppen}${h.oef.map(topicKnop).join("")}</div>` : ""; })()}
+      ${paragraafBlokken(vak, h, h.oef)}
       ${h.par.some(p => p.v.length) ? `<details class="filmpjes"><summary>Filmpjes bij dit hoofdstuk</summary><ul class="paragrafen">${h.par.filter(p => p.v.length).map(p => `<li><b>${p.nr}</b> ${p.titel} · ${filmpje(p.v[0])}</li>`).join("")}</ul></details>` : ""}
     </details>`;
     }).join("");
@@ -1061,7 +1084,7 @@ function renderHome() {
 }
 function start(id) {
   onderwerp = ONDERWERPEN.find(o => o.id === id);
-  $("o-titel").textContent = onderwerp.titel;
+  $("o-titel").textContent = (NUMMER[id] ? NUMMER[id] + " " : "") + onderwerp.titel;
   const par = paragraafVan(id);
   const eigen = Object.entries(UITLEGGEN).find(([k, u]) => u.oefen === id);
   $("o-uitlegtekst").innerHTML = (eigen ? `<p><button class="btn" data-uitleg="${eigen[0]}">🎬 Bekijk eerst de uitleg van ${DOCENT[eigen[1].docent].naam} (${uitlegDuur(eigen[1])} min)</button></p>` : "") + onderwerp.uitleg + (par && par.v.length ? `<p class="videolink klein">Liever een filmpje? <a href="${yt(par.v[0][0])}" target="_blank" rel="noopener">Uitleg bij paragraaf ${par.nr}</a> <span class="duur">(${par.v[0][2]})</span></p>` : "");
