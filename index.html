@@ -136,6 +136,8 @@ details.later>summary{cursor:pointer;color:var(--pencil);font-weight:700;padding
 details.hfst{background:var(--card);border:1px solid var(--grid-strong);border-radius:6px;margin:0 0 .6rem;padding:.2rem 1rem .4rem}
 details.hfst summary{cursor:pointer;font-weight:700;color:var(--ink);padding:.6rem 0;list-style-position:outside}
 .h-nr{font-family:var(--hand);font-size:1.15rem;color:var(--pencil);margin-right:.25rem}
+.nu-klas{display:inline-block;margin-left:.5rem;font-size:.8rem;font-weight:700;color:var(--ink);background:var(--marker);border-radius:999px;padding:.05rem .55rem;vertical-align:middle}
+.klas-kies{display:block;margin:.4rem 0 .2rem;font-size:.9rem;color:var(--pencil);min-height:44px}
 .h-info{display:block;font-weight:400;font-size:.88rem;color:var(--pencil);margin-left:1.6rem}
 details.hfst .schrift{margin:.2rem 0 .6rem}
 .par-blok{margin:.5rem 0 .2rem}
@@ -1127,6 +1129,14 @@ function paragraafBlokken(vak, h, oef) {
 }
 // Eén filmpje per paragraaf: dat van de docent die het boek volgt
 const filmpje = v => `<a href="${yt(v[0])}" target="_blank" rel="noopener">▶ filmpje</a> <span class="duur">${v[2]}</span>`;
+// "Nu in de klas": de leerling tikt het zelf aan (bewaard op dit apparaat); anders de instelling in CONFIG
+function gekozenKlas(vak) { try { return (JSON.parse(localStorage.getItem("oefenschrift-klas")) || {})[vak] || ""; } catch (e) { return ""; } }
+function nuInDeKlas(vak) { return gekozenKlas(vak) || CONFIG.nuInDeKlas[vak]; }
+function kiesKlas(vak, nr) {
+  let k = {}; try { k = JSON.parse(localStorage.getItem("oefenschrift-klas")) || {}; } catch (e) {}
+  k[vak] = nr; try { localStorage.setItem("oefenschrift-klas", JSON.stringify(k)); } catch (e) {}
+  renderHome();
+}
 function renderHome() {
   const open = new Set([...document.querySelectorAll("details.hfst[open]")].map(d => d.dataset.key));
   for (const vak of ["wis", "nat"]) {
@@ -1134,18 +1144,21 @@ function renderHome() {
     const groepen = boek.hoofdstukken.map(h => ({ ...h, oef: ONDERWERPEN.filter(o => o.vak === vak && KOPPELING[o.id] && KOPPELING[o.id].hfst === h.nr) }));
     const rest = ONDERWERPEN.filter(o => o.vak === vak && KOPPELING[o.id] && KOPPELING[o.id].hfst === "herhaling");
     if (rest.length) groepen.push({ nr: "", deel: "", titel: "Herhaling uit klas 2", par: [], oef: rest });
-    const metInhoud = groepen.filter(h => h.oef.length || Object.values(UITLEGGEN).some(u => u.vak === vak && u.hfst === h.nr));
+    const klas = nuInDeKlas(vak);
+    const metInhoud = groepen.filter(h => h.oef.length || h.nr === klas || Object.values(UITLEGGEN).some(u => u.vak === vak && u.hfst === h.nr));
     const later = groepen.filter(h => !metInhoud.includes(h));
     let laatst = null; try { laatst = JSON.parse(localStorage.getItem("oefenschrift-laatst")); } catch (e) {}
-    const openNr = laatst && laatst.vak === vak ? laatst.hfst : CONFIG.nuInDeKlas[vak];
+    // Volgorde: wat de leerling zelf als "nu in de klas" koos, dan het laatst geoefende, dan de instelling
+    const openNr = gekozenKlas(vak) || (laatst && laatst.vak === vak ? laatst.hfst : CONFIG.nuInDeKlas[vak]);
     const standaard = metInhoud.find(h => h.nr === openNr) || metInhoud[0];
     const hfst = (h, kanOpen) => {
       const key = vak + h.nr + h.titel;
       const isOpen = kanOpen && (open.size ? open.has(key) : h === standaard);
       const n = h.oef.length;
       return `<details class="hfst" data-key="${key}"${isOpen ? " open" : ""}>
-      <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}<span class="h-info">${n ? n + " oefening" + (n > 1 ? "en" : "") : "alleen filmpjes"}</span></summary>
+      <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}${h.nr && h.nr === klas ? `<span class="nu-klas">📍 nu in de klas</span>` : ""}<span class="h-info">${n ? n + " oefening" + (n > 1 ? "en" : "") : "alleen filmpjes"}</span></summary>
       ${paragraafBlokken(vak, h, h.oef)}
+      ${h.nr && h.nr !== klas ? `<button type="button" class="linkbtn klas-kies" data-klas="${vak}|${h.nr}">📍 Dit hebben we nu in de klas</button>` : ""}
       ${h.par.some(p => p.v.length) ? `<details class="filmpjes"><summary>Filmpjes bij dit hoofdstuk</summary><ul class="paragrafen">${h.par.filter(p => p.v.length).map(p => `<li><b>${p.nr}</b> ${p.titel} · ${filmpje(p.v[0])}</li>`).join("")}</ul></details>` : ""}
     </details>`;
     };
@@ -1497,6 +1510,30 @@ function spreek(wie, tekst, opt = {}) {
 // Elke uitleg is een reeks stappen: wat de professor zegt (zeg), wat er groot in beeld staat (tekst)
 // en wat er in de tekening staat (teken). Maximaal ongeveer 4 minuten, één idee per uitleg.
 const UITLEGGEN = {
+  "1.5": {
+    vak: "wis", hfst: "1", docent: "delta", titel: "Groeifactor en tijd", oefen: "tabel",
+    teken: st => tijdSVG(st),
+    stappen: [
+      { tekst: `${F("N = 100 · 1,2ᵗ")} (t in jaren)`, teken: { wijs: "start" },
+        zeg: "Hoi! Dit is paragraaf 1.5: groeifactor en tijd. We kijken naar N is 100 keer 1,2 tot de macht t, met t in jaren. De beginwaarde is 100, de groeifactor per jaar is 1,2." },
+      { tekst: "Per jaar × 1,2", teken: { jaar: true },
+        zeg: "Per jaar vermenigvuldig je met 1,2. Dat is 20 procent groei per jaar." },
+      { tekst: `Per 3 jaar: ${F("1,2³ = 1,728")}`, teken: { jaar: true, drie: true, wijs: "drie" },
+        zeg: "Wat is de groeifactor per 3 jaar? Dan doe je 3 keer achter elkaar keer 1,2. Dat is 1,2 tot de macht 3, en dat is 1,728. Let op: niet 3 keer 1,2, want dat is 3,6." },
+      { tekst: "1,728 → 72,8% groei per 3 jaar", teken: { drie: true },
+        zeg: "Een groeifactor van 1,728 betekent 72,8 procent groei per 3 jaar. Dus niet 3 keer 20 is 60 procent: de groei groeit zelf ook mee." },
+      { tekst: `Kleinere tijdseenheid: per maand<br>${F("1,2^(1/12) ≈ 1,015")}`, teken: {},
+        zeg: "Je kunt ook naar een kleinere tijdseenheid. De groeifactor per maand is 1,2 tot de macht 1 twaalfde. Op je rekenmachine: 1,2, dan de macht-knop, en dan haakje 1 gedeeld door 12 haakje. Dat is ongeveer 1,015." },
+      { tekst: "Verdubbelingstijd: wanneer is N = 200?", teken: { dubbel: true },
+        zeg: "Nu de verdubbelingstijd: hoe lang duurt het tot de hoeveelheid twee keer zo groot is? Hier dus: wanneer is N 200?" },
+      { tekst: `Proberen: ${F("1,2ᵗ = 2")}<br><table class="tabel u-tab"><tr><th>t</th><td>3</td><td>4</td></tr><tr><th>1,2ᵗ</th><td>1,73</td><td>2,07</td></tr></table>`, teken: { dubbel: true, wijs: "dubbel" },
+        zeg: "Je zoekt wanneer 1,2 tot de macht t gelijk is aan 2. Probeer het met je rekenmachine. 1,2 tot de macht 3 is 1,73, net te weinig. 1,2 tot de macht 4 is 2,07, net te veel. Dus de verdubbelingstijd ligt tussen 3 en 4 jaar, ongeveer 3,8 jaar." },
+      { tekst: "Afname: halveringstijd", teken: { dubbel: true },
+        zeg: "Bij afname werkt het net zo, alleen zoek je dan de halveringstijd: wanneer is het nog maar de helft? Dan zoek je wanneer de groeifactor tot de macht t gelijk is aan 0,5." },
+      { tekst: "Nu jij!", teken: { jaar: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Onthoud: andere tijdseenheid, dan werk je met een macht. Klik op probeer het zelf. Succes!" }
+    ]
+  },
   "1.4": {
     vak: "wis", hfst: "1", docent: "delta", titel: "Exponentiële groei", oefen: "tabel",
     teken: st => groeiSVG(st),
@@ -1811,6 +1848,31 @@ function groeiSVG(st) {
   return s + "</svg>";
 }
 
+// Groeifactor en tijd voor 1.5: N = 100 · 1,2^t, met groei per 3 jaar en de verdubbelingstijd
+function tijdSVG(st) {
+  const X = t => 55 + 32 * t, Y = n => 20 + (450 - n) * 0.88, f = t => 100 * 1.2 ** t;
+  let s = `<svg viewBox="0 0 340 440" class="plot uitleg-plot" role="img" aria-label="Grafiek van N = 100 keer 1,2 tot de macht t"><defs><clipPath id="t-clip"><rect x="${X(0)}" y="${Y(450)}" width="${X(8) - X(0)}" height="${Y(0) - Y(450)}"/></clipPath></defs>`;
+  for (let t = 0; t <= 8; t++) s += `<line class="g-grid" x1="${X(t)}" y1="${Y(450)}" x2="${X(t)}" y2="${Y(0)}"/>${t % 2 === 0 ? `<text class="g-lbl" x="${X(t)}" y="${Y(0) + 16}" text-anchor="middle">${t}</text>` : ""}`;
+  for (let n = 0; n <= 450; n += 50) s += `<line class="g-grid" x1="${X(0)}" y1="${Y(n)}" x2="${X(8)}" y2="${Y(n)}"/>${n % 100 === 0 && n ? `<text class="g-lbl" x="${X(0) - 6}" y="${Y(n) + 4}" text-anchor="end">${n}</text>` : ""}`;
+  s += `<line class="g-axis" x1="${X(0)}" y1="${Y(450)}" x2="${X(0)}" y2="${Y(0)}"/><line class="g-axis" x1="${X(0)}" y1="${Y(0)}" x2="${X(8)}" y2="${Y(0)}"/>`;
+  s += `<text class="g-name" x="${X(8)}" y="${Y(0) - 6}" text-anchor="end">t (jaar)</text><text class="g-name" x="${X(0) + 6}" y="${Y(450) + 14}">N</text>`;
+  let d = ""; for (let t = 0; t <= 8.001; t += 0.05) d += `${d ? "L" : "M"}${X(t).toFixed(1)},${Y(f(t)).toFixed(1)}`;
+  s += `<path class="g-line" clip-path="url(#t-clip)" d="${d}"/><text class="g-tril" x="${X(4.6)}" y="${Y(380)}" text-anchor="end">N = 100 · 1,2ᵗ</text>`;
+  if (st.jaar) for (let t = 0; t < 3; t++) s += `<circle class="g-pt" cx="${X(t)}" cy="${Y(f(t))}" r="4"/><text class="g-tril" x="${X(t + 0.5)}" y="${Y(f(t)) + 22}" text-anchor="middle" style="fill:var(--red)">× 1,2</text>`;
+  if (st.drie) s += `<circle class="g-pt" cx="${X(0)}" cy="${Y(100)}" r="5"/><circle class="g-pt" cx="${X(3)}" cy="${Y(f(3))}" r="5"/><path class="g-tri" d="M${X(0)},${Y(100)} L${X(3)},${Y(100)} L${X(3)},${Y(f(3))}" style="fill:none;stroke-width:3"/><text class="g-tril" x="${X(1.5)}" y="${Y(100) + 18}" text-anchor="middle">3 jaar</text><text class="g-tril" x="${X(3) + 6}" y="${Y(f(3)) - 6}">× 1,728</text>`;
+  if (st.dubbel) {
+    const td = Math.log(2) / Math.log(1.2);
+    s += `<line class="g-help" x1="${X(0)}" y1="${Y(200)}" x2="${X(8)}" y2="${Y(200)}"/><text class="g-tril" x="${X(7.9)}" y="${Y(200) - 6}" text-anchor="end">2 × 100 = 200</text>`;
+    s += `<line class="g-help" x1="${X(td)}" y1="${Y(200)}" x2="${X(td)}" y2="${Y(0)}"/><circle class="g-pt" cx="${X(td)}" cy="${Y(200)}" r="5"/><text class="g-tril" x="${X(td) + 6}" y="${Y(0) - 8}">±3,8</text>`;
+  }
+  for (const w of [].concat(st.wijs || [])) {
+    if (w === "start") s += `<circle class="wijs" cx="${X(0)}" cy="${Y(100)}" r="15"/>`;
+    if (w === "drie") s += `<circle class="wijs" cx="${X(3)}" cy="${Y(f(3))}" r="15"/>`;
+    if (w === "dubbel") s += `<circle class="wijs" cx="${X(Math.log(2) / Math.log(1.2))}" cy="${Y(200)}" r="15"/>`;
+  }
+  return s + "</svg>";
+}
+
 // Parabool y = x² − 6x + 5 (top (3, −4)) in een assenstelsel, met de onderdelen die een stap aanzet
 function parabSVG(st) {
   const U = 30, X = x => 50 + U * (x + 1), Y = y => 20 + U * (9 - y);
@@ -1945,6 +2007,7 @@ function init() {
   renderHome();
   document.addEventListener("click", e => {
     const u = e.target.closest("[data-uitleg]"); if (u) { startUitleg(u.dataset.uitleg); return; }
+    const kk = e.target.closest("[data-klas]"); if (kk) { const [vak, nr] = kk.dataset.klas.split("|"); kiesKlas(vak, nr); return; }
     const po = e.target.closest("[data-open]");
     if (po) {
       const [vak, nr] = po.dataset.open.split("|");
