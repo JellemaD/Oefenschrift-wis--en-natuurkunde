@@ -1613,6 +1613,28 @@ const UITLEGGEN = {
         zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf, en reken de y-waarden voor je tabel uit. Succes!" }
     ]
   },
+  "2.4": {
+    vak: "wis", hfst: "2", docent: "delta", titel: "De vorm en de ligging van de parabool", oefen: "par-invullen",
+    teken: st => vormSVG(st),
+    stappen: [
+      { tekst: `${F("y = ax² + bx + c")}: wat zeggen a en c?`, teken: { k: [[1, 0, "blauw", "y = x²", 2.6]] },
+        zeg: "Hoi! Dit is paragraaf 2.4: de vorm en de ligging van de parabool. Aan de formule y is a x kwadraat plus b x plus c zie je al veel, zonder te tekenen. Vooral a en c vertellen je hoe de parabool eruitziet." },
+      { tekst: "a positief → dal, a negatief → berg", teken: { k: [[1, 0, "blauw", "y = x²", 2.6], [-1, 0, "rood", "y = −x²", 2.6]], wijs: [[0, 0]] },
+        zeg: "Eerst het teken van a. Is a positief, dan krijg je een dalparabool, met de top als laagste punt. Is a negatief, dan krijg je een bergparabool, met de top als hoogste punt." },
+      { tekst: "Grote a → smal, kleine a → breed", teken: { k: [[1, 0, "grijs", "", 0], [3, 0, "blauw", "y = 3x²", 1.6], [0.25, 0, "rood", "y = 0,25x²", 4.6]] },
+        zeg: "Dan de grootte van a. Hoe groter a, hoe sneller de parabool stijgt, dus hoe smaller hij is. Bij y is 3 x kwadraat is hij smal. Bij y is 0,25 x kwadraat is hij breed. De grijze lijn is y is x kwadraat, om te vergelijken." },
+      { tekst: "c schuift de parabool omhoog of omlaag", teken: { k: [[1, 0, "grijs", "", 0], [1, 3, "blauw", "y = x² + 3", 2.2], [1, -2, "rood", "y = x² − 2", -2.6]], pts: [[0, 3, "(0, 3)"], [0, -2, "(0, −2)"]], wijs: [[0, 3], [0, -2]] },
+        zeg: "Nu c. Bij y is x kwadraat plus 3 schuift de parabool 3 omhoog. Bij y is x kwadraat min 2 schuift hij 2 omlaag. c is altijd de y van het snijpunt met de y-as." },
+      { tekst: "Hoeveel snijpunten met de x-as?", teken: { k: [[1, -4, "blauw", "2 snijpunten", 2.6], [1, 0, "grijs", "1", 1.4], [1, 2, "rood", "0", -1.8]], pts: [[-2, 0], [2, 0]], wijs: [[-2, 0], [2, 0], [0, 0]] },
+        zeg: "Hoeveel snijpunten heeft een dalparabool met de x-as? Ligt de top onder de x-as, dan zijn het er 2. Ligt de top precies op de x-as, dan is het er 1. Ligt de top boven de x-as, dan zijn er 0 snijpunten." },
+      { tekst: "Bij een bergparabool is het andersom", teken: { k: [[-1, 4, "rood", "y = −x² + 4", 2.4]], pts: [[-2, 0], [2, 0], [0, 4, "top (0, 4)"]], wijs: [[0, 4]] },
+        zeg: "Bij een bergparabool is het andersom. Ligt de top boven de x-as, dan zijn er 2 snijpunten. Ligt de top onder de x-as, dan geen." },
+      { tekst: `Voorbeeld: ${F("y = −2x² + 5")}`, teken: { k: [[-2, 5, "blauw", "y = −2x² + 5", 1.6]], pts: [[0, 5, "top (0, 5)"]] },
+        zeg: "Een voorbeeld: y is min 2 x kwadraat plus 5. a is min 2, dus een bergparabool, en vrij smal. c is 5, dus hij snijdt de y-as bij 5. Daar ligt hier ook de top. De top ligt boven de x-as en het is een berg, dus 2 snijpunten met de x-as." },
+      { tekst: "Nu jij!", teken: { k: [[1, 0, "blauw", "y = x²", 2.6], [-1, 0, "rood", "y = −x²", 2.6]] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Kijk bij elke formule eerst naar a en c, en voorspel hoe de parabool eruitziet. Klik op probeer het zelf. Succes!" }
+    ]
+  },
   "2.2": {
     vak: "wis", hfst: "2", docent: "delta", titel: "Symmetrie en top", oefen: "par-symmetrie",
     teken: st => parabSVG(st),
@@ -1669,6 +1691,29 @@ function lijnSVG(st) {
     if (w === "snij") s += `<circle class="wijs" cx="${X(2)}" cy="${Y(5)}" r="16"/>`;
     if (w === "daal") s += `<circle class="wijs" cx="${X(3)}" cy="${Y(3)}" r="18"/>`;
   }
+  return s + "</svg>";
+}
+
+// Meerdere parabolen y = ax² + c naast elkaar (2.4 vorm en ligging); st.k = [[a, c, kleur, label, labelX], ...]
+function vormSVG(st) {
+  const U = 30, X = x => 170 + U * x, Y = y => 20 + U * (9 - y);
+  let s = `<svg viewBox="0 0 340 470" class="plot uitleg-plot" role="img" aria-label="Parabolen met verschillende a en c"><defs><clipPath id="v-clip"><rect x="${X(-5)}" y="${Y(9)}" width="${10 * U}" height="${15 * U}"/></clipPath></defs>`;
+  for (let i = -5; i <= 5; i++) s += `<line class="g-grid" x1="${X(i)}" y1="${Y(9)}" x2="${X(i)}" y2="${Y(-6)}"/>`;
+  for (let j = -6; j <= 9; j++) s += `<line class="g-grid" x1="${X(-5)}" y1="${Y(j)}" x2="${X(5)}" y2="${Y(j)}"/>`;
+  s += `<line class="g-axis" x1="${X(0)}" y1="${Y(9)}" x2="${X(0)}" y2="${Y(-6)}"/><line class="g-axis" x1="${X(-5)}" y1="${Y(0)}" x2="${X(5)}" y2="${Y(0)}"/>`;
+  for (const i of [-4, -2, 2, 4]) s += `<text class="g-lbl" x="${X(i)}" y="${Y(0) + 15}" text-anchor="middle">${fmt(i)}</text>`;
+  for (const j of [-4, -2, 2, 4, 6, 8]) s += `<text class="g-lbl" x="${X(0) - 6}" y="${Y(j) + 4}" text-anchor="end">${fmt(j)}</text>`;
+  s += `<text class="g-name" x="${X(5) - 2}" y="${Y(0) - 6}" text-anchor="end">x</text><text class="g-name" x="${X(0) + 6}" y="${Y(9) + 14}">y</text>`;
+  const kleur = { blauw: "", rood: "stroke:var(--red)", grijs: "stroke:var(--pencil);stroke-dasharray:7 4" };
+  const tkleur = { blauw: "", rood: "fill:var(--red)", grijs: "fill:var(--pencil)" };
+  for (const [a, c, k, lab, lx] of st.k || []) {
+    let d = "";
+    for (let x = -5.2; x <= 5.2; x += 0.1) d += `${d ? "L" : "M"}${X(x).toFixed(1)},${Y(a * x * x + c).toFixed(1)}`;
+    s += `<path class="g-line" clip-path="url(#v-clip)" d="${d}" style="${kleur[k || "blauw"]}"/>`;
+    if (lab) { const ly = Math.max(-5.6, Math.min(8.6, a * lx * lx + c)); s += `<text class="g-tril" x="${X(lx) + (lx > 0 ? 6 : -6)}" y="${Y(ly) + 4}" text-anchor="${lx > 0 ? "start" : "end"}" style="${tkleur[k || "blauw"]}">${lab}</text>`; }
+  }
+  for (const [x, y, lab] of st.pts || []) s += `<circle class="g-pt" cx="${X(x)}" cy="${Y(y)}" r="5"/>${lab ? `<text class="g-ptl" x="${X(x) + 9}" y="${Y(y) + 5}">${lab}</text>` : ""}`;
+  for (const [x, y] of st.wijs || []) s += `<circle class="wijs" cx="${X(x)}" cy="${Y(y)}" r="15"/>`;
   return s + "</svg>";
 }
 
