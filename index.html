@@ -80,11 +80,6 @@ svg.uitleg-plot{max-width:380px}
 #u-balk{height:100%;width:0;background:var(--ink);transition:width .5s linear}
 #u-rest{min-width:4.5rem;text-align:right;font-variant-numeric:tabular-nums}
 @media (max-width:540px){#u-av{width:84px;height:84px}.u-tekst{font-size:1.2rem}}
-/* Microfoon bij de vraag */
-.vraagrij{display:flex;gap:.5rem;align-items:stretch}
-.vraagrij textarea{flex:1}
-.btn.mic{font-size:1.4rem;padding:.4rem .7rem}
-.btn.mic.opname{background:var(--red);border-color:var(--red);color:#fff}
 
 /* Tabbladen wiskunde / natuurkunde */
 .tabs{display:flex;gap:.4rem;margin:1.5rem 0 .75rem;border-bottom:2px solid var(--ink)}
@@ -190,7 +185,22 @@ footer{max-width:760px;margin:0 auto;padding:0 1rem 2rem;font-size:.85rem;color:
 .msg .lees{display:block;margin-top:.3rem;background:none;border:0;color:var(--ink);cursor:pointer;font-weight:700;font-size:.85rem;padding:0}
 .typt{font-family:var(--hand);color:var(--pencil)}
 .msg b{color:var(--ink)}
-#vraagtekst{min-height:4.5rem}
+/* Invulbalk zoals een chat-app */
+.composer{display:flex;align-items:flex-end;gap:.3rem;border:2px solid var(--grid-strong);border-radius:16px;padding:.3rem .35rem .3rem .9rem;background:var(--paper);margin-top:.4rem}
+.composer:focus-within{border-color:var(--ink)}
+dialog .composer textarea#vraagtekst{flex:1;width:auto;min-height:0;height:2.5rem;max-height:160px;border:0;border-radius:0;background:transparent;padding:.5rem 0;resize:none;outline:none;line-height:1.4}
+.ikoon{width:2.6rem;height:2.6rem;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;flex:none;background:transparent;color:var(--ink)}
+.ikoon svg{width:1.35rem;height:1.35rem}
+.ikoon:hover{background:var(--marker-soft)}
+.ikoon.stuur{background:var(--ink);color:var(--paper)}
+.ikoon.stuur:disabled{opacity:.4;cursor:default}
+.ikoon.mic.opname{background:var(--red);color:#fff;animation:luister 1s ease-in-out infinite alternate}
+@keyframes luister{to{box-shadow:0 0 0 6px var(--red-soft)}}
+.sluitknop{margin-left:auto;align-self:flex-start;background:none;border:0;font-size:1.4rem;line-height:1;color:var(--pencil);cursor:pointer;padding:.35rem .5rem;border-radius:8px}
+.sluitknop:hover{background:var(--grid);color:var(--ink)}
+.chatkop h2{font-size:1.4rem}
+.context{max-height:5.5rem}
+.hervat{margin-left:auto;align-self:center;border:0;background:var(--ink);color:var(--paper);border-radius:999px;padding:.45rem 1rem;font-weight:700;cursor:pointer;white-space:nowrap}
 @media (max-width:540px){
   dialog{padding:1rem;max-height:94dvh}
   .chatlog{max-height:52dvh}
@@ -357,6 +367,8 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
   <div class="chatkop">
     <div id="chat-av"></div>
     <div><h2 id="chat-naam">Professor Delta</h2><span class="klein" id="chat-vak">wiskunde</span></div>
+    <button type="button" class="sluitknop" id="v-sluit" aria-label="Sluiten" title="Sluiten">✕</button>
+    <button type="button" class="hervat hidden" id="v-hervat" aria-label="Verder met de uitleg" title="Verder met de uitleg">Verder ▶</button>
   </div>
   <div class="wissel" role="group" aria-label="Kies je docent">
     <button type="button" data-docent="delta" aria-pressed="true">Wiskunde</button>
@@ -364,12 +376,10 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
   </div>
   <div class="context" id="vraagcontext"></div>
   <div class="chatlog" id="chatlog" aria-live="polite"></div>
-  <label for="vraagtekst" class="klein">Wat snap je wel, en waar loop je vast?</label>
-  <div class="vraagrij"><textarea id="vraagtekst" placeholder="Stel hier je vraag"></textarea><button type="button" class="btn mic hidden" id="v-mic" aria-label="Vraag inspreken" title="Vraag inspreken">🎤</button></div>
-  <div class="knoppen" style="margin-top:.6rem">
-    <button class="btn hoofd" id="v-stuur">Vraag de professor</button>
-    <button class="btn" id="v-sluit">Sluiten</button>
-    <button class="btn hidden" id="v-hervat">Verder met de uitleg ▶</button>
+  <div class="composer">
+    <textarea id="vraagtekst" rows="1" placeholder="Stel hier je vraag" aria-label="Je vraag"></textarea>
+    <button type="button" class="ikoon mic hidden" id="v-mic" aria-label="Vraag inspreken" title="Vraag inspreken"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V22h2v-3.08A7 7 0 0 0 19 12h-2z"/></svg></button>
+    <button type="button" class="ikoon stuur" id="v-stuur" aria-label="Vraag versturen" title="Versturen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg></button>
   </div>
   <div class="stemrij">
     <label><input type="checkbox" id="v-voorlezen"> Antwoorden voorlezen</label>
@@ -1191,7 +1201,7 @@ function voegToe(soort, tekst) {
 async function stuurVraag() {
   const vraag = $("vraagtekst").value.trim();
   if (!vraag || bezig) return;
-  voegToe("ik", vraag); $("vraagtekst").value = ""; updateVraaglinks();
+  voegToe("ik", vraag); $("vraagtekst").value = ""; $("vraagtekst").style.height = ""; updateVraaglinks();
   gesprek.push({ role: "user", content: vraag });
   if (!CONFIG.workerUrl) {
     const t = `Ik ben nog niet aangesloten, dus ik kan nog niet antwoorden. Stuur je vraag zolang naar ${CONFIG.begeleider} via "Liever aan ${CONFIG.begeleider} vragen?" hieronder.`;
@@ -1406,6 +1416,8 @@ function openVraag() {
   $("vraagcontext").classList.toggle("hidden", !ctx);
   $("v-status").textContent = "";
   $("v-hervat").classList.toggle("hidden", !inUitleg());
+  $("v-sluit").classList.toggle("hidden", inUitleg());
+  document.querySelector(".wissel").classList.toggle("hidden", inUitleg());
   updateVraaglinks();
   $("vraagvenster").showModal();
   $("vraagtekst").focus();
@@ -1457,7 +1469,8 @@ function init() {
   if (CONFIG.vraagActief || test) $("vraagknop").onclick = openVraag;
   else { const k = $("vraagknop"); k.disabled = true; k.textContent = "Vraag stellen (binnenkort)"; k.title = "Deze functie komt binnenkort"; }
   document.querySelectorAll(".begeleider").forEach(s => s.textContent = CONFIG.begeleider);
-  $("vraagtekst").addEventListener("input", updateVraaglinks);
+  const groei = () => { const t = $("vraagtekst"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 160) + "px"; };
+  $("vraagtekst").addEventListener("input", () => { updateVraaglinks(); groei(); });
   $("vraagtekst").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); stuurVraag(); } });
   $("v-stuur").onclick = stuurVraag;
   // Inspreken in plaats van typen (spraakherkenning van de browser; werkt o.a. in Chrome en op Android)
@@ -1470,10 +1483,10 @@ function init() {
       stopSpraak();
       rec = new Herkenning(); rec.lang = "nl-NL"; rec.interimResults = true; rec.continuous = false;
       basis = $("vraagtekst").value.trim(); basis = basis ? basis + " " : "";
-      rec.onresult = e => { $("vraagtekst").value = basis + [...e.results].map(r => r[0].transcript).join(" "); updateVraaglinks(); };
+      rec.onresult = e => { $("vraagtekst").value = basis + [...e.results].map(r => r[0].transcript).join(" "); updateVraaglinks(); groei(); };
       rec.onerror = e => { $("v-status").textContent = e.error === "not-allowed" ? "De microfoon mag niet gebruikt worden. Sta de microfoon toe in je browser." : "Inspreken lukte niet. Probeer het nog eens of typ je vraag."; };
-      rec.onend = () => { rec = null; mic.classList.remove("opname"); mic.textContent = "🎤"; };
-      mic.classList.add("opname"); mic.textContent = "■"; $("v-status").textContent = "Ik luister… Klik nog een keer als je klaar bent.";
+      rec.onend = () => { rec = null; mic.classList.remove("opname"); groei(); if ($("v-status").textContent.startsWith("Ik luister")) $("v-status").textContent = ""; };
+      mic.classList.add("opname"); $("v-status").textContent = "Ik luister… Tik nog een keer op de microfoon als je klaar bent.";
       rec.start();
     };
   }
