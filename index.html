@@ -73,10 +73,11 @@ button,input,textarea{font:inherit}
 .u-tekst .formule{font-size:1.3rem}
 svg.uitleg-plot{max-width:380px}
 .u-ondertitel{text-align:center;margin:.6rem 0 0}
-.u-knoppen{justify-content:center;margin:1rem 0 .5rem}
 .u-zelf{display:block;margin:1rem auto 0;font-size:1.15rem}
-.u-tijd{display:flex;align-items:center;gap:.6rem;max-width:420px;margin:0 auto}
-.u-balk{flex:1;height:8px;background:var(--grid-strong);border-radius:4px;overflow:hidden}
+.spelerbalk{display:flex;align-items:center;gap:.35rem;margin:1rem auto .4rem;max-width:560px;background:var(--card);border:2px solid var(--grid-strong);border-radius:999px;padding:.3rem .5rem}
+.ikoon.speel{width:3rem;height:3rem}
+.ikoon:disabled{opacity:.35;cursor:default;background:transparent}
+.u-balk{flex:1;height:6px;background:var(--grid-strong);border-radius:3px;overflow:hidden;margin:0 .3rem}
 #u-balk{height:100%;width:0;background:var(--ink);transition:width .5s linear}
 #u-rest{min-width:4.5rem;text-align:right;font-variant-numeric:tabular-nums}
 @media (max-width:540px){#u-av{width:84px;height:84px}.u-tekst{font-size:1.2rem}}
@@ -310,13 +311,14 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
       <div id="u-beeld"></div>
       <p class="klein u-ondertitel" id="u-ondertitel"></p>
     </div>
-    <div class="knoppen u-knoppen">
-      <button class="btn" id="u-terug">◀ Vorige</button>
-      <button class="btn hoofd" id="u-pauze">❚❚ Pauze</button>
-      <button class="btn" id="u-verder">Volgende ▶</button>
+    <div class="spelerbalk">
+      <button type="button" class="ikoon" id="u-terug" aria-label="Vorige stap" title="Vorige stap"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+      <button type="button" class="ikoon stuur speel" id="u-pauze" aria-label="Pauze" title="Pauze"></button>
+      <button type="button" class="ikoon" id="u-verder" aria-label="Volgende stap" title="Volgende stap"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+      <div class="u-balk"><div id="u-balk"></div></div>
+      <span class="klein" id="u-rest"></span>
+      <button type="button" class="ikoon" id="u-vraag" aria-label="Stel een vraag" title="Stel een vraag"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2zm7 11h2v-2h-2zm1-9a3 3 0 0 0-3 3h2a1 1 0 1 1 1 1 1 1 0 0 0-1 1v1h2v-.2A3 3 0 0 0 12 6z"/></svg></button>
     </div>
-    <p style="text-align:center;margin:.2rem 0 .6rem"><button class="btn" id="u-vraag">✋ Stel een vraag</button></p>
-    <div class="u-tijd"><div class="u-balk"><div id="u-balk"></div></div><span class="klein" id="u-rest"></span></div>
     <p class="klein" id="u-status" aria-live="polite"></p>
     <button class="btn hoofd u-zelf hidden" id="u-zelf">Probeer het zelf →</button>
   </section>
@@ -1391,7 +1393,11 @@ function toonStap(i) {
   $("u-voortgang").textContent = `stap ${uStap + 1} van ${uitleg.stappen.length}`;
   $("u-terug").disabled = uStap === 0;
   $("u-verder").disabled = uStap === uitleg.stappen.length - 1;
-  $("u-pauze").textContent = uSpeelt ? "❚❚ Pauze" : "▶ Afspelen";
+  $("u-pauze").innerHTML = uSpeelt
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>';
+  $("u-pauze").setAttribute("aria-label", uSpeelt ? "Pauze" : "Afspelen");
+  $("u-pauze").title = uSpeelt ? "Pauze" : "Afspelen";
   $("u-zelf").classList.toggle("hidden", !st.eind);
   uStart = Date.now(); clearInterval(uKlok); toonTijd();
   if (uSpeelt) uKlok = setInterval(() => { if ($("uitleg").classList.contains("hidden")) clearInterval(uKlok); else toonTijd(); }, 500);
