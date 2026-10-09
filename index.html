@@ -1497,6 +1497,28 @@ function spreek(wie, tekst, opt = {}) {
 // Elke uitleg is een reeks stappen: wat de professor zegt (zeg), wat er groot in beeld staat (tekst)
 // en wat er in de tekening staat (teken). Maximaal ongeveer 4 minuten, één idee per uitleg.
 const UITLEGGEN = {
+  "1.3": {
+    vak: "wis", hfst: "1", docent: "delta", titel: "Formules substitueren", oefen: "verhaal",
+    teken: st => ketenSVG(st),
+    stappen: [
+      { tekst: `${F("P = 3a + 5")} en ${F("a = 2n + 1")}`, teken: { wijs: "keten" },
+        zeg: "Hoi! Dit is paragraaf 1.3: formules substitueren. Soms heb je twee formules die aan elkaar vastzitten. Hier hangt P af van a, en a hangt weer af van n." },
+      { tekst: "Je wilt P direct uit n berekenen", teken: { direct: "vraag", wijs: "direct" },
+        zeg: "Je kunt eerst a uitrekenen en daarna P. Maar handiger is één formule die P meteen uit n berekent. Die maak je door te substitueren: dat betekent invullen." },
+      { tekst: `Vervang a door ${F("(2n + 1)")}<br>${F("P = 3(2n + 1) + 5")}`, teken: { direct: "vraag", wijs: "a" },
+        zeg: "Vervang in de formule van P de letter a door wat a is: 2 n plus 1. Zet er wel haakjes omheen! Dan krijg je P is 3 keer, haakje openen, 2 n plus 1, haakje sluiten, plus 5." },
+      { tekst: `Haakjes wegwerken<br>${F("P = 6n + 3 + 5")}`, teken: { direct: "vraag" },
+        zeg: "Nu de haakjes wegwerken. De 3 vermenigvuldig je met alles tussen de haakjes. 3 keer 2 n is 6 n. 3 keer 1 is 3. Dus P is 6 n plus 3 plus 5." },
+      { tekst: F("P = 6n + 8"), teken: { direct: true, wijs: "direct" },
+        zeg: "Tot slot de getallen samennemen: 3 plus 5 is 8. De nieuwe formule is P is 6 n plus 8. Dat is weer een lineaire formule." },
+      { tekst: `Controle met n = 2: ${F("6 · 2 + 8 = 20")} ✓`, teken: { direct: true, waarden: true, wijs: "keten" },
+        zeg: "Controleer het met een getal. Neem n is 2. Via de keten: a is 2 keer 2 plus 1, is 5. P is 3 keer 5 plus 5, is 20. Met de nieuwe formule: 6 keer 2 plus 8 is ook 20. Het klopt!" },
+      { tekst: `Let op: zonder haakjes gaat het mis<br>${F("3 · 2n + 1 + 5")} ✗`, teken: { direct: true },
+        zeg: "Let op, de meest gemaakte fout: de haakjes vergeten. Dan vermenigvuldig je alleen de 2 n met 3, en niet de 1. Zet dus altijd haakjes als je een formule invult." },
+      { tekst: "Nu jij!", teken: { direct: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
   "1.1": {
     vak: "wis", hfst: "1", docent: "delta", titel: "Lineaire formules opstellen", oefen: "rc-punten",
     teken: st => lijnSVG(st),
@@ -1714,6 +1736,31 @@ function vormSVG(st) {
   }
   for (const [x, y, lab] of st.pts || []) s += `<circle class="g-pt" cx="${X(x)}" cy="${Y(y)}" r="5"/>${lab ? `<text class="g-ptl" x="${X(x) + 9}" y="${Y(y) + 5}">${lab}</text>` : ""}`;
   for (const [x, y] of st.wijs || []) s += `<circle class="wijs" cx="${X(x)}" cy="${Y(y)}" r="15"/>`;
+  return s + "</svg>";
+}
+
+// Keten van formules voor 1.3 substitueren: n → a → P, met de directe formule n → P eronder
+function ketenSVG(st) {
+  const bx = [50, 170, 290], by = 70;
+  let s = `<svg viewBox="0 0 340 250" class="plot uitleg-plot" role="img" aria-label="Keten van formules: n naar a naar P">`;
+  const vak = (x, letter, waarde) => `<rect x="${x - 26}" y="${by - 26}" width="52" height="52" rx="10" style="fill:var(--paper);stroke:var(--ink);stroke-width:2.5"/><text x="${x}" y="${by + 9}" text-anchor="middle" style="font:700 26px var(--hand);fill:var(--ink)">${letter}</text>${waarde !== undefined ? `<text x="${x}" y="${by - 34}" text-anchor="middle" style="font:700 17px var(--body);fill:var(--red)">${waarde}</text>` : ""}`;
+  const pijl = (x1, x2, y, tekst, kleur = "var(--ink)") => `<line x1="${x1}" y1="${y}" x2="${x2 - 6}" y2="${y}" style="stroke:${kleur};stroke-width:2.5"/><path d="M${x2},${y} l-10,-6 v12 Z" style="fill:${kleur}"/><text x="${(x1 + x2) / 2}" y="${y + 22}" text-anchor="middle" style="font:700 15px var(--body);fill:${kleur}">${tekst}</text>`;
+  const w = st.waarden;
+  s += vak(bx[0], "n", w ? 2 : undefined);
+  if (!st.alleenN) {
+    s += vak(bx[1], "a", w ? 5 : undefined) + vak(bx[2], "P", w ? 20 : undefined);
+    s += pijl(bx[0] + 26, bx[1] - 26, by, "a = 2n + 1") + pijl(bx[1] + 26, bx[2] - 26, by, "P = 3a + 5");
+  }
+  if (st.direct) {
+    const y = 185, kleur = "var(--ink)";
+    s += `<path d="M${bx[0]},${by + 26} V${y} H${bx[2] - 6}" style="fill:none;stroke:${kleur};stroke-width:2.5;stroke-dasharray:${st.direct === "vraag" ? "7 5" : "0"}"/><path d="M${bx[2]},${y} l-10,-6 v12 Z" style="fill:${kleur}"/><line x1="${bx[2]}" y1="${y}" x2="${bx[2]}" y2="${by + 26}" style="stroke:${kleur};stroke-width:2.5"/>`;
+    s += `<text x="${bx[1]}" y="${y + 24}" text-anchor="middle" style="font:700 16px var(--body);fill:${kleur}">${st.direct === "vraag" ? "P = ... n ...?" : "P = 6n + 8"}</text>`;
+  }
+  for (const v of [].concat(st.wijs || [])) {
+    if (v === "a") s += `<circle class="wijs" cx="${bx[1]}" cy="${by}" r="36"/>`;
+    if (v === "direct") s += `<rect class="wijs" x="${bx[0] - 10}" y="168" width="${bx[2] - bx[0] + 20}" height="66" rx="14"/>`;
+    if (v === "keten") s += `<rect class="wijs" x="14" y="${by - 44}" width="312" height="110" rx="16"/>`;
+  }
   return s + "</svg>";
 }
 
