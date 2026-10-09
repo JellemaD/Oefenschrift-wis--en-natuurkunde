@@ -1611,11 +1611,11 @@ const UITLEGGEN = {
         zeg: "De zwaartekracht trekt alles naar beneden, naar de aarde. Je tekent hem vanuit het midden van het voorwerp, recht naar beneden." },
       { tekst: `${F("Fz = m × g")} met g = 9,81 N/kg<br>${F("5 × 9,81 ≈ 49 N")}`, teken: { scene: "blok", p: [[170, 220, 170, 310, "Fz", "", 22, -6]] },
         zeg: "Je rekent de zwaartekracht uit met F z is m keer g. m is de massa in kilogram. g is 9,81 newton per kilogram. Een tas van 5 kilogram: 5 keer 9,81 is ongeveer 49 newton." },
-      { tekst: "Normaalkracht Fn: de vloer duwt terug", teken: { scene: "blok", p: [[170, 220, 170, 300, "Fz", "", 22, -6], [170, 250, 170, 160, "Fn", "ink", 22, 8]], wijs: [[170, 250, 14]] },
+      { tekst: "Normaalkracht Fn: de vloer duwt terug", teken: { scene: "blok", p: [[158, 220, 158, 300, "Fz", "", -22, -6], [182, 250, 182, 170, "Fn", "ink", 22, 8]], wijs: [[170, 250, 14]] },
         zeg: "Het blok zakt niet door de vloer. De vloer duwt terug, omhoog. Dat is de normaalkracht. Die teken je vanaf het contactvlak, loodrecht op de vloer." },
       { tekst: "Wrijvingskracht Fw: tegen de beweging in", teken: { scene: "blok", p: [[210, 220, 300, 220, "duw", "ink", 0, -12], [170, 250, 90, 250, "Fw", "", -10, -10]], wijs: [[170, 250, 14]] },
         zeg: "Duw je het blok vooruit, dan werkt de wrijvingskracht tegen. Die werkt langs het contactvlak, tegen de beweging in." },
-      { tekst: "Veerkracht Fv: de veer trekt terug", teken: { scene: "veer", p: [[170, 150, 170, 100, "Fv", "ink", 24, 10], [170, 180, 170, 260, "Fz", "", 24, -4]] },
+      { tekst: "Veerkracht Fv: de veer trekt terug", teken: { scene: "veer", p: [[205, 150, 205, 95, "Fv", "ink", 22, 10], [170, 180, 170, 260, "Fz", "", 24, -4]] },
         zeg: "Een uitgerekte veer trekt terug. Dat is de veerkracht. Hoe verder je de veer uitrekt, hoe groter de veerkracht. Hier houdt de veerkracht de zwaartekracht in evenwicht." },
       { tekst: "Nu jij!", teken: { scene: "blok", p: [[170, 220, 170, 300, "Fz", "", 22, -6]] }, eind: true,
         zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
@@ -1633,7 +1633,7 @@ const UITLEGGEN = {
         zeg: "Werken de krachten tegen elkaar in, dan trek je ze van elkaar af. 30 min 20 is 10 newton. De resulterende kracht wijst in de richting van de grootste kracht: naar rechts." },
       { tekst: "Even groot en tegengesteld: F_res = 0", teken: { scene: "blok", p: [[210, 220, 270, 220, "30 N", "ink", 0, -10], [130, 220, 70, 220, "30 N", "ink", 0, -10]] },
         zeg: "Zijn de krachten even groot en tegengesteld, dan is de resulterende kracht 0. Dat heet evenwicht. Het voorwerp blijft dan stilstaan, of het beweegt met een constante snelheid." },
-      { tekst: "Blok op tafel: Fn = Fz", teken: { scene: "blok", p: [[170, 220, 170, 300, "Fz", "", 22, -6], [170, 250, 170, 170, "Fn", "ink", 22, 8]] },
+      { tekst: "Blok op tafel: Fn = Fz", teken: { scene: "blok", p: [[158, 220, 158, 300, "Fz", "", -22, -6], [182, 250, 182, 170, "Fn", "ink", 22, 8]] },
         zeg: "Een blok dat stil op de vloer ligt, is ook in evenwicht. De normaalkracht omhoog is even groot als de zwaartekracht omlaag." },
       { tekst: "Krachtenschaal", teken: { scene: "blok", schaal: true, p: [[210, 220, 330, 220, "30 N", "ink", -20, -10]] },
         zeg: "Om krachten precies te tekenen, gebruik je een krachtenschaal. Bijvoorbeeld: 1 centimeter is 10 newton. Een kracht van 30 newton teken je dan als een pijl van 3 centimeter." },
@@ -2090,7 +2090,7 @@ function natSVG(st) {
     if (st.klein) s += t(250, 8 + 2 * 64 + 48, "kleine stroom", { a: "start", f: 12, k: grijs });
   }
   if (sc === "huis") {
-    s += vak(14, 110, 92, 110, "meterkast", "") + t(60, 160, "kWh-meter", { f: 11, k: grijs }) + t(60, 176, "groepen", { f: 11, k: grijs });
+    s += `<rect x="14" y="110" width="92" height="110" rx="10" style="fill:var(--paper);stroke:${ink};stroke-width:2.2"/>` + t(60, 136, "meterkast") + t(60, 172, "kWh-meter", { f: 11, k: grijs }) + t(60, 190, "groepen", { f: 11, k: grijs });
     const app = st.apparaten || [["lamp", "60 W"], ["wasmachine", "2000 W"], ["waterkoker", "2200 W"]];
     app.forEach(([naam, P], i) => {
       const y = 70 + i * 85;
@@ -2107,7 +2107,7 @@ function natSVG(st) {
   }
   if (sc === "veilig") {
     // apparaat met metalen behuizing, drie draden van links
-    s += `<rect x="190" y="60" width="130" height="150" rx="8" style="fill:#d9dee6;stroke:${ink};stroke-width:3"/>` + t(255, 92, "metalen", { f: 12, k: grijs }) + t(255, 108, "behuizing", { f: 12, k: grijs });
+    s += `<rect x="190" y="60" width="130" height="150" rx="8" style="fill:#d9dee6;stroke:${ink};stroke-width:3"/>` + t(278, 182, "metalen", { f: 12, k: grijs }) + t(278, 198, "behuizing", { f: 12, k: grijs });
     s += lijn(20, 130, 230, 130, "#8B5A2B", 4) + t(20, 122, "fase (bruin)", { a: "start", f: 12, k: "#8B5A2B" });
     s += lijn(20, 160, 230, 160, "#2E6FD8", 4) + t(20, 152, "nul (blauw)", { a: "start", f: 12, k: "#2E6FD8" });
     s += lijn(20, 190, 190, 190, "#3C9A3C", 4, "10 5") + t(20, 182, "aarde (geel-groen)", { a: "start", f: 12, k: "#3C9A3C" });
@@ -2130,7 +2130,7 @@ function natSVG(st) {
     else {
       s += lijn(100, 20, 240, 20, ink, 4);
       let d = "M170,20 L170,40"; for (let i = 0; i < 8; i++) d += ` L${i % 2 ? 158 : 182},${48 + i * 11}`; d += " L170,136 L170,150";
-      s += `<path d="${d}" style="fill:none;stroke:${ink};stroke-width:2.5"/><rect x="140" y="150" width="60" height="60" rx="4" style="fill:var(--marker);fill-opacity:.55;stroke:${ink};stroke-width:2.5"/>` + t(250, 95, "veer", { a: "start", f: 13, k: grijs });
+      s += `<path d="${d}" style="fill:none;stroke:${ink};stroke-width:2.5"/><rect x="140" y="150" width="60" height="60" rx="4" style="fill:var(--marker);fill-opacity:.55;stroke:${ink};stroke-width:2.5"/>` + t(120, 95, "veer", { a: "end", f: 13, k: grijs });
     }
     for (const [x1, y1, x2, y2, label, kleur, lx, ly] of st.p || []) s += pijl(x1, y1, x2, y2, kleur === "ink" ? ink : kleur === "grijs" ? grijs : rood, label, lx || 0, ly || 0);
     if (st.schaal) s += lijn(30, 300, 70, 300, ink, 3) + lijn(30, 294, 30, 306, ink, 2) + lijn(70, 294, 70, 306, ink, 2) + t(80, 305, "1 cm ≙ 10 N", { a: "start", f: 13 });
@@ -2165,7 +2165,7 @@ function natSVG(st) {
     } else {
       s += lijn(170, 20, 170, 60, ink, 2.2) + `<circle cx="170" cy="85" r="25" style="fill:var(--paper);stroke:${ink};stroke-width:3"/><circle cx="170" cy="85" r="4" style="fill:${ink}"/>`;
       s += lijn(145, 85, 145, 225) + lijn(195, 85, 195, 230) + `<rect x="110" y="225" width="70" height="50" rx="4" style="fill:var(--marker);fill-opacity:.55;stroke:${ink};stroke-width:2.5"/>` + t(145, 256, st.last || "last");
-      s += pijl(195, 240, 195, 310, rood, "F (omlaag trekken)", 0, 18) + pijl(250, 250, 250, 180, grijs, "last gaat omhoog", 0, -8);
+      s += pijl(195, 240, 195, 310, rood, "F (omlaag trekken)", 0, 18) + pijl(260, 250, 260, 180, grijs, "last omhoog", 10, -8);
     }
     for (const w of [].concat(st.wijs || [])) {
       if (w === "wiel") s += `<circle class="wijs" cx="170" cy="${st.los ? 170 : 85}" r="36"/>`;
