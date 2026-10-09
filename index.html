@@ -1103,6 +1103,9 @@ function topicKnop(o) {
   const nr = NUMMER[o.id] ? `<span class="t-nr">${NUMMER[o.id]}</span>` : "";
   return `<button class="topic" data-id="${o.id}"><span class="t-main"><span class="t-title">${nr}${o.titel}</span><span class="t-sub">${o.sub}</span></span><span class="${cls}">${txt}</span></button>`;
 }
+// Sleutel van een uitleg: wiskunde "1.1", natuurkunde "nat:1.1" (paragraafnummers overlappen)
+const uKey = (vak, nr) => vak === "wis" ? nr : vak + ":" + nr;
+const parNr = key => String(key).replace(/^\w+:/, "");
 function uitlegKnop(k, u) {
   return `<button class="topic uitlegknop" data-uitleg="${k}"><span class="t-main"><span class="t-title">🎬 Uitleg</span><span class="t-sub">${DOCENT[u.docent].naam} legt het uit · ongeveer ${uitlegDuur(u)} min</span></span></button>`;
 }
@@ -1111,7 +1114,7 @@ function paragraafBlokken(vak, h, oef) {
   const blokken = [];
   for (const p of h.par) {
     const o = oef.filter(t => KOPPELING[t.id].par === p.nr);
-    const u = UITLEGGEN[p.nr] && UITLEGGEN[p.nr].vak === vak && UITLEGGEN[p.nr].hfst === h.nr ? UITLEGGEN[p.nr] : null;
+    const uu = UITLEGGEN[uKey(vak, p.nr)], u = uu && uu.vak === vak && uu.hfst === h.nr ? uu : null;
     if (!o.length && !u) continue;
     o.forEach((t, i) => { NUMMER[t.id] = `${p.nr}.${i + 1}`; });
     blokken.push({ nr: p.nr, titel: p.titel, u, o });
@@ -1187,8 +1190,8 @@ function start(id) {
   const broers = par ? ONDERWERPEN.filter(o => o.vak === onderwerp.vak && KOPPELING[o.id] && KOPPELING[o.id].par === par.nr) : [];
   $("o-keuze").innerHTML = broers.length > 1 ? broers.map(o => `<button type="button" role="tab" class="keuze" data-id="${o.id}" aria-selected="${o.id === id}">${NUMMER[o.id]} ${o.titel}</button>`).join("") : "";
   $("o-uitlegkop").textContent = par ? `Uitleg bij ${par.nr}` : "Uitleg";
-  const eigen = Object.entries(UITLEGGEN).find(([kk, u]) => u.oefen === id || (par && kk === par.nr && u.vak === onderwerp.vak));
-  $("o-uitlegknop").innerHTML = eigen ? `<button class="uitlegbalk" data-uitleg="${eigen[0]}"><span class="ub-icoon" aria-hidden="true">▶</span><span><b>Uitleg van ${DOCENT[eigen[1].docent].naam}</b><span class="klein">Paragraaf ${eigen[0]} in ongeveer ${uitlegDuur(eigen[1])} minuten</span></span></button>` : "";
+  const eigen = Object.entries(UITLEGGEN).find(([kk, u]) => (u.oefen === id && u.vak === onderwerp.vak) || (par && kk === uKey(onderwerp.vak, par.nr) && u.vak === onderwerp.vak));
+  $("o-uitlegknop").innerHTML = eigen ? `<button class="uitlegbalk" data-uitleg="${eigen[0]}"><span class="ub-icoon" aria-hidden="true">▶</span><span><b>Uitleg van ${DOCENT[eigen[1].docent].naam}</b><span class="klein">Paragraaf ${parNr(eigen[0])} in ongeveer ${uitlegDuur(eigen[1])} minuten</span></span></button>` : "";
   $("o-uitlegtekst").innerHTML = onderwerp.uitleg + (par && par.v.length ? `<p class="videolink klein">Liever een filmpje? <a href="${yt(par.v[0][0])}" target="_blank" rel="noopener">Uitleg bij paragraaf ${par.nr}</a> <span class="duur">(${par.v[0][2]})</span></p>` : "");
   $("o-uitleg").open = false; // geschreven uitleg dicht: de uitlegbalk is het startpunt, de som staat hoger
   try { localStorage.setItem("oefenschrift-laatst", JSON.stringify({ id, vak: onderwerp.vak, hfst: k.hfst })); } catch (e) {}
@@ -1285,7 +1288,7 @@ function inUitleg() { return uitleg && !$("uitleg").classList.contains("hidden")
 function context() {
   if (inUitleg()) {
     const st = uitleg.stappen[uStap];
-    return `Uitleg van paragraaf ${Object.keys(UITLEGGEN).find(k => UITLEGGEN[k] === uitleg)} ${uitleg.titel}, stap ${uStap + 1} van ${uitleg.stappen.length}\nIn beeld: ${tekstVan(st.tekst)}\nDe professor zei: ${st.zeg}`;
+    return `Uitleg van paragraaf ${parNr(Object.keys(UITLEGGEN).find(k => UITLEGGEN[k] === uitleg))} ${uitleg.titel}, stap ${uStap + 1} van ${uitleg.stappen.length}\nIn beeld: ${tekstVan(st.tekst)}\nDe professor zei: ${st.zeg}`;
   }
   if (!onderwerp || $("oefen").classList.contains("hidden")) return "";
   const antw = som.velden.map((v, i) => `${v.label} ${$("f" + i).value || "(leeg)"} ${v.eenheid || ""}`.trim()).join("; ");
@@ -1510,6 +1513,174 @@ function spreek(wie, tekst, opt = {}) {
 // Elke uitleg is een reeks stappen: wat de professor zegt (zeg), wat er groot in beeld staat (tekst)
 // en wat er in de tekening staat (teken). Maximaal ongeveer 4 minuten, één idee per uitleg.
 const UITLEGGEN = {
+  "nat:1.1": {
+    vak: "nat", hfst: "1", docent: "volta", titel: "Elektrische energie vervoeren", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Van centrale naar stopcontact", teken: { scene: "net", wijs: [0, 4] },
+        zeg: "Dag! Ik ben Professor Volta. Dit is paragraaf 1.1: elektrische energie vervoeren. In een centrale wordt elektrische energie opgewekt. Die energie moet helemaal naar jouw stopcontact." },
+      { tekst: "Een stroomkring: bron, draden, apparaat", teken: { scene: "kring", stroom: true, wijs: "kring" },
+        zeg: "Elektrische energie gaat altijd via een stroomkring. Je hebt een bron, zoals een batterij, draden, en een apparaat, zoals een lampje. De stroom gaat van de plus van de bron, door het lampje, terug naar de min." },
+      { tekst: "Kring open → geen stroom", teken: { scene: "kring", open: true, wijs: "schakelaar" },
+        zeg: "Alleen als de kring gesloten is, loopt er stroom. Zet je de schakelaar open, dan is de kring onderbroken. Het lampje gaat uit." },
+      { tekst: "Stroomsterkte I in ampère (A)", teken: { scene: "kring", stroom: true, ameter: true, I: "I = 0,5 A", wijs: "ameter" },
+        zeg: "De stroomsterkte zegt hoeveel stroom er door de draad gaat. Het symbool is I, de eenheid is ampère. Je meet het met een stroommeter. Die zet je in de kring, in serie." },
+      { tekst: "Spanning U in volt (V)", teken: { scene: "kring", stroom: true, vmeter: true, U: "U = 6 V", wijs: "vmeter" },
+        zeg: "De spanning zegt hoe hard de bron de stroom door de kring duwt. Het symbool is U, de eenheid is volt. Een spanningsmeter zet je parallel, over het apparaat heen." },
+      { tekst: "Transport: hoge spanning, kleine stroom", teken: { scene: "net", klein: true, wijs: [1, 2] },
+        zeg: "Terug naar het net. Een transformator maakt de spanning heel hoog, tot wel 380 duizend volt. Bij een hoge spanning is de stroom klein. Een kleine stroom maakt de draden minder warm. Zo gaat er onderweg minder energie verloren." },
+      { tekst: "Bij je huis: 230 V", teken: { scene: "net", wijs: [3, 4] },
+        zeg: "Vlak bij je huis maakt een transformator de spanning weer lager. Uit het stopcontact komt 230 volt." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "net" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 1.1 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
+  "nat:1.2": {
+    vak: "nat", hfst: "1", docent: "volta", titel: "Vermogen en energie", oefen: "vermogen",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Vermogen P in watt (W)", teken: { scene: "kring", stroom: true, lamp: "apparaat", wijs: "lamp" },
+        zeg: "Dag! Dit is paragraaf 1.2: vermogen en energie. Het vermogen van een apparaat zegt hoeveel energie het per seconde gebruikt. Het symbool is P, de eenheid is watt." },
+      { tekst: `${F("P = U × I")}`, teken: { scene: "kring", stroom: true, lamp: "apparaat", ameter: true, vmeter: true, U: "U", I: "I" },
+        zeg: "Het vermogen reken je uit met P is U keer I. Dus spanning keer stroomsterkte." },
+      { tekst: `${F("P = 230 × 4 = 920 W")}`, teken: { scene: "kring", stroom: true, lamp: "apparaat", ameter: true, vmeter: true, U: "230 V", I: "4 A", P: "P = 920 W" },
+        zeg: "Een voorbeeld: een apparaat op 230 volt, met een stroom van 4 ampère. P is 230 keer 4, en dat is 920 watt." },
+      { tekst: `${F("E = P × t")}`, teken: { scene: "kring", stroom: true, lamp: "apparaat", P: "P = 920 W" },
+        zeg: "Hoeveel energie een apparaat gebruikt, hangt ook af van hoe lang het aanstaat. E is P keer t: vermogen keer tijd." },
+      { tekst: `In kWh: kW × uur<br>${F("E = 0,92 × 2 = 1,84 kWh")}`, teken: { scene: "kring", stroom: true, lamp: "apparaat", P: "0,92 kW" },
+        zeg: "Thuis reken je energie meestal in kilowattuur. Zet het vermogen in kilowatt en de tijd in uren. 920 watt is 0,92 kilowatt. Staat het apparaat 2 uur aan, dan is E 0,92 keer 2, en dat is 1,84 kilowattuur." },
+      { tekst: "In joule: W × seconde<br>1 kWh = 3 600 000 J", teken: { scene: "kring", stroom: true, lamp: "apparaat", P: "920 W" },
+        zeg: "In de natuurkunde reken je ook in joule. Dan zet je het vermogen in watt en de tijd in seconden. 1 kilowattuur is 3,6 miljoen joule." },
+      { tekst: `Kosten = kWh × prijs<br>${F("1,84 × € 0,30 ≈ € 0,55")}`, teken: { scene: "kring", stroom: true, lamp: "apparaat", P: "1,84 kWh" },
+        zeg: "En wat kost het? Vermenigvuldig het aantal kilowattuur met de prijs per kilowattuur. Bij 30 cent per kilowattuur: 1,84 keer 0,30 is ongeveer 55 cent." },
+      { tekst: "Nu jij!", teken: { scene: "kring", stroom: true, lamp: "apparaat" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "nat:1.3": {
+    vak: "nat", hfst: "1", docent: "volta", titel: "Elektriciteit in huis", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "De meterkast", teken: { scene: "huis", wijs: "kast" },
+        zeg: "Dag! Dit is paragraaf 1.3: elektriciteit in huis. Alle elektriciteit komt je huis binnen via de meterkast. Daar zit de kilowattuurmeter: die meet hoeveel energie je gebruikt." },
+      { tekst: "Groepen: elk een eigen stroomkring", teken: { scene: "huis", wijs: "groepen" },
+        zeg: "Vanuit de meterkast gaan de leidingen naar verschillende groepen. Elke groep is een eigen stroomkring, naar een deel van het huis." },
+      { tekst: "Parallel geschakeld", teken: { scene: "huis", spanning: true, parallel: true },
+        zeg: "De apparaten in huis zijn parallel geschakeld. Daardoor krijgt elk apparaat de volle 230 volt. En je kunt elk apparaat los aan- en uitzetten." },
+      { tekst: "In serie: één kring voor alles", teken: { scene: "kring", stroom: true },
+        zeg: "In serie zou alles achter elkaar in één kring zitten. Gaat er dan één lampje kapot, dan gaat alles uit. En de spanning wordt verdeeld. Daarom gebruik je thuis een parallelschakeling." },
+      { tekst: "Stromen in een groep tellen op", teken: { scene: "huis", spanning: true },
+        zeg: "In één groep tellen de stromen van alle apparaten bij elkaar op. Hoe meer apparaten aan, hoe groter de stroom in die groep." },
+      { tekst: `Max. 16 A per groep<br>${F("P = 230 × 16 = 3680 W")}`, teken: { scene: "huis", zekering: true, wijs: "zekering" },
+        zeg: "Een groep kan meestal maximaal 16 ampère hebben. Het grootste vermogen is dan 230 keer 16, en dat is 3680 watt. Zet je een wasmachine en een waterkoker op dezelfde groep, dan wordt het al snel te veel." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "huis", spanning: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 1.3 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
+  "nat:1.4": {
+    vak: "nat", hfst: "1", docent: "volta", titel: "Elektriciteit en veiligheid", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Gevaarlijk: stroom door je lichaam", teken: { scene: "veilig", lek: true, persoon: true },
+        zeg: "Dag! Dit is paragraaf 1.4: elektriciteit en veiligheid. Elektriciteit is gevaarlijk als er stroom door je lichaam gaat. Al een kleine stroom kan je hart verstoren." },
+      { tekst: "Drie draden: fase, nul en aarde", teken: { scene: "veilig", wijs: "draden" },
+        zeg: "In een stopcontact met randaarde zitten drie draden. De fasedraad is bruin. De nuldraad is blauw. En de aardedraad is geel-groen." },
+      { tekst: "Kortsluiting → zekering schakelt uit", teken: { scene: "veilig", kort: true, wijs: "kort" },
+        zeg: "Bij kortsluiting raken de fasedraad en de nuldraad elkaar direct. De stroom wordt dan heel groot en de draden worden heet. De zekering in de meterkast schakelt dan de groep uit." },
+      { tekst: "Overbelasting → zekering schakelt uit", teken: { scene: "huis", zekering: true, wijs: "zekering" },
+        zeg: "Bij overbelasting staan er te veel apparaten tegelijk aan op één groep. De stroom wordt te groot. Ook dan schakelt de zekering uit." },
+      { tekst: "Randaarde: lekstroom via de aarde", teken: { scene: "veilig", lek: true, persoon: true, aarde: true, wijs: "behuizing" },
+        zeg: "Raakt de fasedraad de metalen behuizing, dan komt daar spanning op. Met randaarde loopt de stroom via de aardedraad weg, en niet door jou." },
+      { tekst: "Aardlekschakelaar", teken: { scene: "veilig", lek: true, aardlek: true, wijs: "aardlek" },
+        zeg: "De aardlekschakelaar vergelijkt de stroom die heen gaat met de stroom die terugkomt. Is er een verschil, dan lekt er stroom weg, misschien door iemand heen. Dan schakelt hij binnen een fractie van een seconde uit." },
+      { tekst: "Dubbel geïsoleerd: geen randaarde nodig", teken: { scene: "veilig" },
+        zeg: "Apparaten met een plastic behuizing zijn dubbel geïsoleerd. Die hebben geen randaarde nodig. Je herkent ze aan het symbool met twee vierkantjes in elkaar." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "veilig", aarde: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 1.4 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
+  "nat:2.1": {
+    vak: "nat", hfst: "2", docent: "volta", titel: "Soorten krachten", oefen: "zwaartekracht",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Een kracht is een duw of een trek", teken: { scene: "blok", p: [[60, 220, 128, 220, "duw", "", -40, -12]] },
+        zeg: "Dag! Ik ben Professor Volta. Dit is paragraaf 2.1: soorten krachten. Een kracht is een duw of een trek. Een kracht kan iets laten bewegen, afremmen of vervormen. De eenheid van kracht is newton." },
+      { tekst: "Een kracht teken je als een pijl", teken: { scene: "blok", p: [[210, 220, 300, 220, "F", "", 0, -12]], wijs: [[210, 220, 12]] },
+        zeg: "Een kracht teken je als een pijl. Het begin van de pijl is het aangrijpingspunt. De pijl wijst in de richting van de kracht. En hoe langer de pijl, hoe groter de kracht." },
+      { tekst: "Zwaartekracht Fz: recht naar beneden", teken: { scene: "blok", p: [[170, 220, 170, 310, "Fz", "", 22, -6]], wijs: [[170, 220, 12]] },
+        zeg: "De zwaartekracht trekt alles naar beneden, naar de aarde. Je tekent hem vanuit het midden van het voorwerp, recht naar beneden." },
+      { tekst: `${F("Fz = m × g")} met g = 9,81 N/kg<br>${F("5 × 9,81 ≈ 49 N")}`, teken: { scene: "blok", p: [[170, 220, 170, 310, "Fz", "", 22, -6]] },
+        zeg: "Je rekent de zwaartekracht uit met F z is m keer g. m is de massa in kilogram. g is 9,81 newton per kilogram. Een tas van 5 kilogram: 5 keer 9,81 is ongeveer 49 newton." },
+      { tekst: "Normaalkracht Fn: de vloer duwt terug", teken: { scene: "blok", p: [[170, 220, 170, 300, "Fz", "", 22, -6], [170, 250, 170, 160, "Fn", "ink", 22, 8]], wijs: [[170, 250, 14]] },
+        zeg: "Het blok zakt niet door de vloer. De vloer duwt terug, omhoog. Dat is de normaalkracht. Die teken je vanaf het contactvlak, loodrecht op de vloer." },
+      { tekst: "Wrijvingskracht Fw: tegen de beweging in", teken: { scene: "blok", p: [[210, 220, 300, 220, "duw", "ink", 0, -12], [170, 250, 90, 250, "Fw", "", -10, -10]], wijs: [[170, 250, 14]] },
+        zeg: "Duw je het blok vooruit, dan werkt de wrijvingskracht tegen. Die werkt langs het contactvlak, tegen de beweging in." },
+      { tekst: "Veerkracht Fv: de veer trekt terug", teken: { scene: "veer", p: [[170, 150, 170, 100, "Fv", "ink", 24, 10], [170, 180, 170, 260, "Fz", "", 24, -4]] },
+        zeg: "Een uitgerekte veer trekt terug. Dat is de veerkracht. Hoe verder je de veer uitrekt, hoe groter de veerkracht. Hier houdt de veerkracht de zwaartekracht in evenwicht." },
+      { tekst: "Nu jij!", teken: { scene: "blok", p: [[170, 220, 170, 300, "Fz", "", 22, -6]] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "nat:2.2": {
+    vak: "nat", hfst: "2", docent: "volta", titel: "Meer dan één kracht", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Samen: de resulterende kracht F_res", teken: { scene: "blok", p: [[210, 205, 270, 205, "30 N", "ink", 0, -10], [210, 235, 250, 235, "20 N", "ink", 24, 5]] },
+        zeg: "Dag! Dit is paragraaf 2.2: meer dan één kracht. Vaak werken er meerdere krachten tegelijk op een voorwerp. Samen geven ze één kracht: de resulterende kracht, F res." },
+      { tekst: `Zelfde richting: optellen<br>${F("30 + 20 = 50 N")}`, teken: { scene: "blok", p: [[210, 205, 270, 205, "30 N", "ink", 0, -10], [210, 235, 250, 235, "20 N", "ink", 24, 5], [170, 290, 270, 290, "F_res = 50 N", "", -50, 22]] },
+        zeg: "Werken de krachten in dezelfde richting, dan tel je ze op. 30 newton plus 20 newton is 50 newton naar rechts." },
+      { tekst: `Tegengesteld: aftrekken<br>${F("30 − 20 = 10 N")}`, teken: { scene: "blok", p: [[210, 220, 270, 220, "30 N", "ink", 0, -10], [130, 220, 90, 220, "20 N", "ink", 0, -10], [170, 290, 190, 290, "F_res = 10 N", "", 40, 22]] },
+        zeg: "Werken de krachten tegen elkaar in, dan trek je ze van elkaar af. 30 min 20 is 10 newton. De resulterende kracht wijst in de richting van de grootste kracht: naar rechts." },
+      { tekst: "Even groot en tegengesteld: F_res = 0", teken: { scene: "blok", p: [[210, 220, 270, 220, "30 N", "ink", 0, -10], [130, 220, 70, 220, "30 N", "ink", 0, -10]] },
+        zeg: "Zijn de krachten even groot en tegengesteld, dan is de resulterende kracht 0. Dat heet evenwicht. Het voorwerp blijft dan stilstaan, of het beweegt met een constante snelheid." },
+      { tekst: "Blok op tafel: Fn = Fz", teken: { scene: "blok", p: [[170, 220, 170, 300, "Fz", "", 22, -6], [170, 250, 170, 170, "Fn", "ink", 22, 8]] },
+        zeg: "Een blok dat stil op de vloer ligt, is ook in evenwicht. De normaalkracht omhoog is even groot als de zwaartekracht omlaag." },
+      { tekst: "Krachtenschaal", teken: { scene: "blok", schaal: true, p: [[210, 220, 330, 220, "30 N", "ink", -20, -10]] },
+        zeg: "Om krachten precies te tekenen, gebruik je een krachtenschaal. Bijvoorbeeld: 1 centimeter is 10 newton. Een kracht van 30 newton teken je dan als een pijl van 3 centimeter." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "blok" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 2.2 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
+  "nat:2.3": {
+    vak: "nat", hfst: "2", docent: "volta", titel: "Hefbomen", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Een hefboom draait om een draaipunt", teken: { scene: "hefboom", wijs: "dp" },
+        zeg: "Dag! Dit is paragraaf 2.3: hefbomen. Een hefboom is een voorwerp dat kan draaien om een draaipunt. Denk aan een wip, een schaar of een deurklink." },
+      { tekst: "Arm r: afstand draaipunt tot kracht", teken: { scene: "hefboom", F: [[-1.5, 400, "400 N"], [1, 600, "600 N"]], armen: true, wijs: "armen" },
+        zeg: "De arm is de afstand van het draaipunt tot de kracht. Die meet je loodrecht op de kracht. Hier is de linkerarm 1,5 meter en de rechterarm 1 meter." },
+      { tekst: `Moment: ${F("M = F × r")} (Nm)`, teken: { scene: "hefboom", F: [[-1.5, 400, "400 N"]], armen: true, wijs: -1.5 },
+        zeg: "Hoe sterk een kracht de hefboom laat draaien, heet het moment. M is F keer r: kracht keer arm. De eenheid is newtonmeter." },
+      { tekst: "Hefboomwet: M linksom = M rechtsom", teken: { scene: "hefboom", F: [[-1.5, 400, "400 N"], [1, 600, "600 N"]], armen: true, M: "links: 400 × 1,5 = 600 Nm", M2: "rechts: 600 × 1 = 600 Nm" },
+        zeg: "Een hefboom is in evenwicht als het moment linksom even groot is als het moment rechtsom. Links: 400 newton keer 1,5 meter is 600 newtonmeter. Rechts: 600 newton keer 1 meter is ook 600 newtonmeter. De wip is in evenwicht." },
+      { tekst: `Onbekende kracht: ${F("F × 1 = 600 → F = 600 N")}`, teken: { scene: "hefboom", F: [[-1.5, 400, "400 N"], [1, 600, "F = ?"]], armen: true, wijs: 1 },
+        zeg: "Weet je één kracht niet? Gebruik de hefboomwet. Links is het moment 600 newtonmeter. Rechts staat F keer 1. Dus F keer 1 is 600, en F is 600 newton." },
+      { tekst: "Lange arm → kleine kracht", teken: { scene: "hefboom", F: [[-1.8, 200, "200 N"], [0.6, 600, "600 N"]], armen: true, M: "200 × 1,8 = 360 Nm", M2: "600 × 0,6 = 360 Nm" },
+        zeg: "Daarom werkt een lange arm zo goed. Hoe langer de arm, hoe kleiner de kracht die je nodig hebt voor hetzelfde moment. Met een arm van 1,8 meter houd je 600 newton omhoog met maar 200 newton." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "hefboom", F: [[-1.5, 400, "400 N"], [1, 600, "600 N"]] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 2.3 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
+  "nat:2.4": {
+    vak: "nat", hfst: "2", docent: "volta", titel: "Werktuigen", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Werktuig: kleine kracht, groot effect", teken: { scene: "hefboom", dp: 250, sch: 150, x0: 60, x1: 290, F: [[-0.9, 100, "jij: 100 N"], [0.1, 900, "900 N"]] },
+        zeg: "Dag! Dit is paragraaf 2.4: werktuigen. Met een werktuig kun je met een kleine kracht een groot effect hebben. Denk aan een koevoet, een kruiwagen, een katrol of een takel." },
+      { tekst: `Koevoet: ${F("900 × 0,1 = F × 0,9")} → F = 100 N`, teken: { scene: "hefboom", dp: 250, sch: 150, x0: 60, x1: 290, F: [[-0.9, 100, "F = ?"], [0.1, 900, "900 N"]], armen: true },
+        zeg: "Een koevoet is een hefboom. De last van 900 newton zit op 10 centimeter van het draaipunt. Jij duwt op 90 centimeter. Het moment van de last is 900 keer 0,1, is 90 newtonmeter. Dus jouw kracht keer 0,9 is 90. Je kracht is maar 100 newton." },
+      { tekst: "Vaste katrol: andere richting", teken: { scene: "katrol", wijs: "wiel" },
+        zeg: "Een vaste katrol hangt aan het plafond. Die maakt de kracht niet kleiner. Maar hij verandert de richting: je trekt omlaag, en de last gaat omhoog. Dat is makkelijker trekken." },
+      { tekst: "Losse katrol: halve kracht", teken: { scene: "katrol", los: true, touwen: true, wijs: "F" },
+        zeg: "Een losse katrol hangt aan het touw zelf, met de last eraan. Het gewicht wordt verdeeld over twee touwdelen. Je hebt dan maar de helft van de kracht nodig." },
+      { tekst: "Maar: twee keer zo veel touw", teken: { scene: "katrol", los: true, touwen: true },
+        zeg: "Er is wel een prijs. Om de last 1 meter op te tillen, moet je 2 meter touw binnenhalen. Een kleinere kracht, maar een langere weg. Gratis energie bestaat niet." },
+      { tekst: "Takel: F = Fz ÷ aantal touwdelen", teken: { scene: "katrol", los: true, Ftekst: "F = ¼ · Fz" },
+        zeg: "Een takel combineert meerdere katrollen. Hangt de last aan 4 touwdelen, dan heb je maar een vierde van de zwaartekracht nodig. Maar je haalt dan wel 4 keer zo veel touw binnen." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "katrol", los: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 2.4 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
   "1.5": {
     vak: "wis", hfst: "1", docent: "delta", titel: "Groeifactor en tijd", oefen: "tabel",
     teken: st => tijdSVG(st),
@@ -1873,6 +2044,137 @@ function tijdSVG(st) {
   return s + "</svg>";
 }
 
+// Schema's voor natuurkunde (Professor Volta): stroomkring, energienet, huisinstallatie, veiligheid, krachten, hefboom, katrol
+function natSVG(st) {
+  const ink = "var(--ink)", rood = "var(--red)", grijs = "var(--pencil)";
+  let s = `<svg viewBox="0 0 340 330" class="plot uitleg-plot" role="img" aria-label="Natuurkundig schema">`;
+  const t = (x, y, tekst, opt = {}) => `<text x="${x}" y="${y}" text-anchor="${opt.a || "middle"}" style="font:700 ${opt.f || 14}px var(--body);fill:${opt.k || ink}">${tekst}</text>`;
+  const lijn = (x1, y1, x2, y2, k = ink, w = 2.5, dash = "") => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${k};stroke-width:${w}${dash ? ";stroke-dasharray:" + dash : ""}"/>`;
+  const pijl = (x1, y1, x2, y2, k = rood, label = "", lx = 0, ly = 0) => {
+    const a = Math.atan2(y2 - y1, x2 - x1), h = 11;
+    const p1 = [x2 - h * Math.cos(a - 0.45), y2 - h * Math.sin(a - 0.45)], p2 = [x2 - h * Math.cos(a + 0.45), y2 - h * Math.sin(a + 0.45)];
+    return lijn(x1, y1, x2 - 6 * Math.cos(a), y2 - 6 * Math.sin(a), k, 3.5) + `<path d="M${x2},${y2} L${p1[0].toFixed(1)},${p1[1].toFixed(1)} L${p2[0].toFixed(1)},${p2[1].toFixed(1)} Z" style="fill:${k}"/>` + (label ? t(x2 + lx, y2 + ly, label, { k }) : "");
+  };
+  const vak = (x, y, w, h, tekst, sub = "") => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" style="fill:var(--paper);stroke:${ink};stroke-width:2.2"/>` + t(x + w / 2, y + (sub ? h / 2 - 2 : h / 2 + 5), tekst) + (sub ? t(x + w / 2, y + h / 2 + 15, sub, { f: 12, k: grijs }) : "");
+  const wijsRect = (x, y, w, h) => `<rect class="wijs" x="${x}" y="${y}" width="${w}" height="${h}" rx="12"/>`;
+  const sc = st.scene;
+  if (sc === "kring") {
+    // rechthoekige kring: batterij links, lampje rechts, schakelaar boven
+    s += lijn(60, 60, 60, 128) + lijn(60, 152, 60, 240) + lijn(60, 240, 280, 240) + lijn(280, 240, 280, 166) + lijn(280, 134, 280, 60) + lijn(185, 60, 280, 60) + lijn(60, 60, 150, 60);
+    s += lijn(40, 132, 80, 132, ink, 2.5) + lijn(50, 148, 70, 148, ink, 6) + t(92, 128, "+", { a: "start" }) + t(30, 145, "bron", { a: "end", f: 12, k: grijs });
+    s += st.open ? lijn(150, 60, 182, 38, ink, 2.5) : lijn(150, 60, 185, 60, ink, 2.5);
+    s += `<circle cx="150" cy="60" r="3.5" style="fill:${ink}"/><circle cx="185" cy="60" r="3.5" style="fill:${ink}"/>` + t(168, 30, st.open ? "open" : "schakelaar", { f: 12, k: grijs });
+    s += `<circle cx="280" cy="150" r="16" style="fill:${st.open ? "var(--paper)" : "var(--marker)"};stroke:${ink};stroke-width:2.5"/>` + lijn(269, 139, 291, 161, ink, 2) + lijn(291, 139, 269, 161, ink, 2) + t(250, 154, st.lamp || "lampje", { a: "end", f: 12, k: grijs });
+    if (st.stroom && !st.open) s += pijl(95, 60, 125, 60) + pijl(220, 60, 250, 60) + pijl(280, 195, 280, 222) + pijl(200, 240, 170, 240) + pijl(60, 205, 60, 175);
+    if (st.ameter) s += `<circle cx="140" cy="240" r="15" style="fill:var(--paper);stroke:${ink};stroke-width:2.5"/>` + t(140, 245, "A") + t(140, 280, st.I || "stroommeter", { f: 13, k: rood });
+    if (st.vmeter) s += lijn(280, 100, 318, 100, ink, 2) + lijn(318, 100, 318, 135, ink, 2) + lijn(318, 165, 318, 200, ink, 2) + lijn(318, 200, 280, 200, ink, 2) + `<circle cx="318" cy="150" r="15" style="fill:var(--paper);stroke:${ink};stroke-width:2.5"/>` + t(318, 155, "V") + t(318, 225, st.U || "", { f: 13, k: rood });
+    if (st.P) s += t(170, 175, st.P, { f: 18, k: rood });
+    for (const w of [].concat(st.wijs || [])) {
+      if (w === "bron") s += wijsRect(24, 112, 72, 56);
+      if (w === "lamp") s += `<circle class="wijs" cx="280" cy="150" r="28"/>`;
+      if (w === "schakelaar") s += wijsRect(138, 26, 60, 46);
+      if (w === "ameter") s += `<circle class="wijs" cx="140" cy="240" r="26"/>`;
+      if (w === "vmeter") s += `<circle class="wijs" cx="318" cy="150" r="22"/>`;
+      if (w === "kring") s += wijsRect(40, 40, 260, 220);
+    }
+  }
+  if (sc === "net") {
+    const rij = [["centrale", "energie opwekken", ""], ["transformator", "spanning omhoog", ""], ["hoogspanningsnet", "", "380 000 V"], ["transformator", "spanning omlaag", ""], ["huis", "stopcontact", "230 V"]];
+    rij.forEach(([naam, sub, v], i) => {
+      const y = 8 + i * 64;
+      s += vak(70, y, 170, 48, naam, sub);
+      if (v) s += t(250, y + 30, v, { a: "start", k: rood });
+      if (i < rij.length - 1) s += pijl(155, y + 48, 155, y + 64, ink);
+      if ([].concat(st.wijs || []).includes(i)) s += wijsRect(62, y - 6, 186, 60);
+    });
+    if (st.klein) s += t(250, 8 + 2 * 64 + 48, "kleine stroom", { a: "start", f: 12, k: grijs });
+  }
+  if (sc === "huis") {
+    s += vak(14, 110, 92, 110, "meterkast", "") + t(60, 160, "kWh-meter", { f: 11, k: grijs }) + t(60, 176, "groepen", { f: 11, k: grijs });
+    const app = st.apparaten || [["lamp", "60 W"], ["wasmachine", "2000 W"], ["waterkoker", "2200 W"]];
+    app.forEach(([naam, P], i) => {
+      const y = 70 + i * 85;
+      s += lijn(106, 165, 130, 165) + lijn(130, 165, 130, y) + lijn(130, y, 220, y) + vak(220, y - 26, 108, 52, naam, P);
+      if (st.zekering) s += `<rect x="150" y="${y - 9}" width="34" height="18" rx="3" style="fill:var(--marker);stroke:${ink};stroke-width:1.8"/>` + t(167, y + 30, "16 A", { f: 12, k: rood });
+      if (st.spanning) s += t(200, y - 8, "230 V", { f: 12, k: rood, a: "end" });
+    });
+    if (st.parallel) s += t(170, 320, "parallel: elk apparaat 230 V", { f: 13, k: rood });
+    for (const w of [].concat(st.wijs || [])) {
+      if (w === "kast") s += wijsRect(6, 102, 108, 126);
+      if (w === "groepen") s += wijsRect(122, 40, 210, 250);
+      if (w === "zekering") for (let i = 0; i < 3; i++) s += wijsRect(144, 61 + i * 85 - 6, 46, 30);
+    }
+  }
+  if (sc === "veilig") {
+    // apparaat met metalen behuizing, drie draden van links
+    s += `<rect x="190" y="60" width="130" height="150" rx="8" style="fill:#d9dee6;stroke:${ink};stroke-width:3"/>` + t(255, 92, "metalen", { f: 12, k: grijs }) + t(255, 108, "behuizing", { f: 12, k: grijs });
+    s += lijn(20, 130, 230, 130, "#8B5A2B", 4) + t(20, 122, "fase (bruin)", { a: "start", f: 12, k: "#8B5A2B" });
+    s += lijn(20, 160, 230, 160, "#2E6FD8", 4) + t(20, 152, "nul (blauw)", { a: "start", f: 12, k: "#2E6FD8" });
+    s += lijn(20, 190, 190, 190, "#3C9A3C", 4, "10 5") + t(20, 182, "aarde (geel-groen)", { a: "start", f: 12, k: "#3C9A3C" });
+    s += lijn(230, 130, 230, 160, ink, 3) + `<rect x="222" y="138" width="16" height="14" style="fill:var(--marker);stroke:${ink}"/>`;
+    if (st.lek) s += `<path d="M230,130 l14,-12 l-10,-8 l16,-14 l-6,-12" style="fill:none;stroke:${rood};stroke-width:3"/>` + t(255, 50, "fasedraad raakt behuizing!", { f: 12, k: rood });
+    if (st.persoon) s += `<circle cx="300" cy="238" r="9" style="fill:none;stroke:${ink};stroke-width:2.5"/>` + lijn(300, 247, 300, 285) + lijn(300, 285, 288, 315) + lijn(300, 285, 312, 315) + lijn(300, 258, 286, 212) + (st.aarde ? "" : pijl(300, 270, 300, 312, rood, "stroom door jou!", -60, 14));
+    if (st.aarde) s += pijl(170, 190, 60, 190, rood, "lekstroom via aarde", 30, 26);
+    if (st.kort) s += `<path d="M120,130 L130,145 L120,160" style="fill:none;stroke:${rood};stroke-width:4"/>` + t(125, 240, "kortsluiting: fase raakt nul", { f: 13, k: rood }) + t(125, 260, "→ heel grote stroom", { f: 13, k: rood });
+    if (st.aardlek) s += vak(20, 230, 160, 56, "aardlekschakelaar", "heen ≠ terug → uit");
+    for (const w of [].concat(st.wijs || [])) {
+      if (w === "draden") s += wijsRect(12, 108, 226, 94);
+      if (w === "behuizing") s += wijsRect(182, 52, 146, 166);
+      if (w === "aardlek") s += wijsRect(12, 222, 176, 72);
+      if (w === "kort") s += `<circle class="wijs" cx="125" cy="145" r="22"/>`;
+    }
+  }
+  if (sc === "blok" || sc === "veer") {
+    const vloer = sc === "blok";
+    if (vloer) s += lijn(20, 250, 320, 250, ink, 3) + `<rect x="130" y="190" width="80" height="60" rx="4" style="fill:var(--marker);fill-opacity:.55;stroke:${ink};stroke-width:2.5"/>`;
+    else {
+      s += lijn(100, 20, 240, 20, ink, 4);
+      let d = "M170,20 L170,40"; for (let i = 0; i < 8; i++) d += ` L${i % 2 ? 158 : 182},${48 + i * 11}`; d += " L170,136 L170,150";
+      s += `<path d="${d}" style="fill:none;stroke:${ink};stroke-width:2.5"/><rect x="140" y="150" width="60" height="60" rx="4" style="fill:var(--marker);fill-opacity:.55;stroke:${ink};stroke-width:2.5"/>` + t(250, 95, "veer", { a: "start", f: 13, k: grijs });
+    }
+    for (const [x1, y1, x2, y2, label, kleur, lx, ly] of st.p || []) s += pijl(x1, y1, x2, y2, kleur === "ink" ? ink : kleur === "grijs" ? grijs : rood, label, lx || 0, ly || 0);
+    if (st.schaal) s += lijn(30, 300, 70, 300, ink, 3) + lijn(30, 294, 30, 306, ink, 2) + lijn(70, 294, 70, 306, ink, 2) + t(80, 305, "1 cm ≙ 10 N", { a: "start", f: 13 });
+    for (const [x, y, r] of st.wijs || []) s += `<circle class="wijs" cx="${x}" cy="${y}" r="${r || 16}"/>`;
+  }
+  if (sc === "hefboom") {
+    const dp = st.dp || 170, sch = st.sch || 80; // draaipunt-x, pixels per meter
+    s += `<path d="M${dp},200 l-16,34 h32 Z" style="fill:var(--marker);stroke:${ink};stroke-width:2.2"/>` + lijn(10, 236, 330, 236, ink, 2);
+    s += `<rect x="${st.x0 || 20}" y="190" width="${(st.x1 || 320) - (st.x0 || 20)}" height="10" rx="3" style="fill:#c9a36a;stroke:${ink};stroke-width:2"/>`;
+    s += t(dp, 262, "draaipunt", { f: 12, k: grijs });
+    for (const [r, F, label] of st.F || []) {
+      const x = dp + r * sch;
+      s += pijl(x, 110, x, 188, r < 0 ? rood : ink, "", 0, 0) + t(x, 102, label, { k: r < 0 ? rood : ink });
+      if (st.armen) s += lijn(dp, 290, x, 290, grijs, 2) + lijn(x, 284, x, 296, grijs, 2) + t((dp + x) / 2, 312, `${fmt(Math.abs(r))} m`, { f: 13, k: grijs });
+    }
+    if (st.armen) s += lijn(dp, 284, dp, 296, grijs, 2);
+    if (st.M) s += t(170, 40, st.M, { f: 15, k: rood });
+    if (st.M2) s += t(170, 62, st.M2, { f: 15, k: ink });
+    for (const w of [].concat(st.wijs || [])) {
+      if (w === "dp") s += `<circle class="wijs" cx="${dp}" cy="215" r="24"/>`;
+      if (w === "armen") s += wijsRect(10, 278, 320, 44);
+      if (typeof w === "number") s += `<circle class="wijs" cx="${dp + w * sch}" cy="150" r="24"/>`;
+    }
+  }
+  if (sc === "katrol") {
+    s += lijn(40, 20, 300, 20, ink, 4);
+    if (st.los) {
+      // losse katrol: touw vast aan plafond links, om het wiel, rechts omhoog getrokken
+      s += lijn(145, 20, 145, 170) + lijn(195, 170, 195, 60) + `<circle cx="170" cy="170" r="25" style="fill:var(--paper);stroke:${ink};stroke-width:3"/><circle cx="170" cy="170" r="4" style="fill:${ink}"/>` + lijn(170, 170, 170, 225, ink, 2.2) + `<rect x="135" y="225" width="70" height="50" rx="4" style="fill:var(--marker);fill-opacity:.55;stroke:${ink};stroke-width:2.5"/>` + t(170, 256, st.last || "last");
+      s += pijl(195, 70, 195, 34, rood, st.Ftekst || "F = ½ · Fz", 50, 10) + pijl(170, 250, 170, 318, ink, "Fz", 22, -4);
+      if (st.touwen) s += t(120, 110, "2 touwdelen", { a: "end", f: 13, k: grijs });
+    } else {
+      s += lijn(170, 20, 170, 60, ink, 2.2) + `<circle cx="170" cy="85" r="25" style="fill:var(--paper);stroke:${ink};stroke-width:3"/><circle cx="170" cy="85" r="4" style="fill:${ink}"/>`;
+      s += lijn(145, 85, 145, 225) + lijn(195, 85, 195, 230) + `<rect x="110" y="225" width="70" height="50" rx="4" style="fill:var(--marker);fill-opacity:.55;stroke:${ink};stroke-width:2.5"/>` + t(145, 256, st.last || "last");
+      s += pijl(195, 240, 195, 310, rood, "F (omlaag trekken)", 0, 18) + pijl(250, 250, 250, 180, grijs, "last gaat omhoog", 0, -8);
+    }
+    for (const w of [].concat(st.wijs || [])) {
+      if (w === "wiel") s += `<circle class="wijs" cx="170" cy="${st.los ? 170 : 85}" r="36"/>`;
+      if (w === "F") s += `<circle class="wijs" cx="195" cy="${st.los ? 50 : 285}" r="22"/>`;
+    }
+  }
+  return s + "</svg>";
+}
+
 // Parabool y = x² − 6x + 5 (top (3, −4)) in een assenstelsel, met de onderdelen die een stap aanzet
 function parabSVG(st) {
   const U = 30, X = x => 50 + U * (x + 1), Y = y => 20 + U * (9 - y);
@@ -1939,9 +2241,8 @@ let uHerkomst = "home";
 function startUitleg(key) {
   uitleg = UITLEGGEN[key]; if (!uitleg) return;
   uHerkomst = !$("oefen").classList.contains("hidden") ? "oefen" : "home";
-  $("u-naar").textContent = `← ${key} ${uitleg.titel}`;
-  const h = BOEKEN[uitleg.vak].hoofdstukken.find(h => h.nr === uitleg.hfst), p = h && h.par.find(p => p.nr === key);
-  $("u-titel").textContent = `${key} ${uitleg.titel}`;
+  $("u-naar").textContent = `← ${parNr(key)} ${uitleg.titel}`;
+  $("u-titel").textContent = `${parNr(key)} ${uitleg.titel}`;
   $("u-av").innerHTML = DOCENT[uitleg.docent].svg;
   $("u-naam").textContent = DOCENT[uitleg.docent].naam;
   toon("uitleg");
@@ -1961,7 +2262,7 @@ function toonStap(i) {
     : '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>';
   $("u-pauze").setAttribute("aria-label", uSpeelt ? "Pauze" : "Afspelen");
   $("u-pauze").title = uSpeelt ? "Pauze" : "Afspelen";
-  $("u-zelf").classList.toggle("hidden", !st.eind);
+  $("u-zelf").classList.toggle("hidden", !st.eind || !uitleg.oefen);
   uStart = Date.now(); clearInterval(uKlok); toonTijd();
   if (uSpeelt) uKlok = setInterval(() => { if ($("uitleg").classList.contains("hidden")) clearInterval(uKlok); else toonTijd(); }, 500);
   if (!uSpeelt) { stopSpraak(); return; }
@@ -2012,7 +2313,7 @@ function init() {
     if (po) {
       const [vak, nr] = po.dataset.open.split("|");
       const eerste = ONDERWERPEN.find(o => o.vak === vak && KOPPELING[o.id] && KOPPELING[o.id].par === nr);
-      if (eerste) start(eerste.id); else if (UITLEGGEN[nr]) startUitleg(nr);
+      if (eerste) start(eerste.id); else if (UITLEGGEN[uKey(vak, nr)]) startUitleg(uKey(vak, nr));
       return;
     }
     const t = e.target.closest("[data-id]"); if (t) { start(t.dataset.id); return; }
@@ -2040,7 +2341,7 @@ function init() {
       $("tab-" + v).setAttribute("aria-selected", v === uitleg.vak);
       $("paneel-" + v).classList.toggle("hidden", v !== uitleg.vak);
     }
-    const blok = document.querySelector(`[data-par="${uitleg.vak}-${key}"]`);
+    const blok = document.querySelector(`[data-par="${uitleg.vak}-${parNr(key)}"]`);
     if (blok) { const d = blok.closest("details.hfst"); if (d) d.open = true; blok.scrollIntoView({ block: "start" }); window.scrollBy(0, -12); }
   };
   const kiesTab = vak => {
