@@ -74,6 +74,21 @@ button,input,textarea{font:inherit}
 .u-tekst .formule{font-size:1.3rem}
 svg.uitleg-plot{max-width:380px}
 .u-tab{margin:.3rem auto 0;font-family:var(--body);font-size:1rem}
+.wijs{fill:none;stroke:var(--marker);stroke-width:7;stroke-opacity:.85;stroke-linecap:round}
+@media (prefers-reduced-motion: no-preference){ .wijs{animation:wijs 1s ease-in-out infinite alternate} }
+@keyframes wijs{from{stroke-opacity:.35}to{stroke-opacity:.95}}
+.fb-rij{display:flex;align-items:center;gap:.6rem;margin-top:1rem}
+.fb-rij .feedback{margin:0}
+.fb-prof{width:56px;height:56px;flex:none}
+.fb-prof:empty{display:none}
+.fb-prof svg{width:100%;height:100%;display:block}
+@media (prefers-reduced-motion: no-preference){
+  .fb-prof.knik svg{animation:knik .45s ease-in-out 2}
+  .fb-prof.frons svg{animation:frons .9s ease-in-out 1;transform-origin:50% 90%}
+}
+.fb-prof.frons svg .av-lijn,.fb-prof.frons svg .av-lijn-grijs{transform:translateY(2px) rotate(-6deg);transform-box:fill-box;transform-origin:center}
+@keyframes knik{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@keyframes frons{0%,100%{transform:rotate(0)}30%{transform:rotate(-7deg)}70%{transform:rotate(5deg)}}
 .u-tab th,.u-tab td{padding:.25rem .5rem}
 .u-ondertitel{text-align:center;margin:.6rem 0 0}
 .u-zelf{display:block;margin:1rem auto 0;font-size:1.15rem}
@@ -333,7 +348,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
         <button class="btn" id="b-uitw">Uitwerking</button>
         <button class="btn licht" id="b-nieuw">Nieuwe som →</button>
       </div>
-      <p class="feedback" id="o-feedback" aria-live="polite"></p>
+      <div class="fb-rij"><div class="fb-prof" id="fb-prof" aria-hidden="true"></div><p class="feedback" id="o-feedback" aria-live="polite"></p></div>
       <div class="hint hidden" id="o-hint"></div>
       <div class="stappen hidden" id="o-stappen"></div>
     </div>
@@ -1152,6 +1167,7 @@ function nieuweSom() {
   $("o-velden").innerHTML = som.velden.map((v, i) =>
     `<div class="veld"><label for="f${i}">${v.label}</label><input id="f${i}" inputmode="decimal" autocomplete="off" spellcheck="false">${v.eenheid ? `<span class="eenheid">${v.eenheid}</span>` : ""}</div>`).join("");
   $("o-feedback").textContent = ""; $("o-feedback").className = "feedback";
+  const fp = $("fb-prof"); if (fp) { fp.innerHTML = ""; fp.classList.remove("knik", "frons"); }
   $("o-hint").classList.add("hidden");
   $("o-stappen").classList.add("hidden");
   const f0 = $("f0"); if (f0) f0.focus({ preventScroll: true });
@@ -1181,16 +1197,26 @@ function controleer() {
   if (leeg) { fb.className = "feedback fout"; fb.textContent = "Vul in elk vakje een getal in. Een komma mag, bijvoorbeeld 2,5."; return; }
   geprobeerd = true;
   if (alles) {
-    fb.className = "feedback goed";
+    fb.className = "feedback goed"; reageer("goed");
     const r = sessie.reeks + (afgerond ? 0 : 1);
     fb.textContent = pick(LOF) + (!uitwerkingGezien && !afgerond && r >= 3 ? ` Al ${r} op rij!` : "") + " Kies Nieuwe som voor de volgende.";
     telMee(!uitwerkingGezien);
   } else {
-    fb.className = "feedback fout";
+    fb.className = "feedback fout"; reageer("fout");
     fb.textContent = tip || "Nog niet goed. Kijk naar de rode vakjes, of vraag een hint.";
   }
 }
 
+// De professor reageert op het antwoord: knikken en lachen bij goed, bedenkelijk kijken bij fout
+function reageer(soort) {
+  const box = $("fb-prof"); if (!box || !onderwerp) return;
+  box.innerHTML = DOCENT[onderwerp.vak === "nat" ? "volta" : "delta"].svg;
+  const svg = box.querySelector("svg");
+  box.classList.remove("knik", "frons"); void box.offsetWidth;
+  box.classList.add(soort === "goed" ? "knik" : "frons");
+  svg.dataset.mond = soort === "goed" ? "2" : "1";
+  clearTimeout(box._t); box._t = setTimeout(() => { svg.dataset.mond = "0"; }, 1400);
+}
 function hint() { $("o-hint").innerHTML = "<b>Hint:</b> " + som.hint; $("o-hint").classList.remove("hidden"); }
 function uitwerking() {
   uitwerkingGezien = true;
@@ -1372,7 +1398,27 @@ function mond(aan, box = $("chat-av")) {
   if (!s) return;
   if (!aan) { s.dataset.mond = "0"; return; }
   let vorige = 0;
-  mondTimer = setInterval(() => { let m; do { m = [0, 1, 1, 2, 2, 3][Math.floor(Math.random() * 6)]; } while (m === vorige && m !== 1); vorige = m; s.dataset.mond = m; }, 110);
+  // Terugval: willekeurige mondstanden, maar alleen zolang er geen woordseintjes binnenkomen
+  mondTimer = setInterval(() => {
+    if (Date.now() - (box._woord || 0) < 600) return;
+    let m; do { m = [0, 1, 1, 2, 2, 3][Math.floor(Math.random() * 6)]; } while (m === vorige && m !== 1); vorige = m; s.dataset.mond = m;
+  }, 110);
+}
+// Mond op het woord: open bij a, rond bij o/oe/u, half open bij e/i; daarna kort dicht
+function woordMond(box, woord) {
+  const s = box && box.querySelector("svg"); if (!s) return;
+  box._woord = Date.now();
+  const w = (woord || "").toLowerCase();
+  const reeks = [];
+  for (const m of w.matchAll(/aa|a|oe|oo|o|u|ui|eu|ee|e|ie|i|ij|ei|y/g)) reeks.push(/^a/.test(m[0]) ? 2 : /^(oe|oo|o|u|ui|eu)$/.test(m[0]) ? 3 : 1);
+  if (!reeks.length) reeks.push(1);
+  clearTimeout(box._woordTimer);
+  let i = 0;
+  const volgende = () => {
+    if (i < reeks.length) { s.dataset.mond = reeks[i++]; box._woordTimer = setTimeout(volgende, 120); }
+    else s.dataset.mond = "0";
+  };
+  volgende();
 }
 let mondBox = null;
 function stopSpraak() { spraakId++; if (kanSpreken) speechSynthesis.cancel(); mond(false, mondBox || undefined); }
@@ -1395,6 +1441,8 @@ function spreek(wie, tekst, opt = {}) {
     u.lang = stem ? stem.lang : "nl-NL"; if (stem) u.voice = stem;
     u.rate = tempo; u.pitch = gedeeld ? DOCENT[wie].toonhoogte : 1;
     u.onstart = () => { if (mijn !== spraakId) return; if (opt.opZin) opt.opZin(i); if (!gestart) { gestart = true; clearTimeout(wacht); beweeg(true); status.textContent = ""; } };
+    const zin = zinnen[i];
+    u.onboundary = e => { if (mijn === spraakId && e.name === "word") woordMond(box, zin.substr(e.charIndex, e.charLength || (zin.slice(e.charIndex).match(/^\S+/) || [""])[0].length)); };
     u.onend = () => { if (mijn === spraakId) { i++; volgende(); } };
     u.onerror = e => { if (mijn !== spraakId || e.error === "canceled" || e.error === "interrupted") return; clearTimeout(wacht); beweeg(false); status.textContent = `Voorlezen lukte niet (${e.error}).`; klaar(); };
     speechSynthesis.speak(u);
@@ -1417,9 +1465,9 @@ const UITLEGGEN = {
         zeg: "Hoi! Dit is paragraaf 2.1: parabolen. Een formule met x kwadraat, zoals y is x kwadraat min 6 x plus 5, heet een kwadratische formule. De grafiek is geen rechte lijn maar een boog: een parabool." },
       { tekst: `${F("y = ax² + bx + c")}<br>hier: a = 1, b = −6, c = 5`, teken: {},
         zeg: "Zo'n formule schrijf je in de vorm y is a x kwadraat plus b x plus c. In ons voorbeeld is a gelijk aan 1, b is min 6, en c is 5." },
-      { tekst: "a positief → dalparabool", teken: { top: true, toplabel: "laagste punt" },
+      { tekst: "a positief → dalparabool", teken: { top: true, toplabel: "laagste punt", wijs: "top" },
         zeg: "Is a positief, dan krijg je een dalparabool. Hij gaat aan beide kanten omhoog, net als een dal. De top is het laagste punt." },
-      { tekst: `a negatief → bergparabool<br>${F("y = −x² + 6x − 5")}`, teken: { berg: true },
+      { tekst: `a negatief → bergparabool<br>${F("y = −x² + 6x − 5")}`, teken: { berg: true, wijs: "bergtop" },
         zeg: "Is a negatief, dan krijg je een bergparabool. Kijk naar y is min x kwadraat plus 6 x min 5. Die gaat aan beide kanten omlaag, net als een berg. De top is dan het hoogste punt." },
       { tekst: `Invullen: x = −1<br>${F("y = (−1)² − 6 · (−1) + 5 = 12")}`, teken: {},
         zeg: "Punten van de parabool vind je door x in te vullen. Neem x is min 1. Min 1 kwadraat is 1. Min 6 keer min 1 is plus 6. Plus 5. Samen is dat 12." },
@@ -1427,7 +1475,7 @@ const UITLEGGEN = {
         zeg: "Let op, hier gaat het vaak mis. Zet haakjes om een negatief getal. Min 1 kwadraat is min 1 keer min 1, en dat is plus 1. Een kwadraat is nooit negatief." },
       { tekst: `<table class="tabel u-tab"><tr><th>x</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td></tr><tr><th>y</th><td>5</td><td>0</td><td>−3</td><td>−4</td><td>−3</td><td>0</td><td>5</td></tr></table>`, teken: { tabel: true },
         zeg: "Vul je meer x-waarden in, dan krijg je een tabel. Zet je die punten in een assenstelsel en verbind je ze met een vloeiende boog, dan heb je de parabool." },
-      { tekst: "c is het snijpunt met de y-as", teken: { yas: true },
+      { tekst: "c is het snijpunt met de y-as", teken: { yas: true, wijs: "yas" },
         zeg: "Een handige regel: vul je x is 0 in, dan blijft alleen c over. De parabool snijdt de y-as dus altijd bij y is c. Hier is dat bij 5." },
       { tekst: "Nu jij!", teken: { top: true, yas: true }, eind: true,
         zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf, en reken y uit voor een paar x-waarden. Succes!" }
@@ -1439,15 +1487,15 @@ const UITLEGGEN = {
     stappen: [
       { tekst: "Eén parabool, drie formules", teken: {},
         zeg: "Hoi! Dit is paragraaf 2.5: drie vormen van kwadratische formules. Je kunt dezelfde parabool op drie manieren opschrijven. Elke vorm laat je iets anders direct zien." },
-      { tekst: `Vorm 1: ${F("y = x² − 6x + 5")}<br>c = 5 → snijpunt met de y-as`, teken: { yas: true },
+      { tekst: `Vorm 1: ${F("y = x² − 6x + 5")}<br>c = 5 → snijpunt met de y-as`, teken: { yas: true, wijs: "yas" },
         zeg: "Vorm 1 ken je al: y is x kwadraat min 6 x plus 5. Hier zie je direct c. De parabool snijdt de y-as bij 5." },
-      { tekst: `Vorm 2: ${F("y = (x − 3)² − 4")}<br>top (3, −4)`, teken: { as: true, aslabel: true, top: true },
+      { tekst: `Vorm 2: ${F("y = (x − 3)² − 4")}<br>top (3, −4)`, teken: { as: true, aslabel: true, top: true, wijs: "top" },
         zeg: "Vorm 2: y is, tussen haakjes, x min 3, in het kwadraat, min 4. Dit is de vorm y is a keer x min p kwadraat plus q. De top is het punt p komma q. Hier is dat 3 komma min 4." },
       { tekst: "Let op het teken:<br>(x − 3)² → p = 3 &nbsp; (x + 3)² → p = −3", teken: { as: true, aslabel: true, top: true },
         zeg: "Let op het teken. Bij x min 3 hoort p is 3. Bij x plus 3 hoort p is min 3. Vraag je steeds af: welke x maakt het stuk tussen haakjes nul?" },
-      { tekst: `Vorm 3: ${F("y = (x − 1)(x − 5)")}<br>snijpunten x = 1 en x = 5`, teken: { punten: true },
+      { tekst: `Vorm 3: ${F("y = (x − 1)(x − 5)")}<br>snijpunten x = 1 en x = 5`, teken: { punten: true, wijs: "punten" },
         zeg: "Vorm 3: y is x min 1 keer x min 5. Op de x-as is y nul. Een product is nul als één van de stukken nul is. Dus x is 1 of x is 5. Dat zijn de snijpunten met de x-as." },
-      { tekst: "Alles in één plaatje", teken: { as: true, top: true, punten: true, yas: true },
+      { tekst: "Alles in één plaatje", teken: { as: true, top: true, punten: true, yas: true, wijs: ["yas", "top", "punten"] },
         zeg: "Alle drie de vormen horen bij dezelfde parabool. Vorm 1 geeft het snijpunt met de y-as, vorm 2 de top, en vorm 3 de snijpunten met de x-as. Kies de vorm die past bij wat je zoekt." },
       { tekst: `Controle: ${F("(x − 3)² − 4 = x² − 6x + 9 − 4 = x² − 6x + 5")} ✓`, teken: { as: true, top: true, punten: true, yas: true },
         zeg: "Wil je controleren of het klopt? Werk de haakjes weg. x min 3, in het kwadraat, is x kwadraat min 6 x plus 9. Daar gaat 4 af. Dan krijg je weer x kwadraat min 6 x plus 5: vorm 1." },
@@ -1461,19 +1509,19 @@ const UITLEGGEN = {
     stappen: [
       { tekst: `Waar ligt de top?<br>${F("y = x² − 6x + 5")}`, teken: {},
         zeg: "Hoi! Dit is paragraaf 2.2: symmetrie en top. Kijk naar deze parabool. Hij hoort bij de formule y is x kwadraat min 6 x plus 5. Het is een dalparabool. Waar ligt de top, het laagste punt?" },
-      { tekst: "Een parabool is symmetrisch", teken: { spiegel: true },
+      { tekst: "Een parabool is symmetrisch", teken: { spiegel: true, wijs: "spiegel" },
         zeg: "Een parabool is symmetrisch. De linkerkant is het spiegelbeeld van de rechterkant. Kijk maar: bij x is 0 en bij x is 6 is y allebei 5." },
-      { tekst: "De symmetrieas gaat door de top", teken: { spiegel: true, as: true },
+      { tekst: "De symmetrieas gaat door de top", teken: { spiegel: true, as: true, wijs: "as" },
         zeg: "De spiegel is een verticale lijn door de top. Die lijn heet de symmetrieas." },
-      { tekst: "Twee punten met dezelfde y", teken: { as: true, punten: true },
+      { tekst: "Twee punten met dezelfde y", teken: { as: true, punten: true, wijs: "punten" },
         zeg: "Neem nu twee punten met dezelfde y. Hier zijn dat de punten 1 komma 0 en 5 komma 0. Ze liggen even ver links en rechts van de symmetrieas." },
-      { tekst: "Even ver links en rechts", teken: { as: true, punten: true, afstand: true },
+      { tekst: "Even ver links en rechts", teken: { as: true, punten: true, afstand: true, wijs: "afstand" },
         zeg: "Allebei liggen ze 2 hokjes van de symmetrieas af. De symmetrieas ligt dus precies in het midden." },
       { tekst: F("x-top = (x₁ + x₂) / 2"), teken: { as: true, punten: true, afstand: true },
         zeg: "Daarom vind je de x van de top zo: tel de twee x-waarden op, en deel door 2." },
-      { tekst: F("x-top = (1 + 5) / 2 = 6 / 2 = 3"), teken: { as: true, punten: true, aslabel: true },
+      { tekst: F("x-top = (1 + 5) / 2 = 6 / 2 = 3"), teken: { as: true, punten: true, aslabel: true, wijs: "as" },
         zeg: "1 plus 5 is 6. 6 gedeeld door 2 is 3. De x-top is dus 3, en de symmetrieas is de lijn x is 3." },
-      { tekst: `${F("y-top = 3² − 6 · 3 + 5 = −4")}<br>top (3, −4)`, teken: { as: true, aslabel: true, top: true },
+      { tekst: `${F("y-top = 3² − 6 · 3 + 5 = −4")}<br>top (3, −4)`, teken: { as: true, aslabel: true, top: true, wijs: "top" },
         zeg: "Wil je ook de y-top? Vul x is 3 in de formule in. 3 kwadraat is 9, min 18, plus 5. Dat is min 4. De top is dus het punt 3 komma min 4." },
       { tekst: "Let op: het midden, niet het verschil<br>(5 − 1) / 2 = 2 ✗", teken: { as: true, punten: true, aslabel: true },
         zeg: "Let op, hier gaat het vaak mis. Je zoekt het midden, niet het verschil. 5 min 1, gedeeld door 2, is 2. Dat is niet de top. Tel dus op, en deel dan door 2." },
@@ -1514,6 +1562,17 @@ function parabSVG(st) {
   if (st.punten) for (const x of [1, 5]) s += `<circle class="g-pt" cx="${X(x)}" cy="${Y(0)}" r="5"/><text class="g-ptl" x="${X(x)}" y="${Y(0) - 10}" text-anchor="middle">(${x}, 0)</text>`;
   if (st.afstand) for (const [a, b] of [[1, 3], [3, 5]]) s += `<path class="g-tri" d="M${X(a)},${Y(-1)} L${X(b)},${Y(-1)}" style="fill:none;stroke-width:3"/><text class="g-tril" x="${X((a + b) / 2)}" y="${Y(-1) + 18}" text-anchor="middle">2</text>`;
   if (st.top) s += `<circle class="g-pt" cx="${X(3)}" cy="${Y(-4)}" r="6"/><text class="g-ptl" x="${X(3) + 10}" y="${Y(-4) + 5}">top (3, −4)${st.toplabel ? ": " + st.toplabel : ""}</text>`;
+  // Aanwijzen: gele, pulserende markering op wat de professor nu noemt
+  for (const w of [].concat(st.wijs || [])) {
+    if (w === "top") s += `<circle class="wijs" cx="${X(3)}" cy="${Y(-4)}" r="15"/>`;
+    if (w === "bergtop") s += `<circle class="wijs" cx="${X(3)}" cy="${Y(4)}" r="15"/>`;
+    if (w === "yas") s += `<circle class="wijs" cx="${X(0)}" cy="${Y(5)}" r="15"/>`;
+    if (w === "punten") for (const x of [1, 5]) s += `<circle class="wijs" cx="${X(x)}" cy="${Y(0)}" r="15"/>`;
+    if (w === "spiegel") for (const x of [0, 6]) s += `<circle class="wijs" cx="${X(x)}" cy="${Y(5)}" r="15"/>`;
+    if (w === "as") s += `<line class="wijs" x1="${X(3)}" y1="${Y(9)}" x2="${X(3)}" y2="${Y(-6)}"/>`;
+    if (w === "afstand") s += `<line class="wijs" x1="${X(1)}" y1="${Y(-1)}" x2="${X(5)}" y2="${Y(-1)}"/>`;
+    if (w === "lijn") s += `<rect class="wijs" x="${X(-0.6)}" y="${Y(9)}" width="${7.2 * U}" height="${15 * U}" rx="14"/>`;
+  }
   return s + "</svg>";
 }
 
