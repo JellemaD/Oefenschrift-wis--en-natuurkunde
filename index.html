@@ -348,7 +348,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <h2>Alles op een rij</h2>
     <div class="schrift">
       <button class="topic" data-spiek="wis">
-        <span class="t-main"><span class="t-title">Spiekbrief wiskunde</span><span class="t-sub">Alle formules en regels uit H1 en H2 op één pagina</span></span>
+        <span class="t-main"><span class="t-title">Spiekbrief wiskunde</span><span class="t-sub">Alle formules en regels uit H1 t/m H4 op één pagina</span></span>
       </button>
       <button class="topic" data-spiek="nat">
         <span class="t-main"><span class="t-title">Spiekbrief natuurkunde</span><span class="t-sub">Alle formules, eenheden en begrippen uit H1 t/m H3 op één pagina</span></span>
@@ -453,6 +453,34 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
         <dt><span class="formule">y = a(x − p)² + q</span></dt><dd>top (p, q). Let op: (x + 3)² geeft p = −3</dd>
         <dt><span class="formule">y = a(x − d)(x − e)</span></dt><dd>snijpunten met de x-as: x = d en x = e</dd>
         <dt><span class="formule">y = ax² + bx + c</span></dt><dd>snijpunt met de y-as: (0, c)</dd>
+      </dl>
+      <h3>H3 Hoeken en spiegelen</h3>
+      <dl>
+        <dt>nevenhoeken</dt><dd>naast elkaar op een rechte lijn: samen 180°</dd>
+        <dt>overstaande hoeken</dt><dd>schuin tegenover elkaar: even groot</dd>
+        <dt>F-hoeken / Z-hoeken</dt><dd>bij evenwijdige lijnen: even groot</dd>
+        <dt>hoekensom driehoek</dt><dd>samen 180°</dd>
+        <dt>spiegelen</dt><dd>loodrecht op de spiegellijn, even ver aan de andere kant</dd>
+        <dt>in de y-as / x-as</dt><dd>(x, y) → (−x, y) / (x, −y)</dd>
+        <dt>symmetrieas</dt><dd>dubbelvouwen past precies; vierkant 4, rechthoek 2, gelijkzijdige driehoek 3</dd>
+      </dl>
+      <h3>H3 Driehoeken en gelijkvormigheid</h3>
+      <dl>
+        <dt>driehoek ligt vast bij</dt><dd>drie zijden · twee zijden en de hoek ertussen · een zijde en de twee hoeken eraan</dd>
+        <dt>bestaat de driehoek?</dt><dd>twee kortste samen langer dan de langste</dd>
+        <dt>gelijkvormig</dt><dd>dezelfde hoeken (twee gelijke hoeken is genoeg)</dd>
+        <dt><span class="formule">k = nieuw / oud</span></dt><dd>vergrotingsfactor van overeenkomstige zijden (tegenover dezelfde hoek)</dd>
+        <dt>kruislings</dt><dd><span class="formule">a / b = c / d</span> → <span class="formule">a · d = b · c</span></dd>
+      </dl>
+      <h3>H4 Kwadratische vergelijkingen</h3>
+      <dl>
+        <dt>ontbinden</dt><dd><span class="formule">x² + bx + c = (x + p)(x + q)</span> met p · q = c en p + q = b</dd>
+        <dt>product is 0</dt><dd><span class="formule">A · B = 0</span> → A = 0 of B = 0</dd>
+        <dt><span class="formule">x² = 25</span></dt><dd>x = 5 of x = −5</dd>
+        <dt>geen los getal</dt><dd><span class="formule">x² − 6x = x(x − 6)</span></dd>
+        <dt><span class="formule">D = b² − 4ac</span></dt><dd>D &gt; 0: twee · D = 0: één · D &lt; 0: geen oplossingen</dd>
+        <dt>abc-formule</dt><dd><span class="formule">x = (−b ± √D) / 2a</span></dd>
+        <dt>eerst</dt><dd>op nul herleiden (alles naar één kant); haakjes wegwerken</dd>
       </dl>
     </div>
     <div class="spiek" id="spiek-nat">
@@ -615,7 +643,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.09-8";
+const VERSIE = "2026.10.09-9";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
@@ -1107,6 +1135,285 @@ const ONDERWERPEN = [
         velden: [{ label: "parabool", val: smal, tol: EXACT, tips: [[3 - smal, "Juist andersom: hoe groter a (zonder min-teken), hoe smaller. Het getal c verandert alleen de hoogte."]] }],
         hint: `Vergelijk alleen de getallen vóór x², zonder op het min-teken te letten.`,
         stappen: `|a| = ${fmt(Math.abs(a1))} tegen ${fmt(Math.abs(a2))} → parabool <b>${smal}</b> is het smalst.` };
+    }
+  },
+  // ---------- Wiskunde H3 Vlakke figuren ----------
+  {
+    id: "hoek-fz", vak: "wis", titel: "Hoeken bij evenwijdige lijnen",
+    sub: "F-hoeken, Z-hoeken, nevenhoeken, overstaande hoeken",
+    uitleg: `<p>Lijn l en m zijn evenwijdig en worden gesneden door een derde lijn.</p>
+      <ul><li><b>Nevenhoeken</b> liggen naast elkaar op een rechte lijn: samen 180°.</li>
+      <li><b>Overstaande hoeken</b> liggen schuin tegenover elkaar: even groot.</li>
+      <li><b>F-hoeken</b> (zelfde plek bij beide snijpunten): even groot.</li>
+      <li><b>Z-hoeken</b> (tussen de lijnen, aan verschillende kanten van de snijlijn): even groot.</li></ul>
+      <p>Er zijn dus maar twee groottes: α en 180° − α.</p>`,
+    gen() {
+      const a = R(35, 80), POS = ["ro", "lo", "lb", "rb"], scherp = p => p === "ro" || p === "lb";
+      const g = [pick(["A", "B"]), pick(POS)]; let v; do { v = [pick(["A", "B"]), pick(POS)]; } while (v[0] === g[0] && v[1] === g[1]);
+      const waarde = p => scherp(p) ? a : 180 - a, antw = waarde(v[1]);
+      return { vraag: `Lijn l en m zijn evenwijdig. De gele hoek bij ${g[0]} is ${waarde(g[1])}°. Hoe groot is de rode hoek bij ${v[0]}?${meetSVG({ scene: "hoeken", schaal: false, h: [[g[0], g[1], waarde(g[1]) + "°"], [v[0], v[1], "?", "rood"]] })}`,
+        velden: [{ label: "hoek =", val: antw, tol: EXACT, eenheid: "°", tips: [[180 - antw, "Kijk of de rode hoek scherp of stomp is. Een hoek en zijn nevenhoek zijn samen 180°."]] }],
+        hint: `Zoek een F-hoek, Z-hoek, overstaande hoek of nevenhoek die de twee hoeken verbindt. Er zijn maar twee groottes: ${waarde(g[1])}° en ${180 - waarde(g[1])}°.`,
+        stappen: `De rode hoek is ${scherp(v[1]) ? "scherp" : "stomp"}, net als ${scherp(v[1]) === scherp(g[1]) ? "de gele hoek: even groot" : "de nevenhoek van de gele hoek"}.<br>Rode hoek = <b>${antw}°</b>` };
+    }
+  },
+  {
+    id: "hoekensom", vak: "wis", titel: "Hoekensom van een driehoek",
+    sub: "Samen altijd 180°",
+    uitleg: `<p>De drie hoeken van een driehoek zijn samen altijd <b>180°</b>.</p>
+      <ul><li>Derde hoek = 180° − de andere twee.</li><li>Gelijkbenige driehoek: de twee basishoeken zijn even groot.</li></ul>`,
+    gen() {
+      if (Math.random() < 0.6) {
+        const A = R(25, 90), B = R(20, 140 - A), C = 180 - A - B, P = [[50, 240], [290, 240], [140, 60]];
+        return { vraag: `In driehoek ABC is ∠A = ${A}° en ∠B = ${B}°. Hoe groot is ∠C?${meetSVG({ scene: "driehoek", schaal: false, d: [{ P, namen: ["A", "B", "C"], hoeken: [A + "°", B + "°", "?"] }] })}`,
+          velden: [{ label: "∠C =", val: C, tol: EXACT, eenheid: "°", tips: [[360 - A - B, "De hoeken van een driehoek zijn samen 180°, niet 360°."]] }],
+          hint: `Samen 180°: 180 − ${A} − ${B}.`, stappen: `∠C = 180 − ${A} − ${B} = <b>${C}°</b>` };
+      }
+      const top = pick([20, 30, 40, 50, 60, 70, 80, 90, 100, 110]), basis = (180 - top) / 2;
+      return { vraag: `Driehoek ABC is gelijkbenig met AC = BC. De tophoek ∠C is ${top}°. Hoe groot is ∠A?`,
+        velden: [{ label: "∠A =", val: basis, tol: EXACT, eenheid: "°", tips: [[180 - top, "Dat is ∠A en ∠B samen. Deel nog door 2: de basishoeken zijn even groot."]] }],
+        hint: `∠A en ∠B zijn even groot. Samen zijn ze 180 − ${top}.`, stappen: `∠A + ∠B = 180 − ${top} = ${180 - top}<br>∠A = ${180 - top} / 2 = <b>${fmt(basis)}°</b>` };
+    }
+  },
+  {
+    id: "spiegel-punt", vak: "wis", titel: "Een punt spiegelen",
+    sub: "In de x-as, de y-as of een andere lijn",
+    uitleg: `<p>Het spiegelbeeld ligt aan de andere kant van de spiegellijn, <b>even ver weg</b>, en de verbindingslijn staat <b>loodrecht</b> op de spiegellijn.</p>
+      <ul><li>Spiegelen in de y-as: (x, y) → (−x, y)</li><li>Spiegelen in de x-as: (x, y) → (x, −y)</li>
+      <li>Spiegelen in de lijn x = k: tel de afstand tot de lijn en ga even ver aan de andere kant.</li></ul>`,
+    gen() {
+      const soort = pick(["x", "y"]), k = pick([0, 0, R(-2, 2)]), x = R(-4, 4), y = R(-4, 4);
+      const [bx, by] = soort === "x" ? [x, 2 * k - y] : [2 * k - x, y];
+      const naam = soort === "x" ? (k ? `de lijn y = ${fmt(k)}` : "de x-as") : (k ? `de lijn x = ${fmt(k)}` : "de y-as");
+      return { vraag: `Spiegel het punt P(${fmt(x)}, ${fmt(y)}) in ${naam}. Wat zijn de coördinaten van het spiegelbeeld P'?`,
+        velden: [{ label: "x =", val: bx, tol: EXACT, tips: soort === "y" && k ? [[-x, `Je hebt gespiegeld in de y-as. De spiegellijn is x = ${fmt(k)}: tel de afstand tot die lijn.`]] : [] },
+                 { label: "y =", val: by, tol: EXACT, tips: soort === "x" && k ? [[-y, `Je hebt gespiegeld in de x-as. De spiegellijn is y = ${fmt(k)}: tel de afstand tot die lijn.`]] : [] }],
+        hint: soort === "y" ? `De y blijft ${fmt(y)}. Hoe ver ligt P links of rechts van ${naam}? Ga even ver naar de andere kant.` : `De x blijft ${fmt(x)}. Hoe ver ligt P boven of onder ${naam}? Ga even ver naar de andere kant.`,
+        stappen: `${soort === "y" ? `P ligt ${fmt(Math.abs(x - k))} ${x >= k ? "rechts" : "links"} van ${naam}, P' even ver aan de andere kant.` : `P ligt ${fmt(Math.abs(y - k))} ${y >= k ? "boven" : "onder"} ${naam}, P' even ver aan de andere kant.`}<br>P' = <b>(${fmt(bx)}, ${fmt(by)})</b>${meetSVG({ scene: "spiegel", lijn: [soort, k], P: [x, y], beeld: true })}` };
+    }
+  },
+  {
+    id: "symmetrieassen", vak: "wis", titel: "Symmetrieassen tellen",
+    sub: "Hoe vaak kun je de figuur dubbelvouwen?",
+    uitleg: `<p>Een <b>symmetrieas</b> is een lijn waarin je een figuur kunt spiegelen zodat hij op zichzelf valt (dubbelvouwen past precies).</p>
+      <ul><li>Vierkant: 4 · rechthoek: 2 · ruit: 2 · gelijkzijdige driehoek: 3</li><li>Gelijkbenige driehoek: 1 · parallellogram: 0 · regelmatige zeshoek: 6</li></ul>`,
+    gen() {
+      const [naam, n, tip] = pick([["een vierkant", 4, "Denk aan de twee diagonalen én de twee lijnen door het midden van de zijden."], ["een rechthoek (geen vierkant)", 2, "De diagonalen van een rechthoek zijn géén symmetrieassen."], ["een ruit (geen vierkant)", 2, "Bij een ruit zijn juist de diagonalen de symmetrieassen."], ["een gelijkzijdige driehoek", 3, "Van elke hoek naar het midden van de overstaande zijde."], ["een gelijkbenige driehoek (niet gelijkzijdig)", 1, "Alleen de lijn van de tophoek naar het midden van de basis."], ["een parallellogram (geen rechthoek of ruit)", 0, "Probeer dubbel te vouwen: het past nooit precies."], ["een regelmatige zeshoek", 6, "Door tegenover elkaar liggende hoeken én door de middens van tegenover elkaar liggende zijden."], ["een gelijkbenig trapezium", 1, "Alleen de lijn door de middens van de twee evenwijdige zijden."]]);
+      return { vraag: `Hoeveel symmetrieassen heeft ${naam}?`,
+        velden: [{ label: "aantal =", val: n, tol: EXACT, tips: [0, 1, 2, 3, 4, 6].filter(x => x !== n).map(x => [x, "Nog niet. " + tip]) }],
+        hint: `Teken de figuur en zoek elke lijn waarlangs je hem precies dubbel kunt vouwen.`, stappen: `${naam[0].toUpperCase() + naam.slice(1)} heeft <b>${n}</b> symmetrie${n === 1 ? "as" : "assen"}. ${tip}` };
+    }
+  },
+  {
+    id: "driehoek-kan", vak: "wis", titel: "Bestaat de driehoek?",
+    sub: "De twee kortste samen langer dan de langste",
+    uitleg: `<p>Een driehoek bestaat alleen als de <b>twee kortste zijden samen langer</b> zijn dan de langste zijde.</p>
+      <p>Voorbeeld: 4, 5 en 6 cm kan (4 + 5 = 9 &gt; 6). Met 2, 3 en 6 cm lukt het niet (2 + 3 = 5 &lt; 6). Bij precies gelijk (2, 3 en 5) liggen de punten op één lijn: ook geen driehoek.</p>`,
+    gen() {
+      const z = [R(2, 9), R(2, 9), R(2, 12)].sort((p, q) => p - q), kan = z[0] + z[1] > z[2] ? 1 : 2, sh = [...z].sort(() => Math.random() - 0.5);
+      return { vraag: `Kun je een driehoek tekenen met zijden van ${sh[0]} cm, ${sh[1]} cm en ${sh[2]} cm?<br>Vul in: <b>1</b> = ja, <b>2</b> = nee.`,
+        velden: [{ label: "antwoord =", val: kan, tol: EXACT, tips: [[3 - kan, `Nog niet. Tel de twee kortste op: ${z[0]} + ${z[1]} = ${z[0] + z[1]}. Is dat meer dan ${z[2]}?`]] }],
+        hint: `Tel de twee kortste zijden op en vergelijk met de langste.`,
+        stappen: `${z[0]} + ${z[1]} = ${z[0] + z[1]} ${z[0] + z[1] > z[2] ? "&gt;" : z[0] + z[1] === z[2] ? "=" : "&lt;"} ${z[2]} → <b>${kan === 1 ? "1 = ja" : "2 = nee"}</b>` };
+    }
+  },
+  {
+    id: "driehoek-gegevens", vak: "wis", titel: "Welke gegevens heb je?",
+    sub: "Drie zijden, twee zijden met de hoek ertussen, of een zijde met twee hoeken",
+    uitleg: `<p>Een driehoek ligt vast (je kunt hem precies tekenen) als je weet:</p>
+      <ol><li>de <b>drie zijden</b> (passer gebruiken);</li><li><b>twee zijden en de hoek ertussen</b>;</li><li><b>één zijde en de twee hoeken die eraan liggen</b>.</li></ol>
+      <p>Let op: ∠A ligt tussen de zijden AB en AC.</p>`,
+    gen() {
+      const z = () => R(3, 8), h = () => R(30, 80);
+      const V = pick([
+        [`AB = ${z()} cm, BC = ${z() + 1} cm en AC = ${z()} cm`, 1, "Alle drie de zijden zijn gegeven."],
+        [`AB = ${z()} cm, AC = ${z()} cm en ∠A = ${h()}°`, 2, "∠A ligt tussen AB en AC: twee zijden en de hoek ertussen."],
+        [`BC = ${z()} cm, AB = ${z()} cm en ∠B = ${h()}°`, 2, "∠B ligt tussen AB en BC: twee zijden en de hoek ertussen."],
+        [`AB = ${z()} cm, ∠A = ${h()}° en ∠B = ${h()}°`, 3, "∠A en ∠B liggen allebei aan zijde AB: één zijde en de twee hoeken eraan."],
+        [`BC = ${z()} cm, ∠B = ${h()}° en ∠C = ${h()}°`, 3, "∠B en ∠C liggen allebei aan zijde BC: één zijde en de twee hoeken eraan."]]);
+      return { vraag: `Van driehoek ABC is gegeven: ${V[0]}. Welke situatie is dit?<br>Vul in: <b>1</b> = drie zijden, <b>2</b> = twee zijden en de hoek ertussen, <b>3</b> = één zijde en de twee hoeken eraan.`,
+        velden: [{ label: "antwoord =", val: V[1], tol: EXACT, tips: [1, 2, 3].filter(x => x !== V[1]).map(x => [x, "Nog niet. Kijk welke hoek tussen welke zijden ligt: ∠A ligt tussen AB en AC."]) }],
+        hint: `Tel zijden en hoeken. Ligt de hoek tussen de twee gegeven zijden, of aan de gegeven zijde?`, stappen: `Antwoord <b>${V[1]}</b>. ${V[2]}` };
+    }
+  },
+  {
+    id: "vergrotingsfactor", vak: "wis", titel: "Vergrotingsfactor",
+    sub: "k = nieuwe lengte / oude lengte",
+    uitleg: `<p>Bij gelijkvormige figuren worden alle lengtes met hetzelfde getal vermenigvuldigd: de <b>vergrotingsfactor</b> k.</p>
+      <ul><li>${F("k = nieuwe lengte / oude lengte")} (van overeenkomstige zijden)</li><li>Nieuwe lengte = k · oude lengte; oude lengte = nieuwe lengte / k</li>
+      <li>k &gt; 1: vergroting; k &lt; 1: verkleining.</li></ul>`,
+    gen() {
+      const k = pick([1.5, 2, 2.5, 3, 4, 0.5, 0.25]), oud = pick([2, 4, 6, 8, 10, 12]), nieuw = k * oud, v = pick(["k", "nieuw", "oud"]);
+      if (v === "k") return { vraag: `Driehoek ABC wordt vergroot of verkleind tot driehoek DEF. Zijde AB = ${oud} cm hoort bij zijde DE = ${fmt(nieuw)} cm. Wat is de vergrotingsfactor?`,
+        velden: [{ label: "k =", val: k, tol: EXACT, tips: [[oud / nieuw, "Andersom: deel de nieuwe lengte (DE) door de oude lengte (AB)."]] }], hint: `${F("k = DE / AB")}`, stappen: `k = ${fmt(nieuw)} / ${oud} = <b>${fmt(k)}</b>` };
+      if (v === "nieuw") return { vraag: `Een driehoek wordt vermenigvuldigd met vergrotingsfactor ${fmt(k)}. Een zijde is ${oud} cm. Hoe lang wordt die zijde?`,
+        velden: [{ label: "lengte =", val: nieuw, tol: EXACT, eenheid: "cm", tips: [[oud / k, "Je hebt gedeeld. Nieuwe lengte = k · oude lengte."]] }], hint: `${fmt(k)} · ${oud}`, stappen: `${fmt(k)} · ${oud} = <b>${fmt(nieuw)} cm</b>` };
+      return { vraag: `Na vermenigvuldigen met vergrotingsfactor ${fmt(k)} is een zijde ${fmt(nieuw)} cm. Hoe lang was die zijde eerst?`,
+        velden: [{ label: "lengte =", val: oud, tol: EXACT, eenheid: "cm", tips: [[nieuw * k, "Terugrekenen: deel door k in plaats van vermenigvuldigen."]] }], hint: `Oude lengte = nieuwe lengte / k.`, stappen: `${fmt(nieuw)} / ${fmt(k)} = <b>${oud} cm</b>` };
+    }
+  },
+  {
+    id: "gelijkvormig-ja", vak: "wis", titel: "Zijn ze gelijkvormig?",
+    sub: "Vergelijk de hoeken",
+    uitleg: `<p>Twee driehoeken zijn <b>gelijkvormig</b> als ze dezelfde hoeken hebben. Twee gelijke hoeken is genoeg: de derde volgt uit de hoekensom (180°).</p>
+      <p>Tip: reken eerst bij beide driehoeken de derde hoek uit.</p>`,
+    gen() {
+      const A = R(30, 80), B = R(30, 140 - A - 10), C = 180 - A - B, ja = Math.random() < 0.5;
+      const lijst = ja ? pick([[B, C], [C, A], [A, C]]) : [A + pick([-10, -5, 5, 10]), B];
+      const ander = 180 - lijst[0] - lijst[1], set1 = [A, B, C].sort((p, q) => p - q), set2 = [lijst[0], lijst[1], ander].sort((p, q) => p - q), gelijk = set1.every((x, i) => x === set2[i]) ? 1 : 2;
+      return { vraag: `Driehoek ABC heeft ∠A = ${A}° en ∠B = ${B}°. Driehoek PQR heeft ∠P = ${lijst[0]}° en ∠Q = ${lijst[1]}°. Zijn de driehoeken gelijkvormig?<br>Vul in: <b>1</b> = ja, <b>2</b> = nee.`,
+        velden: [{ label: "antwoord =", val: gelijk, tol: EXACT, tips: [[3 - gelijk, "Nog niet. Reken bij beide driehoeken de derde hoek uit en vergelijk alle drie de hoeken."]] }],
+        hint: `Derde hoek ABC: 180 − ${A} − ${B}. Derde hoek PQR: 180 − ${lijst[0]} − ${lijst[1]}.`,
+        stappen: `Hoeken ABC: ${set1.join("°, ")}°<br>Hoeken PQR: ${set2.join("°, ")}°<br>${gelijk === 1 ? "Dezelfde hoeken → <b>1 = ja, gelijkvormig</b>" : "Niet dezelfde hoeken → <b>2 = nee</b>"}` };
+    }
+  },
+  {
+    id: "zijde-gelijkvormig", vak: "wis", titel: "Zijde berekenen",
+    sub: "Met de vergrotingsfactor of een verhoudingstabel",
+    uitleg: `<p>Zijn twee driehoeken gelijkvormig, dan zet je <b>overeenkomstige zijden</b> in een verhoudingstabel.</p>
+      <ol><li>Zoek een paar zijden waarvan je beide lengtes kent: k = groot / klein.</li><li>Onbekende zijde = k · de bijbehorende zijde.</li></ol>
+      <p>Of kruislings vermenigvuldigen: 4 / 6 = 6 / x → 4x = 36 → x = 9.</p>`,
+    gen() {
+      const k = pick([1.5, 2, 2.5, 3, 0.5]), a = pick([2, 4, 6, 8]), b = pick([3, 5, 6, 10].filter(x => x !== a));
+      const P1 = [[30, 230], [30 + a * 12, 230], [30, 230 - b * 12]], P2 = [[190, 240], [190 + a * 12 * Math.min(k, 1.8) / 1, 240], [190, 240 - b * 12 * Math.min(k, 1.8)]];
+      const tabel = `<div class="tabelwrap"><table class="tabel"><tr><th>ABC</th><td>AB = ${a}</td><td>AC = ${b}</td></tr><tr><th>DEF</th><td>DE = ${fmt(a * k)}</td><td>DF = ?</td></tr></table></div>`;
+      return { vraag: `Driehoek ABC en DEF zijn gelijkvormig (AB hoort bij DE, AC bij DF). AB = ${a}, AC = ${b} en DE = ${fmt(a * k)}. Bereken DF.${tabel}`,
+        velden: [{ label: "DF =", val: b * k, tol: EXACT, tips: [[b / k, "Andersom: DEF is " + (k > 1 ? "groter" : "kleiner") + ". Vermenigvuldig met k = DE / AB."], [b + a * k - a, "Bij gelijkvormigheid vermenigvuldig je; je telt niet hetzelfde getal erbij op."]] }],
+        hint: `k = DE / AB = ${fmt(a * k)} / ${a}. Doe AC keer k.`, stappen: `k = ${fmt(a * k)} / ${a} = ${fmt(k)}<br>DF = ${fmt(k)} · ${b} = <b>${fmt(b * k)}</b>` };
+    }
+  },
+  {
+    id: "kruislings", vak: "wis", titel: "Kruislings vermenigvuldigen",
+    sub: "x uitrekenen uit een verhouding",
+    uitleg: `<p>Staan er twee breuken gelijk aan elkaar, dan mag je <b>kruislings vermenigvuldigen</b>:</p>
+      <p>${F("a / b = c / d")} → ${F("a · d = b · c")}</p><p>Voorbeeld: 4 / 6 = 10 / x → 4 · x = 6 · 10 → 4x = 60 → x = 15.</p>`,
+    gen() {
+      const a = pick([2, 3, 4, 5, 6, 8]), b = pick([3, 4, 5, 6, 9, 10, 12].filter(x => x !== a)), m = pick([2, 3, 4, 5, 1.5, 2.5]), c = a * m, x = b * m;
+      return { vraag: `Los op: ${F(`${a} / ${b} = ${fmt(c)} / x`)}`,
+        velden: [{ label: "x =", val: x, tol: EXACT, tips: [[a * c / b, "Kruislings: " + a + " · x = " + b + " · " + fmt(c) + ". Dan delen door " + a + "."]] }],
+        hint: `Kruislings: ${a} · x = ${b} · ${fmt(c)}.`, stappen: `${a}x = ${b} · ${fmt(c)} = ${fmt(b * c)}<br>x = ${fmt(b * c)} / ${a} = <b>${fmt(x)}</b>` };
+    }
+  },
+  // ---------- Wiskunde H4 De abc-formule ----------
+  {
+    id: "ontbinden", vak: "wis", titel: "Ontbinden in factoren",
+    sub: "x² + bx + c = (x + p)(x + q)",
+    uitleg: `<p>Ontbinden: een som schrijven als een product.</p>
+      <p>${F("x² + bx + c = (x + p)(x + q)")} met <b>p · q = c</b> en <b>p + q = b</b>.</p>
+      <ul><li>x² + 5x + 6: product 6, som 5 → 2 en 3 → (x + 2)(x + 3)</li><li>x² − x − 6: product −6, som −1 → 2 en −3 → (x + 2)(x − 3)</li>
+      <li>Geen los getal? x buiten haakjes: x² + 4x = x(x + 4)</li></ul>`,
+    gen() {
+      let p, q; do { p = R(-7, 7); q = R(-7, 7); } while (!p || !q); [p, q] = [Math.min(p, q), Math.max(p, q)];
+      const b = p + q, c = p * q;
+      return { vraag: `Ontbind in factoren: ${F(kw(1, b, c).slice(4))}. Schrijf het als (x + p)(x + q) en geef p en q (kleinste eerst).`,
+        velden: [{ label: "p =", val: p, tol: EXACT, tips: [[-p, "Let op het teken: p · q moet " + fmt(c) + " zijn en p + q moet " + fmt(b) + " zijn."], [-q, "Let op het teken: p · q moet " + fmt(c) + " zijn en p + q moet " + fmt(b) + " zijn."]] },
+                 { label: "q =", val: q, tol: EXACT, tips: [[-q, "Let op het teken."], [-p, "Let op het teken."]] }],
+        hint: `Zoek twee getallen met product ${fmt(c)} en som ${fmt(b)}.`,
+        stappen: `${fmt(p)} · ${par(q)} = ${fmt(c)} en ${fmt(p)} + ${par(q)} = ${fmt(b)}<br>${kw(1, b, c).slice(4)} = <b>${fac(p)}${fac(q)}</b>` };
+    }
+  },
+  {
+    id: "ontbinden-oplossen", vak: "wis", titel: "Oplossen door ontbinden",
+    sub: "A · B = 0 → A = 0 of B = 0",
+    uitleg: `<p>Een product is 0 als één van de factoren 0 is.</p>
+      <ol><li>Ontbind: x² − x − 6 = 0 → (x + 2)(x − 3) = 0</li><li>Elke factor 0: x + 2 = 0 of x − 3 = 0</li><li>x = −2 of x = 3</li></ol>
+      <p>Geen los getal: x² − 5x = 0 → x(x − 5) = 0 → x = 0 of x = 5.</p>`,
+    gen() {
+      let d, e; do { d = R(-7, 7); e = R(-7, 7); } while (d === e); [d, e] = [Math.min(d, e), Math.max(d, e)];
+      const b = -(d + e), c = d * e;
+      return { vraag: `Los op door te ontbinden: ${F(kw(1, b, c, "x", "").replace(/^ = /, "") + " = 0")}. Geef de oplossingen, de kleinste eerst.`,
+        velden: [{ label: "x =", val: d, tol: EXACT, tips: [[-d, "Let op het teken: x + 3 = 0 geeft x = −3."], [-e, "Let op het teken: x + 3 = 0 geeft x = −3."]] }, { label: "of x =", val: e, tol: EXACT, tips: [[-e, "Let op het teken."], [-d, "Let op het teken."]] }],
+        hint: c ? `Zoek twee getallen met product ${fmt(c)} en som ${fmt(b)}. Elke factor apart gelijk aan 0.` : `Er is geen los getal: haal x buiten haakjes.`,
+        stappen: `${kw(1, b, c).slice(4)} = 0<br>${fac(-d)}${fac(-e)} = 0<br>${fac(-d)} = 0 of ${fac(-e)} = 0<br><b>x = ${fmt(d)} of x = ${fmt(e)}</b>` };
+    }
+  },
+  {
+    id: "discriminant", vak: "wis", titel: "Discriminant en aantal oplossingen",
+    sub: "D = b² − 4ac",
+    uitleg: `<p>Bij ${F("ax² + bx + c = 0")} reken je eerst de discriminant uit: ${F("D = b² − 4ac")}.</p>
+      <ul><li>D &gt; 0: twee oplossingen</li><li>D = 0: één oplossing</li><li>D &lt; 0: geen oplossingen</li></ul>
+      <p>Let op: b² is altijd positief, ook als b negatief is: (−4)² = 16.</p>`,
+    gen() {
+      const a = pick([1, 1, 2, -1, 3]), b = R(-8, 8) || 4, c = Math.random() < 0.25 && Number.isInteger(b * b / (4 * a)) ? b * b / (4 * a) : (R(-9, 9) || 2), D = b * b - 4 * a * c, n = D > 0 ? 2 : D === 0 ? 1 : 0;
+      return { vraag: `Gegeven is ${F(kw(a, b, c).slice(4) + " = 0")}. Bereken de discriminant D en het aantal oplossingen.`,
+        velden: [{ label: "D =", val: D, tol: EXACT, tips: [[-b * b - 4 * a * c, "b² is altijd positief: " + par(b) + "² = " + b * b + "."], [b * b + 4 * a * c, "Het is b² min 4ac. Let op het teken van 4 · a · c."]] },
+                 { label: "aantal oplossingen =", val: n, tol: EXACT, tips: [0, 1, 2].filter(x => x !== n).map(x => [x, "D > 0: twee, D = 0: één, D < 0: geen."]) }],
+        hint: `a = ${fmt(a)}, b = ${fmt(b)}, c = ${fmt(c)}. D = ${par(b)}² − 4 · ${par(a)} · ${par(c)}.`,
+        stappen: `D = ${par(b)}² − 4 · ${par(a)} · ${par(c)} = ${b * b} − ${par(4 * a * c)} = <b>${D}</b><br>D ${D > 0 ? "&gt;" : D === 0 ? "=" : "&lt;"} 0 → <b>${n} oplossing${n === 1 ? "" : "en"}</b>` };
+    }
+  },
+  {
+    id: "abc", vak: "wis", titel: "Oplossen met de abc-formule",
+    sub: "x = (−b ± √D) / 2a",
+    uitleg: `<p>${F("x = (−b ± √D) / 2a")} met ${F("D = b² − 4ac")}.</p>
+      <ol><li>Schrijf a, b en c op (let op de min-tekens).</li><li>Reken D uit.</li><li>Vul in: één keer met + √D, één keer met − √D.</li></ol>
+      <p>Voorbeeld: x² − 4x + 1 = 0 → D = 16 − 4 = 12 → x = (4 ± √12) / 2 → x ≈ 3,73 of x ≈ 0,27.</p>`,
+    gen() {
+      let a, b, c, D; do { a = pick([1, 1, 2, -1]); b = R(-7, 7); c = R(-8, 8); D = b * b - 4 * a * c; } while (D <= 0);
+      const w = Math.sqrt(D), r = [(-b - w) / (2 * a), (-b + w) / (2 * a)].sort((p, q) => p - q), af = x => Math.round(x * 100) / 100, tol = { abs: 0.011, rel: 0 };
+      return { vraag: `Los op met de abc-formule: ${F(kw(a, b, c).slice(4) + " = 0")}. Rond af op twee decimalen, de kleinste eerst.`,
+        velden: [{ label: "x =", val: af(r[0]), tol, tips: [[af((b - w) / (2 * a)), "Let op: het is −b in de teller. Bij b = " + fmt(b) + " is −b = " + fmt(-b) + "."], [af((b + w) / (2 * a)), "Let op: het is −b in de teller."]] }, { label: "of x =", val: af(r[1]), tol, tips: [[af((b + w) / (2 * a)), "Let op: het is −b in de teller."], [af((b - w) / (2 * a)), "Let op: het is −b in de teller."]] }],
+        hint: `a = ${fmt(a)}, b = ${fmt(b)}, c = ${fmt(c)}. Eerst D = b² − 4ac.`,
+        stappen: `D = ${par(b)}² − 4 · ${par(a)} · ${par(c)} = ${D}<br>x = (${fmt(-b)} ± √${D}) / ${par(2 * a)}<br><b>x ≈ ${fmt(af(r[0]), 2)} of x ≈ ${fmt(af(r[1]), 2)}</b>` };
+    }
+  },
+  {
+    id: "methode", vak: "wis", titel: "Welke methode is het handigst?",
+    sub: "Wortel, x buiten haakjes, ontbinden of abc-formule",
+    uitleg: `<ul><li><b>1 Wortel trekken</b>: alleen x² en een getal, bijv. x² = 25 → x = 5 of x = −5.</li>
+      <li><b>2 x buiten haakjes</b>: geen los getal, bijv. x² − 6x = 0 → x(x − 6) = 0.</li>
+      <li><b>3 Ontbinden</b>: a = 1 en mooie gehele getallen, bijv. x² + 7x + 12 = 0.</li>
+      <li><b>4 abc-formule</b>: werkt altijd; handig als ontbinden niet lukt of a ≠ 1.</li></ul>`,
+    gen() {
+      const t = pick([1, 2, 3, 4]); let v;
+      if (t === 1) { const k = pick([4, 9, 16, 25, 36, 49]); v = pick([`x² = ${k}`, `x² − ${k} = 0`]); }
+      if (t === 2) { const b = R(2, 9) * pick([1, -1]); v = kw(1, b, 0).slice(4) + " = 0"; }
+      if (t === 3) { let p, q; do { p = R(-6, 6); q = R(-6, 6); } while (!p || !q || p === -q); v = kw(1, p + q, p * q).slice(4) + " = 0"; }
+      if (t === 4) { let a, b, c, D; do { a = pick([2, 3, -2]); b = R(-7, 7) || 3; c = R(-6, 6) || 1; D = b * b - 4 * a * c; } while (D <= 0 || Number.isInteger(Math.sqrt(D))); v = kw(a, b, c).slice(4) + " = 0"; }
+      const uit = { 1: "Alleen x² en een getal: neem de wortel (positief én negatief).", 2: "Geen los getal: haal x buiten haakjes.", 3: "a = 1 en twee mooie gehele getallen: ontbinden gaat het snelst.", 4: "Ontbinden lukt hier niet mooi: gebruik de abc-formule." };
+      return { vraag: `Welke methode is het handigst voor ${F(v)}?<br>Vul in: <b>1</b> = wortel trekken, <b>2</b> = x buiten haakjes, <b>3</b> = ontbinden, <b>4</b> = abc-formule.`,
+        velden: [{ label: "antwoord =", val: t, tol: EXACT, tips: [1, 2, 3, 4].filter(x => x !== t).map(x => [x, x === 4 ? "De abc-formule werkt altijd, maar hier kan het sneller. " + uit[t].split(":")[0] + "." : "Nog niet. Kijk: is er een los getal? Een term met x? Is a = 1?"]) }],
+        hint: `Kijk welke termen er staan: alleen x²? geen los getal? a = 1 met mooie getallen?`, stappen: `Antwoord <b>${t}</b>. ${uit[t]}` };
+    }
+  },
+  {
+    id: "kwadr-snel", vak: "wis", titel: "Snel oplossen",
+    sub: "Wortel trekken of x buiten haakjes",
+    uitleg: `<ul><li>${F("x² = 25")} → x = 5 of x = −5 (vergeet de negatieve niet!)</li><li>${F("(x − 1)² = 16")} → x − 1 = 4 of x − 1 = −4 → x = 5 of x = −3</li>
+      <li>${F("x² − 6x = 0")} → x(x − 6) = 0 → x = 0 of x = 6</li></ul>`,
+    gen() {
+      const v = pick(["wortel", "haakje", "buiten"]);
+      if (v === "wortel") { const w = R(2, 9); return { vraag: `Los op: ${F(`x² = ${w * w}`)}. Geef de oplossingen, de kleinste eerst.`, velden: [{ label: "x =", val: -w, tol: EXACT, tips: [[w, "Er zijn twee oplossingen: ook de negatieve. (−" + w + ")² = " + w * w + "."]] }, { label: "of x =", val: w, tol: EXACT }], hint: `Welk getal in het kwadraat is ${w * w}? Denk ook aan het negatieve getal.`, stappen: `x = √${w * w} of x = −√${w * w}<br><b>x = −${w} of x = ${w}</b>` }; }
+      if (v === "haakje") { const p = R(-5, 5) || 2, w = R(1, 6); return { vraag: `Los op: ${F(`(${lin(-p)})² = ${w * w}`)}. Geef de oplossingen, de kleinste eerst.`, velden: [{ label: "x =", val: p - w, tol: EXACT }, { label: "of x =", val: p + w, tol: EXACT }], hint: `${lin(-p)} = ${w} of ${lin(-p)} = −${w}.`, stappen: `${lin(-p)} = ${w} of ${lin(-p)} = −${w}<br><b>x = ${fmt(p - w)} of x = ${fmt(p + w)}</b>` }; }
+      const b = R(2, 9) * pick([1, -1]), r = [0, -b].sort((p, q) => p - q);
+      return { vraag: `Los op: ${F(kw(1, b, 0).slice(4) + " = 0")}. Geef de oplossingen, de kleinste eerst.`, velden: [{ label: "x =", val: r[0], tol: EXACT, tips: [[-r[0], "Let op het teken."]] }, { label: "of x =", val: r[1], tol: EXACT, tips: [[-r[1], "Let op het teken."]] }], hint: `Haal x buiten haakjes: x(${lin(b)}) = 0.`, stappen: `x(${lin(b)}) = 0<br>x = 0 of ${lin(b)} = 0<br><b>x = ${fmt(r[0])} of x = ${fmt(r[1])}</b>` };
+    }
+  },
+  {
+    id: "op-nul", vak: "wis", titel: "Op nul herleiden",
+    sub: "Alles naar één kant: … = 0",
+    uitleg: `<p>Een kwadratische vergelijking los je op als er rechts <b>0</b> staat.</p>
+      <ul><li>x² + 3x = 10 → aan beide kanten 10 eraf → x² + 3x − 10 = 0</li><li>Haakjes eerst wegwerken: x(x + 2) = 15 → x² + 2x = 15 → x² + 2x − 15 = 0</li></ul>`,
+    gen() {
+      if (Math.random() < 0.5) { const b = R(-6, 6) || 2, c = R(2, 20) * pick([1, -1]);
+        return { vraag: `Herleid op nul: ${F(kw(1, b, 0).slice(4) + " = " + fmt(c))}. Schrijf als x² + bx + c = 0. Wat zijn b en c?`, velden: [{ label: "b =", val: b, tol: EXACT }, { label: "c =", val: -c, tol: EXACT, tips: [[c, "Breng " + fmt(c) + " naar links: dan verandert het teken."]] }],
+          hint: `Trek aan beide kanten ${fmt(c)} af.`, stappen: `${kw(1, b, 0).slice(4)} ${c < 0 ? "+" : "−"} ${fmt(Math.abs(c))} = 0<br><b>b = ${fmt(b)}, c = ${fmt(-c)}</b>` }; }
+      const p = R(1, 6) * pick([1, -1]), q = R(2, 20);
+      return { vraag: `Herleid op nul: ${F(`x(${lin(p)}) = ${q}`)}. Schrijf als x² + bx + c = 0. Wat zijn b en c?`, velden: [{ label: "b =", val: p, tol: EXACT }, { label: "c =", val: -q, tol: EXACT, tips: [[q, "Breng " + q + " naar links: dan verandert het teken."]] }],
+        hint: `Werk eerst de haakjes weg: x · x en x · ${fmt(p)}. Trek daarna ${q} af.`, stappen: `x(${lin(p)}) = ${kw(1, p, 0).slice(4)}<br>${kw(1, p, 0).slice(4)} − ${q} = 0<br><b>b = ${fmt(p)}, c = ${fmt(-q)}</b>` };
+    }
+  },
+  {
+    id: "kwadr-vergelijking", vak: "wis", titel: "Kwadratische vergelijking oplossen",
+    sub: "Op nul, ontbinden, oplossen",
+    uitleg: `<ol><li>Herleid op nul.</li><li>Ontbind (of gebruik de abc-formule).</li><li>Elke factor gelijk aan 0.</li></ol>
+      <p>Voorbeeld: x² + 3x = 10 → x² + 3x − 10 = 0 → (x + 5)(x − 2) = 0 → x = −5 of x = 2.</p>`,
+    gen() {
+      let d, e; do { d = R(-7, 6); e = R(-6, 7); } while (d >= e || d * e === 0); const b = -(d + e), c0 = d * e, k = R(-10, 12) || 4, links = c0 + k;
+      return { vraag: `Los op: ${F(kw(1, b, links).slice(4) + " = " + fmt(k))}. Geef de oplossingen, de kleinste eerst.`,
+        velden: [{ label: "x =", val: d, tol: EXACT, tips: [[-d, "Let op het teken."]] }, { label: "of x =", val: e, tol: EXACT, tips: [[-e, "Let op het teken."]] }],
+        hint: `Herleid eerst op nul: trek ${fmt(k)} af aan beide kanten. Ontbind daarna.`,
+        stappen: `${kw(1, b, c0).slice(4)} = 0<br>${fac(-d)}${fac(-e)} = 0<br><b>x = ${fmt(d)} of x = ${fmt(e)}</b>` };
     }
   },
   {
@@ -1711,7 +2018,7 @@ const ONDERWERPEN = [
 // Indeling van Esra's boeken (8-10-2026): Moderne Wiskunde 13e editie havo 3 (Noordhoff) en Nova Natuurkunde 3 havo MAX 5.1 (Malmberg).
 // Per paragraaf één uitlegvideo op YouTube van een docent die het boek volgt: [id, kanaal, duur].
 const BOEKEN = {
-  wis: { boek: "Moderne Wiskunde 13e editie, havo 3", hoofdstukken: [{"nr": "1", "deel": "A", "titel": "Lineaire en exponentiële formules", "par": [{"nr": "1.1", "titel": "Lineaire formules opstellen", "v": [["YJrQwzQG-Xo", "Hansie", "18:31"]]}, {"nr": "1.2", "titel": "Lijnen snijden", "v": [["LsBTPR1MHGE", "Hansie", "25:50"]]}, {"nr": "1.3", "titel": "Formules substitueren", "v": [["kPZlDBw_PpI", "Hansie", "21:06"]]}, {"nr": "1.4", "titel": "Exponentiële groei", "v": [["kLo1KfR8fPg", "Hansie", "11:31"]]}, {"nr": "1.5", "titel": "Groeifactor en tijd", "v": [["yus-GCFnNAc", "Hansie", "16:04"]]}]}, {"nr": "2", "deel": "A", "titel": "Parabolen", "par": [{"nr": "2.1", "titel": "Parabolen", "v": [["ZgvA8UdSLuM", "Hansie", "13:25"]]}, {"nr": "2.2", "titel": "Symmetrie en top", "v": [["CfrWBUtByf0", "Hansie", "19:10"]]}, {"nr": "2.3", "titel": "Parabolen tekenen", "v": [["ozayMF5GlTw", "Hansie", "15:22"]]}, {"nr": "2.4", "titel": "De vorm en de ligging van de parabool", "v": [["M0ZuSZAB5H4", "Hansie", "11:47"]]}, {"nr": "2.5", "titel": "Drie vormen van kwadratische formules", "v": [["P0-0fDl_ljo", "Hansie", "18:58"]]}]}, {"nr": "3", "deel": "A", "titel": "Vlakke figuren", "par": [{"nr": "3.1", "titel": "F-hoeken en Z-hoeken", "v": [["-_P2L0Gwxho", "Hansie", "18:38"]]}, {"nr": "3.2", "titel": "Spiegelen", "v": [["PCipAl2uBaE", "Hansie", "16:17"]]}, {"nr": "3.3", "titel": "Driehoeken tekenen", "v": [["lmAlp3zFjdI", "Hansie", "16:11"]]}, {"nr": "3.4", "titel": "Gelijkvormige driehoeken", "v": [["2LlBovHLMlQ", "Hansie", "21:00"]]}, {"nr": "3.5", "titel": "Rekenen met gelijkvormigheid", "v": [["ILgAV0JhrNw", "Hansie", "23:04"]]}]}, {"nr": "4", "deel": "A", "titel": "De abc-formule", "par": [{"nr": "4.1", "titel": "Ontbinden in factoren", "v": [["UasrK3ZC5hw", "Hansie", "15:21"]]}, {"nr": "4.2", "titel": "De abc-formule", "v": [["msdAkOSqboA", "Hansie", "19:18"]]}, {"nr": "4.3", "titel": "De abc-formule ontbinden in factoren", "v": [["hX6jIZ5QY08", "Hansie", "14:06"]]}, {"nr": "4.4", "titel": "Kwadratische vergelijkingen", "v": [["FGyUkczLqx8", "Hansie", "19:18"]]}]}, {"nr": "5", "deel": "A", "titel": "Nieuwe grafieken", "par": [{"nr": "5.1", "titel": "Periodieke grafieken", "v": [["t3uPyuxjil8", "Hansie", "19:19"]]}, {"nr": "5.2", "titel": "Verticaal verschuiven", "v": [["_ErzLHsrXfg", "Hansie", "15:26"]]}, {"nr": "5.3", "titel": "Vermenigvuldigen ten opzichte van de x-as", "v": [["pQqxOspxy8c", "Hansie", "17:12"]]}, {"nr": "5.4", "titel": "Combineren", "v": [["C2eZhsfVOVo", "Hansie", "18:43"]]}, {"nr": "5.5", "titel": "Somformule en verschilformule", "v": [["CFXrTaqdGPA", "Hansie", "27:25"]]}]}, {"nr": "6", "deel": "A", "titel": "Goniometrie", "par": [{"nr": "6.1", "titel": "Hellingshoek en hellingsgetal", "v": [["lPV5POnzKUE", "Hansie", "15:32"]]}, {"nr": "6.2", "titel": "Tangens", "v": [["6jHAlaRiU28", "Hansie", "16:22"]]}, {"nr": "6.3", "titel": "Rekenen met de tangens", "v": [["QtSlh5k4GDw", "Hansie", "17:35"]]}, {"nr": "6.4", "titel": "Sinus en cosinus", "v": [["3me7VDkOCno", "Hansie", "21:43"]]}, {"nr": "6.5", "titel": "Rekenen in driehoeken", "v": [["-OV-iBT4_Ew", "Hansie", "22:26"]]}, {"nr": "6.6", "titel": "Hoeken in ruimtefiguren", "v": [["hdoh2GqmF6A", "Hansie", "24:02"]]}]}, {"nr": "7", "deel": "A", "titel": "Verbanden", "par": [{"nr": "7.1", "titel": "Kwadratische formules", "v": [["rwWv5-CrDPU", "Hansie", "15:28"]]}, {"nr": "7.2", "titel": "Recht evenredig en omgekeerd evenredig", "v": [["OOwqoxem92s", "Hansie", "20:41"]]}, {"nr": "7.3", "titel": "Gebroken formules", "v": [["ybjt_cpznVU", "Hansie", "14:45"]]}, {"nr": "7.4", "titel": "Machtsformules", "v": [["ZaY6LhwJ8_Y", "Hansie", "17:52"]]}, {"nr": "7.5", "titel": "Wortelformules", "v": [["Po6AaJ_E4TY", "Hansie", "14:11"]]}, {"nr": "7.6", "titel": "Tabellen en formules", "v": [["cdZTUSIzvBs", "Hansie", "15:38"]]}]}, {"nr": "8", "deel": "B", "titel": "Statistiek", "par": [{"nr": "8.1", "titel": "Absoluut en relatief", "v": [["5nJSwBBbLTk", "Hansie", "14:41"]]}, {"nr": "8.2", "titel": "Indeling in klassen", "v": [["3JVnRuzKtOc", "Hansie", "12:43"]]}, {"nr": "8.3", "titel": "Spreidingsmaten", "v": [["00wuhYVf-IQ", "Hansie", "13:06"]]}, {"nr": "8.4", "titel": "Boxplot", "v": [["2uGS1lpjSiw", "Hansie", "17:51"]]}, {"nr": "8.5", "titel": "Data verwerken", "v": [["UXKtdorW8Jk", "Hansie", "19:47"]]}]}, {"nr": "9", "deel": "B", "titel": "Rekenen met variabelen", "par": [{"nr": "9.1", "titel": "Rekenen met breuken", "v": [["qBBki_Oi8EE", "Hansie", "14:32"]]}, {"nr": "9.2", "titel": "Rekenen met exponenten", "v": [["lKaiGOsoCZs", "Hansie", "19:02"]]}, {"nr": "9.3", "titel": "Rekenen met machten", "v": [["HZc4iWWeo8A", "Hansie", "16:06"]]}, {"nr": "9.4", "titel": "Rekenen met wortels", "v": [["x_kyzFV29U0", "Hansie", "16:01"]]}]}, {"nr": "10", "deel": "B", "titel": "Bijzondere lijnen in driehoeken", "par": [{"nr": "10.1", "titel": "Middelloodlijn", "v": [["a5lcxD-DWNE", "Hansie", "18:45"]]}, {"nr": "10.2", "titel": "Hoogtelijn", "v": [["xgCRsV7N2wM", "Hansie", "16:09"]]}, {"nr": "10.3", "titel": "Deellijn", "v": [["jqO9_tKO61k", "Hansie", "10:06"]]}, {"nr": "10.4", "titel": "Zwaartelijn", "v": [["Js13zEmoCdI", "Hansie", "17:14"]]}, {"nr": "10.5", "titel": "Ingeschreven en omgeschreven cirkel", "v": [["t0C9G9rwp2Q", "Hansie", "12:31"]]}]}, {"nr": "11A", "deel": "B", "titel": "Vergelijkingen en ongelijkheden", "par": [{"nr": "11A.1", "titel": "Parabool en lijn", "v": [["TAKH-QDvkyE", "Hansie", "19:14"]]}, {"nr": "11A.2", "titel": "Intervallen", "v": [["71KX8wTOwzA", "Hansie", "19:10"]]}, {"nr": "11A.3", "titel": "Kwadratische ongelijkheden", "v": [["3y0slYrG8D0", "Hansie", "18:54"]]}, {"nr": "11A.4", "titel": "Machtsvergelijkingen", "v": [["ByB-4ZSlMgI", "Hansie", "25:31"]]}]}, {"nr": "11B", "deel": "B", "titel": "Vergelijkingen en ongelijkheden", "par": [{"nr": "11B.1", "titel": "Parabool en lijn", "v": [["7II2jjo8uuY", "Menno: Snijpunten van grafieken", "9:17"]]}, {"nr": "11B.2", "titel": "Intervallen", "v": [["NelmW7RJlI0", "Menno: Intervallen", "8:47"]]}, {"nr": "11B.3", "titel": "Kwadratische ongelijkheden", "v": [["8sparF9WnB4", "Menno: De ongelijkheden f(x) groter dan 0 en f(x) kleiner dan 0", "4:31"]]}, {"nr": "11B.4", "titel": "Machtsvergelijkingen", "v": [["I8fs_8EjpIQ", "Menno: De vergelijkingen x² = c en x³ = c", "6:15"]]}]}, {"nr": "12A", "deel": "B", "titel": "Rekenen", "par": [{"nr": "12A.1", "titel": "Volgorde bij berekeningen", "v": [["zLveCpbGjvI", "Hansie", "9:25"]]}, {"nr": "12A.2", "titel": "Verhoudingen", "v": [["ekPrw-hWc-Y", "Hansie", "10:35"]]}, {"nr": "12A.3", "titel": "Procenten en factor", "v": [["wdATvNBIBnI", "Hansie", "9:57"]]}, {"nr": "12A.4", "titel": "Rekenen met tijd", "v": [["_zrOzDv_gks", "Hansie", "19:44"]]}]}, {"nr": "12B", "deel": "B", "titel": "Lijnen en cirkels", "par": [{"nr": "12B.1", "titel": "De vergelijkingen van lijnen", "v": [["AoTPdVlZeo8", "Hansie", "15:10"]]}, {"nr": "12B.2", "titel": "Vergelijking van een cirkel", "v": [["tLd9WU-eY7M", "Hansie", "17:42"]]}, {"nr": "12B.3", "titel": "De vorm x^2 + y^2 + px + qy + s = 0", "v": [["rAFkMEvM47I", "Hansie", "10:24"]]}, {"nr": "12B.4", "titel": "Cirkel en lijn", "v": [["62hXiA2U07g", "Hansie", "20:55"]]}]}] },
+  wis: { boek: "Moderne Wiskunde 13e editie, havo 3", hoofdstukken: [{"nr": "1", "deel": "A", "titel": "Lineaire en exponentiële formules", "par": [{"nr": "1.1", "titel": "Lineaire formules opstellen", "v": [["YJrQwzQG-Xo", "Hansie", "18:31"]]}, {"nr": "1.2", "titel": "Lijnen snijden", "v": [["LsBTPR1MHGE", "Hansie", "25:50"]]}, {"nr": "1.3", "titel": "Formules substitueren", "v": [["kPZlDBw_PpI", "Hansie", "21:06"]]}, {"nr": "1.4", "titel": "Exponentiële groei", "v": [["kLo1KfR8fPg", "Hansie", "11:31"]]}, {"nr": "1.5", "titel": "Groeifactor en tijd", "v": [["yus-GCFnNAc", "Hansie", "16:04"]]}]}, {"nr": "2", "deel": "A", "titel": "Parabolen", "par": [{"nr": "2.1", "titel": "Parabolen", "v": [["ZgvA8UdSLuM", "Hansie", "13:25"]]}, {"nr": "2.2", "titel": "Symmetrie en top", "v": [["CfrWBUtByf0", "Hansie", "19:10"]]}, {"nr": "2.3", "titel": "Parabolen tekenen", "v": [["ozayMF5GlTw", "Hansie", "15:22"]]}, {"nr": "2.4", "titel": "De vorm en de ligging van de parabool", "v": [["M0ZuSZAB5H4", "Hansie", "11:47"]]}, {"nr": "2.5", "titel": "Drie vormen van kwadratische formules", "v": [["P0-0fDl_ljo", "Hansie", "18:58"]]}]}, {"nr": "3", "deel": "A", "titel": "Vlakke figuren", "par": [{"nr": "3.1", "titel": "F-hoeken en Z-hoeken", "v": [["-_P2L0Gwxho", "Hansie", "18:38"]]}, {"nr": "3.2", "titel": "Spiegelen", "v": [["PCipAl2uBaE", "Hansie", "16:17"]]}, {"nr": "3.3", "titel": "Driehoeken tekenen", "v": [["lmAlp3zFjdI", "Hansie", "16:11"]]}, {"nr": "3.4", "titel": "Gelijkvormige driehoeken", "v": [["2LlBovHLMlQ", "Hansie", "21:00"]]}, {"nr": "3.5", "titel": "Rekenen met gelijkvormigheid", "v": [["ILgAV0JhrNw", "Hansie", "23:04"]]}]}, {"nr": "4", "deel": "A", "titel": "De abc-formule", "par": [{"nr": "4.1", "titel": "Ontbinden in factoren", "v": [["UasrK3ZC5hw", "Hansie", "15:21"]]}, {"nr": "4.2", "titel": "De abc-formule", "v": [["msdAkOSqboA", "Hansie", "19:18"]]}, {"nr": "4.3", "titel": "De abc-formule of ontbinden in factoren", "v": [["hX6jIZ5QY08", "Hansie", "14:06"]]}, {"nr": "4.4", "titel": "Kwadratische vergelijkingen", "v": [["FGyUkczLqx8", "Hansie", "19:18"]]}]}, {"nr": "5", "deel": "A", "titel": "Nieuwe grafieken", "par": [{"nr": "5.1", "titel": "Periodieke grafieken", "v": [["t3uPyuxjil8", "Hansie", "19:19"]]}, {"nr": "5.2", "titel": "Verticaal verschuiven", "v": [["_ErzLHsrXfg", "Hansie", "15:26"]]}, {"nr": "5.3", "titel": "Vermenigvuldigen ten opzichte van de x-as", "v": [["pQqxOspxy8c", "Hansie", "17:12"]]}, {"nr": "5.4", "titel": "Combineren", "v": [["C2eZhsfVOVo", "Hansie", "18:43"]]}, {"nr": "5.5", "titel": "Somformule en verschilformule", "v": [["CFXrTaqdGPA", "Hansie", "27:25"]]}]}, {"nr": "6", "deel": "A", "titel": "Goniometrie", "par": [{"nr": "6.1", "titel": "Hellingshoek en hellingsgetal", "v": [["lPV5POnzKUE", "Hansie", "15:32"]]}, {"nr": "6.2", "titel": "Tangens", "v": [["6jHAlaRiU28", "Hansie", "16:22"]]}, {"nr": "6.3", "titel": "Rekenen met de tangens", "v": [["QtSlh5k4GDw", "Hansie", "17:35"]]}, {"nr": "6.4", "titel": "Sinus en cosinus", "v": [["3me7VDkOCno", "Hansie", "21:43"]]}, {"nr": "6.5", "titel": "Rekenen in driehoeken", "v": [["-OV-iBT4_Ew", "Hansie", "22:26"]]}, {"nr": "6.6", "titel": "Hoeken in ruimtefiguren", "v": [["hdoh2GqmF6A", "Hansie", "24:02"]]}]}, {"nr": "7", "deel": "A", "titel": "Verbanden", "par": [{"nr": "7.1", "titel": "Kwadratische formules", "v": [["rwWv5-CrDPU", "Hansie", "15:28"]]}, {"nr": "7.2", "titel": "Recht evenredig en omgekeerd evenredig", "v": [["OOwqoxem92s", "Hansie", "20:41"]]}, {"nr": "7.3", "titel": "Gebroken formules", "v": [["ybjt_cpznVU", "Hansie", "14:45"]]}, {"nr": "7.4", "titel": "Machtsformules", "v": [["ZaY6LhwJ8_Y", "Hansie", "17:52"]]}, {"nr": "7.5", "titel": "Wortelformules", "v": [["Po6AaJ_E4TY", "Hansie", "14:11"]]}, {"nr": "7.6", "titel": "Tabellen en formules", "v": [["cdZTUSIzvBs", "Hansie", "15:38"]]}]}, {"nr": "8", "deel": "B", "titel": "Statistiek", "par": [{"nr": "8.1", "titel": "Absoluut en relatief", "v": [["5nJSwBBbLTk", "Hansie", "14:41"]]}, {"nr": "8.2", "titel": "Indeling in klassen", "v": [["3JVnRuzKtOc", "Hansie", "12:43"]]}, {"nr": "8.3", "titel": "Spreidingsmaten", "v": [["00wuhYVf-IQ", "Hansie", "13:06"]]}, {"nr": "8.4", "titel": "Boxplot", "v": [["2uGS1lpjSiw", "Hansie", "17:51"]]}, {"nr": "8.5", "titel": "Data verwerken", "v": [["UXKtdorW8Jk", "Hansie", "19:47"]]}]}, {"nr": "9", "deel": "B", "titel": "Rekenen met variabelen", "par": [{"nr": "9.1", "titel": "Rekenen met breuken", "v": [["qBBki_Oi8EE", "Hansie", "14:32"]]}, {"nr": "9.2", "titel": "Rekenen met exponenten", "v": [["lKaiGOsoCZs", "Hansie", "19:02"]]}, {"nr": "9.3", "titel": "Rekenen met machten", "v": [["HZc4iWWeo8A", "Hansie", "16:06"]]}, {"nr": "9.4", "titel": "Rekenen met wortels", "v": [["x_kyzFV29U0", "Hansie", "16:01"]]}]}, {"nr": "10", "deel": "B", "titel": "Bijzondere lijnen in driehoeken", "par": [{"nr": "10.1", "titel": "Middelloodlijn", "v": [["a5lcxD-DWNE", "Hansie", "18:45"]]}, {"nr": "10.2", "titel": "Hoogtelijn", "v": [["xgCRsV7N2wM", "Hansie", "16:09"]]}, {"nr": "10.3", "titel": "Deellijn", "v": [["jqO9_tKO61k", "Hansie", "10:06"]]}, {"nr": "10.4", "titel": "Zwaartelijn", "v": [["Js13zEmoCdI", "Hansie", "17:14"]]}, {"nr": "10.5", "titel": "Ingeschreven en omgeschreven cirkel", "v": [["t0C9G9rwp2Q", "Hansie", "12:31"]]}]}, {"nr": "11A", "deel": "B", "titel": "Vergelijkingen en ongelijkheden", "par": [{"nr": "11A.1", "titel": "Parabool en lijn", "v": [["TAKH-QDvkyE", "Hansie", "19:14"]]}, {"nr": "11A.2", "titel": "Intervallen", "v": [["71KX8wTOwzA", "Hansie", "19:10"]]}, {"nr": "11A.3", "titel": "Kwadratische ongelijkheden", "v": [["3y0slYrG8D0", "Hansie", "18:54"]]}, {"nr": "11A.4", "titel": "Machtsvergelijkingen", "v": [["ByB-4ZSlMgI", "Hansie", "25:31"]]}]}, {"nr": "11B", "deel": "B", "titel": "Vergelijkingen en ongelijkheden", "par": [{"nr": "11B.1", "titel": "Parabool en lijn", "v": [["7II2jjo8uuY", "Menno: Snijpunten van grafieken", "9:17"]]}, {"nr": "11B.2", "titel": "Intervallen", "v": [["NelmW7RJlI0", "Menno: Intervallen", "8:47"]]}, {"nr": "11B.3", "titel": "Kwadratische ongelijkheden", "v": [["8sparF9WnB4", "Menno: De ongelijkheden f(x) groter dan 0 en f(x) kleiner dan 0", "4:31"]]}, {"nr": "11B.4", "titel": "Machtsvergelijkingen", "v": [["I8fs_8EjpIQ", "Menno: De vergelijkingen x² = c en x³ = c", "6:15"]]}]}, {"nr": "12A", "deel": "B", "titel": "Rekenen", "par": [{"nr": "12A.1", "titel": "Volgorde bij berekeningen", "v": [["zLveCpbGjvI", "Hansie", "9:25"]]}, {"nr": "12A.2", "titel": "Verhoudingen", "v": [["ekPrw-hWc-Y", "Hansie", "10:35"]]}, {"nr": "12A.3", "titel": "Procenten en factor", "v": [["wdATvNBIBnI", "Hansie", "9:57"]]}, {"nr": "12A.4", "titel": "Rekenen met tijd", "v": [["_zrOzDv_gks", "Hansie", "19:44"]]}]}, {"nr": "12B", "deel": "B", "titel": "Lijnen en cirkels", "par": [{"nr": "12B.1", "titel": "De vergelijkingen van lijnen", "v": [["AoTPdVlZeo8", "Hansie", "15:10"]]}, {"nr": "12B.2", "titel": "Vergelijking van een cirkel", "v": [["tLd9WU-eY7M", "Hansie", "17:42"]]}, {"nr": "12B.3", "titel": "De vorm x^2 + y^2 + px + qy + s = 0", "v": [["rAFkMEvM47I", "Hansie", "10:24"]]}, {"nr": "12B.4", "titel": "Cirkel en lijn", "v": [["62hXiA2U07g", "Hansie", "20:55"]]}]}] },
   nat: { boek: "Nova Natuurkunde, 3 havo", hoofdstukken: [{"nr": "1", "deel": "A", "titel": "Elektriciteit", "par": [{"nr": "1.1", "titel": "Elektrische energie vervoeren", "v": [["eh4RN6gShWk", "Meneer van der Welle", "11:10"]]}, {"nr": "1.2", "titel": "Vermogen en energie", "v": [["tEdVi4KbQWA", "Meneer van der Welle", "9:46"]]}, {"nr": "1.3", "titel": "Elektriciteit in huis", "v": [["45CnBUA8aoU", "Meneer van der Welle", "8:56"]]}, {"nr": "1.4", "titel": "Elektriciteit en veiligheid", "v": [["UntviW_IbRs", "Meneer van der Welle", "8:39"]]}]}, {"nr": "2", "deel": "A", "titel": "Krachten", "par": [{"nr": "2.1", "titel": "Soorten krachten", "v": [["gtXogRkND5M", "Meneer van der Welle", "10:34"]]}, {"nr": "2.2", "titel": "Meer dan één kracht", "v": [["Oxcr1SkQAiw", "Meneer van der Welle", "12:04"]]}, {"nr": "2.3", "titel": "Hefbomen", "v": [["_3n1S41Az3I", "Meneer van der Welle", "12:10"]]}, {"nr": "2.4", "titel": "Werktuigen", "v": [["tCcIvDMMlSw", "Meneer van der Welle", "12:49"]]}]}, {"nr": "3", "deel": "A", "titel": "Energie", "par": [{"nr": "3.1", "titel": "Energiebronnen", "v": [["6Acet2HKdlI", "Meneer van der Welle", "7:19"]]}, {"nr": "3.2", "titel": "Verwarmen", "v": [["P2s0MNmJLBI", "Meneer van der Welle", "11:49"]]}, {"nr": "3.3", "titel": "Isoleren", "v": [["YTKlUHd7kJo", "Meneer van der Welle", "9:41"]]}, {"nr": "3.4", "titel": "Rendement", "v": [["Xv-AbrSj8TM", "Meneer van der Welle", "12:05"]]}]}, {"nr": "4", "deel": "B", "titel": "Kracht en beweging", "par": [{"nr": "4.1", "titel": "Voortstuwen en tegenwerken", "v": [["aNfIE51Cd8A", "Meneer van der Welle", "10:43"]]}, {"nr": "4.2", "titel": "Versnellen en vertragen", "v": [["S32cRlKu1CI", "Meneer van der Welle", "13:25"]]}, {"nr": "4.3", "titel": "Kracht, massa en versnelling", "v": [["a4nFYJieWJE", "Meneer van der Welle", "14:38"]]}, {"nr": "4.4", "titel": "Remmen en botsen", "v": [["OESxFAtVUbw", "Meneer van der Welle", "9:02"]]}]}, {"nr": "5", "deel": "B", "titel": "Schakelingen", "par": [{"nr": "5.1", "titel": "Lading en spanning", "v": [["6ButCFwfeb0", "Meneer van der Welle", "6:56"]]}, {"nr": "5.2", "titel": "Weerstand", "v": [["F-0wXQG1YVo", "Meneer van der Welle", "9:14"]]}, {"nr": "5.3", "titel": "Werken met weerstanden", "v": [["sd2ahjSlvgM", "Meneer van der Welle", "7:04"]]}, {"nr": "5.4", "titel": "Automatische schakelingen", "v": [["8sJywlq22CU", "Meneer van der Welle", "8:39"]]}]}, {"nr": "6", "deel": "B", "titel": "Straling", "par": [{"nr": "6.1", "titel": "Elektromagnetische straling", "v": [["pAcaZQwlOsg", "Meneer van der Welle", "8:35"]]}, {"nr": "6.2", "titel": "Licht en lenzen", "v": [["yqF9DOjnBt8", "Meneer van der Welle", "11:26"]]}, {"nr": "6.3", "titel": "Röntgenfoto's maken", "v": [["x-VxchKYnaQ", "Meneer van der Welle", "9:37"]]}, {"nr": "6.4", "titel": "Werken met gammastraling", "v": [["kvrn3GTlPU4", "Meneer van der Welle", "8:25"]]}]}, {"nr": "V", "deel": "A+B", "titel": "Vaardigheden", "par": [{"nr": "V1", "titel": "Onderzoek doen", "v": []}, {"nr": "V2", "titel": "Werken met grootheden en eenheden", "v": []}, {"nr": "V3", "titel": "Werken met machten van 10", "v": []}, {"nr": "V4", "titel": "Werken met meetinstrumenten", "v": []}, {"nr": "V5", "titel": "Werken met formules", "v": []}, {"nr": "V6", "titel": "Formules herschrijven", "v": []}, {"nr": "V7", "titel": "Uitkomsten afronden", "v": []}, {"nr": "V8", "titel": "Werken met tabellen en grafieken", "v": []}, {"nr": "V9", "titel": "Verbanden meten", "v": []}, {"nr": "V10", "titel": "Een verslag schrijven", "v": []}]}] }
 };
 
@@ -1739,7 +2046,7 @@ const BOEKEN = {
 const KOPPELING = {
   "rc-punten": { hfst: "1", par: "1.1" }, "rc-grafiek": { hfst: "1", par: "1.1" },
   "tabel": { hfst: "1", par: "1.1" }, "verhaal": { hfst: "1", par: "1.1" }, "vergelijking": { hfst: "1", par: "1.2" }, "snijpunt": { hfst: "1", par: "1.2" }, "subst-formule": { hfst: "1", par: "1.3" }, "subst-waarde": { hfst: "1", par: "1.3" }, "groeifactor": { hfst: "1", par: "1.4" }, "exp-formule": { hfst: "1", par: "1.4" }, "groeitijd": { hfst: "1", par: "1.5" }, "verdubbeling": { hfst: "1", par: "1.5" },
-  "par-invullen": { hfst: "2", par: "2.1" }, "par-dalberg": { hfst: "2", par: "2.1" }, "par-tabel": { hfst: "2", par: "2.3" }, "par-tabeltop": { hfst: "2", par: "2.3" }, "par-vorm": { hfst: "2", par: "2.4" }, "par-smal": { hfst: "2", par: "2.4" }, "par-snijpunten": { hfst: "2", par: "2.5" }, "par-symmetrie": { hfst: "2", par: "2.2" },
+  "par-invullen": { hfst: "2", par: "2.1" }, "hoek-fz": { hfst: "3", par: "3.1" }, "hoekensom": { hfst: "3", par: "3.1" }, "spiegel-punt": { hfst: "3", par: "3.2" }, "symmetrieassen": { hfst: "3", par: "3.2" }, "driehoek-kan": { hfst: "3", par: "3.3" }, "driehoek-gegevens": { hfst: "3", par: "3.3" }, "vergrotingsfactor": { hfst: "3", par: "3.4" }, "gelijkvormig-ja": { hfst: "3", par: "3.4" }, "zijde-gelijkvormig": { hfst: "3", par: "3.5" }, "kruislings": { hfst: "3", par: "3.5" }, "ontbinden": { hfst: "4", par: "4.1" }, "ontbinden-oplossen": { hfst: "4", par: "4.1" }, "discriminant": { hfst: "4", par: "4.2" }, "abc": { hfst: "4", par: "4.2" }, "methode": { hfst: "4", par: "4.3" }, "kwadr-snel": { hfst: "4", par: "4.3" }, "op-nul": { hfst: "4", par: "4.4" }, "kwadr-vergelijking": { hfst: "4", par: "4.4" }, "par-dalberg": { hfst: "2", par: "2.1" }, "par-tabel": { hfst: "2", par: "2.3" }, "par-tabeltop": { hfst: "2", par: "2.3" }, "par-vorm": { hfst: "2", par: "2.4" }, "par-smal": { hfst: "2", par: "2.4" }, "par-snijpunten": { hfst: "2", par: "2.5" }, "par-symmetrie": { hfst: "2", par: "2.2" },
   "par-top": { hfst: "2", par: "2.2" }, "par-vormen": { hfst: "2", par: "2.5" },
 "stroomkring": { hfst: "1", par: "1.1" }, "omrekenen-el": { hfst: "1", par: "1.1" }, "energie-kosten": { hfst: "1", par: "1.2" }, "groep-max": { hfst: "1", par: "1.3" }, "draden": { hfst: "1", par: "1.4" }, "krachtenschaal": { hfst: "2", par: "2.2" }, "moment": { hfst: "2", par: "2.3" }, "katrol": { hfst: "2", par: "2.4" }, "vermogen": { hfst: "1", par: "1.2" }, "huisinstallatie": { hfst: "1", par: "1.3" }, "veiligheid": { hfst: "1", par: "1.4" }, "energiebehoud": { hfst: "3", par: "3.1" }, "energiebronnen": { hfst: "3", par: "3.1" }, "verbranding": { hfst: "3", par: "3.2" }, "isoleren": { hfst: "3", par: "3.3" }, "rendement-terug": { hfst: "3", par: "3.4" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" }, "resulterend": { hfst: "2", par: "2.2" }, "hefboom": { hfst: "2", par: "2.3" }, "werktuig": { hfst: "2", par: "2.4" },
   "snelheid": { hfst: "4", par: "4.2" }, "ohm": { hfst: "5", par: "5.2" },
@@ -2197,6 +2504,192 @@ function spreek(wie, tekst, opt = {}) {
 // Elke uitleg is een reeks stappen: wat de professor zegt (zeg), wat er groot in beeld staat (tekst)
 // en wat er in de tekening staat (teken). Maximaal ongeveer 4 minuten, één idee per uitleg.
 const UITLEGGEN = {
+  "3.1": {
+    vak: "wis", hfst: "3", docent: "delta", titel: "F-hoeken en Z-hoeken", oefen: "hoek-fz",
+    teken: st => meetSVG(st),
+    stappen: [
+      { tekst: "Twee evenwijdige lijnen en een snijlijn", teken: { scene: "hoeken" },
+        zeg: "Hoi! Dit is paragraaf 3.1: F-hoeken en Z-hoeken. Hier zie je twee evenwijdige lijnen, l en m, en een lijn die ze allebei snijdt. Bij elk snijpunt ontstaan vier hoeken." },
+      { tekst: "Nevenhoeken: samen 180°", teken: { scene: "hoeken", h: [["A", "ro", "60°"], ["A", "lo", "120°"]] },
+        zeg: "Twee hoeken naast elkaar op een rechte lijn heten nevenhoeken. Samen zijn ze 180 graden. Is de ene 60 graden, dan is de andere 120 graden." },
+      { tekst: "Overstaande hoeken: even groot", teken: { scene: "hoeken", h: [["A", "ro", "60°"], ["A", "lb", "60°"]] },
+        zeg: "Hoeken die schuin tegenover elkaar liggen, heten overstaande hoeken. Die zijn even groot: allebei 60 graden." },
+      { tekst: "F-hoeken: even groot", teken: { scene: "hoeken", vorm: "F", h: [["A", "ro", "60°"], ["B", "ro", "60°"]] },
+        zeg: "Kijk nu naar beide snijpunten. Hoeken op dezelfde plek bij de twee lijnen vormen samen een F. Dat zijn F-hoeken. Bij evenwijdige lijnen zijn F-hoeken even groot." },
+      { tekst: "Z-hoeken: even groot", teken: { scene: "hoeken", vorm: "Z", h: [["A", "ro", "60°"], ["B", "lb", "60°"]] },
+        zeg: "Hoeken die samen een Z vormen, heten Z-hoeken. Ze liggen tussen de evenwijdige lijnen, aan verschillende kanten van de snijlijn. Ook Z-hoeken zijn even groot." },
+      { tekst: "Ken je één hoek, dan ken je ze allemaal", teken: { scene: "hoeken", h: [["A", "ro", "60°"], ["A", "lo", "120°"], ["A", "lb", "60°"], ["A", "rb", "120°"], ["B", "ro", "60°"], ["B", "lo", "120°"], ["B", "lb", "60°"], ["B", "rb", "120°"]] },
+        zeg: "Ken je één hoek, dan ken je ze allemaal. Er zijn maar twee groottes: hier 60 graden en 120 graden. Samen altijd 180 graden." },
+      { tekst: "Hoekensom driehoek: 180°", teken: { scene: "driehoek", d: [{ P: [[50, 240], [290, 240], [140, 60]], namen: ["A", "B", "C"], hoeken: ["50°", "60°", "70°"] }] },
+        zeg: "Nog een belangrijke regel: de drie hoeken van een driehoek zijn samen altijd 180 graden. Ken je twee hoeken, dan reken je de derde uit: 180 min de andere twee." },
+      { tekst: "Nu jij!", teken: { scene: "hoeken", h: [["A", "ro", "60°"], ["B", "lb", "?", "rood"]] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "3.2": {
+    vak: "wis", hfst: "3", docent: "delta", titel: "Spiegelen", oefen: "spiegel-punt",
+    teken: st => meetSVG(st),
+    stappen: [
+      { tekst: "Spiegelen in een lijn", teken: { scene: "spiegel", lijn: ["y", 0], P: [3, 2] },
+        zeg: "Hoi! Dit is paragraaf 3.2: spiegelen. Bij spiegelen in een lijn klap je een figuur om, alsof de lijn een spiegel is." },
+      { tekst: "Loodrecht en even ver", teken: { scene: "spiegel", lijn: ["y", 0], P: [3, 2], beeld: true, wijs: "afstand" },
+        zeg: "Het spiegelbeeld ligt aan de andere kant van de spiegellijn, even ver weg. En de verbindingslijn staat loodrecht op de spiegellijn." },
+      { tekst: "In de y-as: x wordt tegengesteld", teken: { scene: "spiegel", lijn: ["y", 0], P: [3, 2], beeld: true },
+        zeg: "Spiegel je in de y-as, dan blijft y hetzelfde en wordt x tegengesteld. Het punt 3 komma 2 wordt min 3 komma 2." },
+      { tekst: "In de x-as: y wordt tegengesteld", teken: { scene: "spiegel", lijn: ["x", 0], P: [3, 2], beeld: true },
+        zeg: "Spiegel je in de x-as, dan blijft x hetzelfde en wordt y tegengesteld. Het punt 3 komma 2 wordt 3 komma min 2." },
+      { tekst: "In een andere lijn: tel de afstand", teken: { scene: "spiegel", lijn: ["y", 1], P: [4, 2], beeld: true, wijs: "afstand" },
+        zeg: "Spiegel je in de lijn x is 1, tel dan de afstand. Het punt 4 komma 2 ligt 3 rechts van de lijn. Het spiegelbeeld ligt 3 links ervan, bij x is min 2. Dus min 2 komma 2." },
+      { tekst: "Een figuur spiegelen", teken: { scene: "spiegel", lijn: ["y", 0], fig: [[1, 1], [4, 1], [3, 4]], beeld: true },
+        zeg: "Een figuur spiegel je hoekpunt voor hoekpunt. Spiegel elk hoekpunt en verbind de nieuwe punten weer met elkaar." },
+      { tekst: "Symmetrieas: dubbelvouwen past", teken: { scene: "spiegel", lijn: ["y", 0], fig: [[-3, -2], [3, -2], [3, 2], [0, 4], [-3, 2]] },
+        zeg: "Valt een figuur bij spiegelen op zichzelf, dan heeft hij een symmetrieas. Dit huisje heeft er één. Een vierkant heeft er vier, een rechthoek twee en een gelijkzijdige driehoek drie." },
+      { tekst: "Nu jij!", teken: { scene: "spiegel", lijn: ["x", 0], P: [-2, 3] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "3.3": {
+    vak: "wis", hfst: "3", docent: "delta", titel: "Driehoeken tekenen", oefen: "driehoek-kan",
+    teken: st => meetSVG(st),
+    stappen: [
+      { tekst: "Precies tekenen met passer en geodriehoek", teken: { scene: "constructie", stap: 3 },
+        zeg: "Hoi! Dit is paragraaf 3.3: driehoeken tekenen. Met een geodriehoek en een passer kun je een driehoek precies tekenen, als je genoeg gegevens hebt." },
+      { tekst: "Drie zijden: teken eerst één zijde", teken: { scene: "constructie", stap: 1 },
+        zeg: "Zijn alle drie de zijden gegeven, bijvoorbeeld 6, 5 en 4 centimeter? Teken eerst één zijde, bijvoorbeeld AB van 6 centimeter." },
+      { tekst: "Passer: twee cirkelbogen", teken: { scene: "constructie", stap: 2 },
+        zeg: "Zet je passer in A met een opening van 5 centimeter en teken een boog. Zet hem daarna in B met een opening van 4 centimeter en teken weer een boog." },
+      { tekst: "Het snijpunt is C", teken: { scene: "constructie", stap: 3 },
+        zeg: "Waar de twee bogen elkaar snijden, ligt punt C. Verbind C met A en met B. Klaar!" },
+      { tekst: "Twee zijden en de hoek ertussen", teken: { scene: "driehoek", d: [{ P: [[50, 240], [290, 240], [130, 90]], namen: ["A", "B", "C"], hoeken: ["50°", null, null], zijden: ["6 cm", null, "4 cm"] }] },
+        zeg: "Je kunt ook twee zijden en de hoek ertussen krijgen. Teken een zijde, zet met je geodriehoek de hoek uit, en meet de tweede zijde af." },
+      { tekst: "Eén zijde en de twee hoeken eraan", teken: { scene: "driehoek", d: [{ P: [[50, 240], [290, 240], [150, 80]], namen: ["A", "B", "C"], hoeken: ["55°", "60°", null], zijden: ["6 cm", null, null] }] },
+        zeg: "Of je krijgt één zijde en de twee hoeken die eraan liggen. Teken de zijde, en zet bij beide uiteinden de hoek uit. Waar de lijnen elkaar snijden, ligt het derde punt." },
+      { tekst: "Kan het? Twee kortste samen langer dan de langste", teken: { scene: "constructie", stap: 2, kort: true },
+        zeg: "Let op: niet elke driehoek bestaat. De twee kortste zijden moeten samen langer zijn dan de langste. Met 2, 3 en 6 centimeter lukt het niet: 2 plus 3 is maar 5." },
+      { tekst: "Nu jij!", teken: { scene: "constructie", stap: 3 }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "3.4": {
+    vak: "wis", hfst: "3", docent: "delta", titel: "Gelijkvormige driehoeken", oefen: "vergrotingsfactor",
+    teken: st => meetSVG(st),
+    stappen: [
+      { tekst: "Gelijkvormig: zelfde vorm, andere grootte", teken: { scene: "twee", d: [{ P: [[20, 250], [80, 250], [20, 205]], namen: ["A", "B", "C"] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"] }] },
+        zeg: "Hoi! Dit is paragraaf 3.4: gelijkvormige driehoeken. Twee figuren zijn gelijkvormig als de ene een vergroting of verkleining is van de andere. De vorm is hetzelfde, de grootte niet." },
+      { tekst: "De hoeken blijven gelijk", teken: { scene: "twee", d: [{ P: [[20, 250], [80, 250], [20, 205]], namen: ["A", "B", "C"], hoeken: ["90°", "37°", "53°"] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], hoeken: ["90°", "37°", "53°"] }] },
+        zeg: "Bij vergroten blijven alle hoeken gelijk. Hebben twee driehoeken dezelfde hoeken, dan zijn ze gelijkvormig. Twee gelijke hoeken is al genoeg, want de derde volgt uit de hoekensom." },
+      { tekst: "Alle zijden keer dezelfde factor", teken: { scene: "twee", d: [{ P: [[20, 250], [80, 250], [20, 205]], namen: ["A", "B", "C"], zijden: ["4", "5", "3"] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], zijden: ["8", "10", "6"] }] },
+        zeg: "Alle zijden worden met hetzelfde getal vermenigvuldigd: de vergrotingsfactor. Hier is elke zijde twee keer zo lang. De vergrotingsfactor is 2." },
+      { tekst: `${F("k = nieuwe lengte / oude lengte")}<br>${F("k = 8 / 4 = 2")}`, teken: { scene: "twee", d: [{ P: [[20, 250], [80, 250], [20, 205]], namen: ["A", "B", "C"], zijden: ["4", null, null] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], zijden: ["8", null, null] }] },
+        zeg: "De vergrotingsfactor reken je uit met: nieuwe lengte gedeeld door de bijbehorende oude lengte. 8 gedeeld door 4 is 2." },
+      { tekst: "Overeenkomstige zijden: tegenover dezelfde hoek", teken: { scene: "twee", d: [{ P: [[20, 250], [80, 250], [20, 205]], namen: ["A", "B", "C"], hoeken: [null, null, "53°"], zijden: ["4", null, null] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], hoeken: [null, null, "53°"], zijden: ["8", null, null] }] },
+        zeg: "Let goed op welke zijden bij elkaar horen. Dat zijn de zijden die tegenover dezelfde hoek liggen. Ze heten overeenkomstige zijden." },
+      { tekst: "k kleiner dan 1: verkleining", teken: { scene: "twee", d: [{ P: [[150, 250], [270, 250], [150, 160]], namen: ["A", "B", "C"] }, { P: [[20, 250], [80, 250], [20, 205]], namen: ["D", "E", "F"] }] },
+        zeg: "Is de vergrotingsfactor kleiner dan 1, dan is het een verkleining. Bij 0,5 wordt alles half zo groot." },
+      { tekst: "Nu jij!", teken: { scene: "twee", d: [{ P: [[20, 250], [80, 250], [20, 205]], namen: ["A", "B", "C"], zijden: ["4", null, null] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], zijden: ["?", null, null] }] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "3.5": {
+    vak: "wis", hfst: "3", docent: "delta", titel: "Rekenen met gelijkvormigheid", oefen: "zijde-gelijkvormig",
+    teken: st => meetSVG(st),
+    stappen: [
+      { tekst: "Eén zijde onbekend", teken: { scene: "twee", d: [{ P: [[20, 250], [100, 250], [20, 190]], namen: ["A", "B", "C"], zijden: ["4", null, "3"] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], zijden: ["6", null, "x"] }] },
+        zeg: "Hoi! Dit is paragraaf 3.5: rekenen met gelijkvormigheid. Driehoek ABC en DEF zijn gelijkvormig. AB is 4, AC is 3 en DE is 6. Hoe lang is DF?" },
+      { tekst: `Verhoudingstabel<br><table class="tabel u-tab"><tr><th>ABC</th><td>AB = 4</td><td>AC = 3</td></tr><tr><th>DEF</th><td>DE = 6</td><td>DF = x</td></tr></table>`, teken: { scene: "twee", d: [{ P: [[20, 250], [100, 250], [20, 190]], namen: ["A", "B", "C"], zijden: ["4", null, "3"] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], zijden: ["6", null, "x"] }] },
+        zeg: "Zet de overeenkomstige zijden in een verhoudingstabel. Bovenaan de zijden van de kleine driehoek, eronder die van de grote." },
+      { tekst: `${F("k = 6 / 4 = 1,5")}`, teken: { scene: "twee", d: [{ P: [[20, 250], [100, 250], [20, 190]], namen: ["A", "B", "C"], zijden: ["4", null, null] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], zijden: ["6", null, null] }] },
+        zeg: "Gebruik het paar waarvan je beide lengtes kent: AB en DE. De vergrotingsfactor is 6 gedeeld door 4, en dat is 1,5." },
+      { tekst: `${F("x = 1,5 · 3 = 4,5")}`, teken: { scene: "twee", d: [{ P: [[20, 250], [100, 250], [20, 190]], namen: ["A", "B", "C"], zijden: [null, null, "3"] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], zijden: [null, null, "4,5"] }] },
+        zeg: "Nu de onbekende zijde: DF is 1,5 keer AC. 1,5 keer 3 is 4,5." },
+      { tekst: `Kruislings: ${F("4 / 3 = 6 / x")} → ${F("4x = 18")} → ${F("x = 4,5")}`, teken: { scene: "twee", d: [{ P: [[20, 250], [100, 250], [20, 190]], namen: ["A", "B", "C"], zijden: ["4", null, "3"] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], zijden: ["6", null, "x"] }] },
+        zeg: "Het kan ook met kruislings vermenigvuldigen. 4 staat tot 3 als 6 staat tot x. Kruislings: 4 keer x is 3 keer 6. Dus 4x is 18, en x is 4,5." },
+      { tekst: "Driehoeken in elkaar: zoek de gelijke hoeken", teken: { scene: "driehoek", d: [{ P: [[40, 250], [300, 250], [170, 50]], namen: ["A", "B", "T"] }, { P: [[105, 150], [235, 150], [170, 50]], namen: ["P", "Q", ""] }] },
+        zeg: "In opgaven zitten de twee driehoeken vaak in elkaar, zoals hier. De kleine en de grote driehoek delen de tophoek. Zoek eerst de gelijke hoeken, dan weet je welke zijden bij elkaar horen." },
+      { tekst: "Nu jij!", teken: { scene: "twee", d: [{ P: [[20, 250], [100, 250], [20, 190]], namen: ["A", "B", "C"] }, { P: [[150, 250], [270, 250], [150, 160]], namen: ["D", "E", "F"], zijden: [null, null, "?"] }] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "4.1": {
+    vak: "wis", hfst: "4", docent: "delta", titel: "Ontbinden in factoren", oefen: "ontbinden",
+    teken: st => kwSVG(st),
+    stappen: [
+      { tekst: `${F("x² + 5x + 6 = (x + 2)(x + 3)")}`, teken: { p: [[1, 5, 6]] },
+        zeg: "Hoi! Dit is paragraaf 4.1: ontbinden in factoren. Ontbinden betekent: een som schrijven als een product. Bijvoorbeeld: x kwadraat plus 5x plus 6 wordt haakje x plus 2, keer haakje x plus 3." },
+      { tekst: "Zoek twee getallen: product 6, som 5", teken: { p: [[1, 5, 6]] },
+        zeg: "Zoek twee getallen die vermenigvuldigd 6 zijn, en opgeteld 5. Dat zijn 2 en 3, want 2 keer 3 is 6, en 2 plus 3 is 5." },
+      { tekst: "Controle: haakjes wegwerken", teken: { p: [[1, 5, 6]] },
+        zeg: "Controleer het door de haakjes weg te werken. x keer x is x kwadraat. Dan 3x plus 2x is 5x. En 2 keer 3 is 6. Het klopt." },
+      { tekst: `Met min-tekens: ${F("x² − x − 6 = (x + 2)(x − 3)")}`, teken: { p: [[1, -1, -6]] },
+        zeg: "Let goed op de min-tekens. Bij x kwadraat min x min 6 zoek je: product min 6, en som min 1. Dat zijn 2 en min 3." },
+      { tekst: `Geen los getal: ${F("x² + 4x = x(x + 4)")}`, teken: { p: [[1, 4, 0]], pts: [[-4, 0], [0, 0]] },
+        zeg: "Is er geen los getal, haal dan x buiten haakjes. x kwadraat plus 4x is x keer haakje x plus 4." },
+      { tekst: `Oplossen: ${F("(x + 2)(x − 3) = 0")} → x = −2 of x = 3`, teken: { p: [[1, -1, -6]], pts: [[-2, 0, "−2"], [3, 0, "3"]], wijs: [[-2, 0], [3, 0]] },
+        zeg: "Ontbinden helpt bij oplossen. Een product is 0 als één van de factoren 0 is. Haakje x plus 2 is 0, of haakje x min 3 is 0. Dus x is min 2, of x is 3. Dat zijn de snijpunten met de x-as." },
+      { tekst: "Nu jij!", teken: { p: [[1, -1, -6]], pts: [[-2, 0], [3, 0]] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "4.2": {
+    vak: "wis", hfst: "4", docent: "delta", titel: "De abc-formule", oefen: "abc",
+    teken: st => kwSVG(st),
+    stappen: [
+      { tekst: `${F("x² − 4x + 1 = 0")}: ontbinden lukt niet`, teken: { p: [[1, -4, 1]] },
+        zeg: "Hoi! Dit is paragraaf 4.2: de abc-formule. Bij x kwadraat min 4x plus 1 is 0 vind je geen mooie getallen om te ontbinden. Dan gebruik je de abc-formule. Die werkt altijd." },
+      { tekst: `${F("D = b² − 4ac = 16 − 4 = 12")}`, teken: { p: [[1, -4, 1]] },
+        zeg: "Schrijf eerst a, b en c op: a is 1, b is min 4, c is 1. Reken dan de discriminant uit: D is b kwadraat min 4 a c. Dat is 16 min 4, en dat is 12." },
+      { tekst: "D > 0: twee, D = 0: één, D < 0: geen oplossingen", teken: { p: [[1, -4, 1], [1, -4, 4, "var(--pencil)"], [1, -4, 7, "var(--red)"]] },
+        zeg: "De discriminant vertelt hoeveel oplossingen er zijn. Is D groter dan 0, dan zijn er twee. Is D precies 0, dan één. Is D kleiner dan 0, dan zijn er geen oplossingen: de parabool raakt de x-as dan niet." },
+      { tekst: `${F("x = (−b ± √D) / 2a")}`, teken: { p: [[1, -4, 1]] },
+        zeg: "Dan de abc-formule: x is min b, plus of min wortel D, gedeeld door 2a." },
+      { tekst: `${F("x = (4 ± √12) / 2")} → x ≈ 0,27 of x ≈ 3,73`, teken: { p: [[1, -4, 1]], pts: [[0.27, 0, "0,27"], [3.73, 0, "3,73"]], wijs: [[0.27, 0], [3.73, 0]] },
+        zeg: "Hier: x is 4, plus of min wortel 12, gedeeld door 2. Dat geeft x is ongeveer 3,73 of x is ongeveer 0,27." },
+      { tekst: "Let op de min-tekens", teken: { p: [[1, -4, 1]] },
+        zeg: "Pas op met de min-tekens. Is b min 4, dan is min b plus 4. En b kwadraat is altijd positief: min 4 in het kwadraat is 16." },
+      { tekst: "Nu jij!", teken: { p: [[1, -4, 1]], pts: [[0.27, 0], [3.73, 0]] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "4.3": {
+    vak: "wis", hfst: "4", docent: "delta", titel: "De abc-formule of ontbinden in factoren", oefen: "methode",
+    teken: st => kwSVG(st),
+    stappen: [
+      { tekst: "Kies de handigste manier", teken: { p: [[1, 0, -9]] },
+        zeg: "Hoi! Dit is paragraaf 4.3: de abc-formule of ontbinden in factoren. De abc-formule werkt altijd, maar vaak kan het sneller. Kijk eerst goed naar de vergelijking." },
+      { tekst: `${F("x² = 9")} → x = 3 of x = −3`, teken: { p: [[1, 0, 0]], k: 9, pts: [[-3, 9, "−3"], [3, 9, "3"]], wijs: [[-3, 9], [3, 9]] },
+        zeg: "Staat er alleen x kwadraat is een getal, neem dan de wortel. Vergeet de negatieve oplossing niet: x kwadraat is 9 geeft x is 3, of x is min 3." },
+      { tekst: `${F("x² − 6x = 0")} → ${F("x(x − 6) = 0")}`, teken: { p: [[1, -6, 0]], y0: -10, pts: [[0, 0, "0"], [6, 0, "6"]], wijs: [[0, 0], [6, 0]] },
+        zeg: "Is er geen los getal, haal dan x buiten haakjes. x keer haakje x min 6 is 0. Dus x is 0, of x is 6." },
+      { tekst: `Mooie getallen: ${F("x² + 7x + 12 = (x + 3)(x + 4)")}`, teken: { p: [[1, 7, 12]], pts: [[-4, 0, "−4"], [-3, 0, "−3"]] },
+        zeg: "Is a gelijk aan 1 en zie je twee mooie getallen? Ontbind dan. Product 12, som 7: dat zijn 3 en 4. Dus x is min 3, of x is min 4." },
+      { tekst: "Lukt dat niet? De abc-formule", teken: { p: [[2, -3, -4]] },
+        zeg: "Vind je niet snel twee getallen, of staat er voor x kwadraat een ander getal dan 1? Gebruik dan de abc-formule." },
+      { tekst: "Altijd: controleer door invullen", teken: { p: [[1, -6, 0]], pts: [[6, 0, "6"]], wijs: [[6, 0]] },
+        zeg: "Controleer een oplossing door hem in te vullen. 6 kwadraat min 6 keer 6 is 36 min 36, en dat is 0. Het klopt." },
+      { tekst: "Nu jij!", teken: { p: [[1, 7, 12]] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
+  "4.4": {
+    vak: "wis", hfst: "4", docent: "delta", titel: "Kwadratische vergelijkingen", oefen: "op-nul",
+    teken: st => kwSVG(st),
+    stappen: [
+      { tekst: `${F("x² + 3x = 10")}`, teken: { p: [[1, 3, 0]], k: 10 },
+        zeg: "Hoi! Dit is paragraaf 4.4: kwadratische vergelijkingen. Hoe los je x kwadraat plus 3x is 10 op?" },
+      { tekst: `Op nul: ${F("x² + 3x − 10 = 0")}`, teken: { p: [[1, 3, 0]], k: 10 },
+        zeg: "Breng eerst alles naar één kant, zodat er rechts 0 staat. Trek aan beide kanten 10 af. Dan krijg je: x kwadraat plus 3x min 10 is 0." },
+      { tekst: `Ontbinden: ${F("(x + 5)(x − 2) = 0")}`, teken: { p: [[1, 3, 0]], k: 10 },
+        zeg: "Ontbind nu: product min 10, som 3. Dat zijn 5 en min 2. Dus haakje x plus 5, keer haakje x min 2, is 0." },
+      { tekst: "x = −5 of x = 2", teken: { p: [[1, 3, 0]], k: 10, pts: [[-5, 10, "−5"], [2, 10, "2"]], wijs: [[-5, 10], [2, 10]] },
+        zeg: "Dus x is min 5, of x is 2. In de grafiek zijn dat de x-waarden waar de parabool de lijn y is 10 snijdt." },
+      { tekst: `Haakjes eerst: ${F("x(x + 2) = 15")} → ${F("x² + 2x − 15 = 0")}`, teken: { p: [[1, 2, 0]], k: 15, y1: 18, pts: [[-5, 15, "−5"], [3, 15, "3"]] },
+        zeg: "Staan er haakjes, werk die dan eerst weg. x keer haakje x plus 2 is 15 wordt x kwadraat plus 2x is 15. Op nul: x kwadraat plus 2x min 15 is 0. Dat geeft x is 3, of x is min 5." },
+      { tekst: `${F("(x − 1)² = 16")} → x − 1 = 4 of x − 1 = −4`, teken: { p: [[1, -2, 1]], k: 16, y1: 18, pts: [[-3, 16, "−3"], [5, 16, "5"]] },
+        zeg: "Staat er een kwadraat is een getal, dan kan het sneller. x min 1 is 4, of x min 1 is min 4. Dus x is 5, of x is min 3." },
+      { tekst: "Nu jij!", teken: { p: [[1, 3, 0]], k: 10 }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
+    ]
+  },
   "nat:3.1": {
     vak: "nat", hfst: "3", docent: "volta", titel: "Energiebronnen", oefen: "energiebehoud",
     teken: st => natSVG(st),
@@ -3000,6 +3493,104 @@ function natSVG(st) {
       if (w === "vlam") s += `<circle class="wijs" cx="160" cy="284" r="26"/>`;
     }
   }
+  return s + "</svg>";
+}
+
+// Meetkunde voor H3 (Vlakke figuren): hoeken bij evenwijdige lijnen, spiegelen, driehoeken, constructie
+function meetSVG(st) {
+  const ink = "var(--ink)", rood = "var(--red)", grijs = "var(--pencil)";
+  let s = `<svg viewBox="0 0 340 300" class="plot uitleg-plot" role="img" aria-label="Meetkundige figuur">`;
+  const t = (x, y, tekst, o = {}) => `<text x="${x}" y="${y}" text-anchor="${o.a || "middle"}" style="font:700 ${o.f || 14}px var(--body);fill:${o.k || ink}">${tekst}</text>`;
+  const lijn = (x1, y1, x2, y2, k = ink, w = 2.5, dash = "") => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${k};stroke-width:${w}${dash ? ";stroke-dasharray:" + dash : ""}"/>`;
+  const rad = g => g * Math.PI / 180;
+  const sector = (cx, cy, a1, a2, r, kleur, label) => {
+    const p = a => [cx + r * Math.cos(rad(a)), cy + r * Math.sin(rad(a))], [x1, y1] = p(a1), [x2, y2] = p(a2), m = (a1 + a2) / 2;
+    return `<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${a2 - a1 > 180 ? 1 : 0} 1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" style="fill:${kleur};fill-opacity:.45;stroke:${kleur === "var(--marker)" ? "#B89400" : kleur};stroke-width:1.5"/>`
+      + (label ? t(cx + (r + 16) * Math.cos(rad(m)), cy + (r + 16) * Math.sin(rad(m)) + 5, label, { f: 13 }) : "");
+  };
+  const sc = st.scene;
+  if (sc === "hoeken") {
+    // l: y = 90, m: y = 210; snijlijn met een scherpe hoek van 60°
+    const A = [140, 90], B = [140 + 120 / Math.tan(rad(60)), 210], dx = Math.cos(rad(60)), dy = Math.sin(rad(60));
+    s += lijn(15, 90, 325, 90) + lijn(15, 210, 325, 210) + t(322, 82, "l", { a: "end" }) + t(322, 202, "m", { a: "end" });
+    s += lijn(A[0] - 75 * dx, A[1] - 75 * dy, B[0] + 75 * dx, B[1] + 75 * dy);
+    s += t(A[0] - 14, A[1] - 8, "A", { a: "end" }) + t(B[0] + 14, B[1] + 20, "B", { a: "start" });
+    if (st.vorm === "F") s += `<path d="M${B[0] + 120},${B[1]} L${B[0]},${B[1]} L${A[0] - 40 * dx},${A[1] - 40 * dy} M${A[0]},${A[1]} L${A[0] + 120},${A[1]}" style="fill:none;stroke:var(--marker);stroke-width:9;stroke-opacity:.6;stroke-linecap:round"/>`;
+    if (st.vorm === "Z") s += `<path d="M${A[0] + 110},${A[1]} L${A[0]},${A[1]} L${B[0]},${B[1]} L${B[0] - 110},${B[1]}" style="fill:none;stroke:var(--marker);stroke-width:9;stroke-opacity:.6;stroke-linecap:round;stroke-linejoin:round"/>`;
+    const POS = { ro: [0, 60], lo: [60, 180], lb: [180, 240], rb: [240, 360] };
+    for (const [pt, pos, label, kleur] of st.h || []) { const P = pt === "A" ? A : B; s += sector(P[0], P[1], POS[pos][0], POS[pos][1], pos === "ro" || pos === "lb" ? 26 : 20, kleur === "rood" ? rood : "var(--marker)", label); }
+    if (st.schaal === false) s += t(330, 290, "niet op schaal", { a: "end", f: 11, k: grijs });
+  }
+  if (sc === "driehoek" || sc === "twee") {
+    const teken = (P, namen, hoeken, zijden, kleur) => {
+      let r = `<polygon points="${P.map(p => p.join(",")).join(" ")}" style="fill:${kleur || "var(--marker)"};fill-opacity:.2;stroke:${ink};stroke-width:2.5"/>`;
+      P.forEach((p, i) => {
+        const q1 = P[(i + 1) % 3], q2 = P[(i + 2) % 3];
+        let a1 = Math.atan2(q1[1] - p[1], q1[0] - p[0]) * 180 / Math.PI, a2 = Math.atan2(q2[1] - p[1], q2[0] - p[0]) * 180 / Math.PI;
+        let lo = Math.min(a1, a2), hi = Math.max(a1, a2); if (hi - lo > 180) { [lo, hi] = [hi, lo + 360]; }
+        if (hoeken && hoeken[i]) r += sector(p[0], p[1], lo, hi, 20, hoeken[i].startsWith("?") ? rood : "var(--marker)", "") + t(p[0] + 38 * Math.cos(rad((lo + hi) / 2)), p[1] + 38 * Math.sin(rad((lo + hi) / 2)) + 5, hoeken[i], { f: 13, k: hoeken[i].startsWith("?") ? rood : ink });
+        const cx = (P[0][0] + P[1][0] + P[2][0]) / 3, cy = (P[0][1] + P[1][1] + P[2][1]) / 3, ux = p[0] - cx, uy = p[1] - cy, L = Math.hypot(ux, uy);
+        if (namen) r += t(p[0] + 16 * ux / L, p[1] + 16 * uy / L + 5, namen[i]);
+        if (zijden && zijden[i]) { const mx = (p[0] + q1[0]) / 2, my = (p[1] + q1[1]) / 2, vx = mx - cx, vy = my - cy, V = Math.hypot(vx, vy); r += t(mx + 16 * vx / V, my + 16 * vy / V + 5, zijden[i], { f: 13, k: zijden[i].includes("?") || zijden[i] === "x" ? rood : ink }); }
+      });
+      return r;
+    };
+    for (const d of st.d || []) s += teken(d.P, d.namen, d.hoeken, d.zijden, d.kleur);
+    if (st.schaal === false) s += t(330, 290, "niet op schaal", { a: "end", f: 11, k: grijs });
+  }
+  if (sc === "spiegel") {
+    const U = 26, X = x => 170 + U * x, Y = y => 150 - U * y;
+    for (let i = -6; i <= 6; i++) s += lijn(X(i), Y(5.5), X(i), Y(-5.5), "var(--grid)", 1) ;
+    for (let j = -5; j <= 5; j++) s += lijn(X(-6), Y(j), X(6), Y(j), "var(--grid)", 1);
+    s += lijn(X(-6), Y(0), X(6), Y(0), grijs, 1.5) + lijn(X(0), Y(5.5), X(0), Y(-5.5), grijs, 1.5) + t(X(6) - 4, Y(0) - 6, "x", { a: "end", f: 12, k: grijs }) + t(X(0) + 8, Y(5.5) + 12, "y", { a: "start", f: 12, k: grijs });
+    const [soort, k] = st.lijn || ["y", 0];
+    const spiegel = ([x, y]) => soort === "x" ? [x, 2 * k - y] : [2 * k - x, y];
+    if (soort === "x") s += lijn(X(-6), Y(k), X(6), Y(k), rood, 3) + t(X(6) - 2, Y(k) - 6, k ? `y = ${fmt(k)}` : "x-as", { a: "end", f: 12, k: rood });
+    else s += lijn(X(k), Y(5.5), X(k), Y(-5.5), rood, 3) + t(X(k) + 6, Y(5.5) + 12, k ? `x = ${fmt(k)}` : "y-as", { a: "start", f: 12, k: rood });
+    if (st.fig) {
+      const pts = st.fig, b = pts.map(spiegel);
+      s += `<polygon points="${pts.map(([x, y]) => X(x) + "," + Y(y)).join(" ")}" style="fill:var(--marker);fill-opacity:.4;stroke:${ink};stroke-width:2"/>`;
+      if (st.beeld) s += `<polygon points="${b.map(([x, y]) => X(x) + "," + Y(y)).join(" ")}" style="fill:var(--marker);fill-opacity:.4;stroke:${ink};stroke-width:2;stroke-dasharray:6 3"/>`;
+    }
+    if (st.P) {
+      const P = st.P, Q = spiegel(P);
+      s += `<circle cx="${X(P[0])}" cy="${Y(P[1])}" r="5" style="fill:${ink}"/>` + t(X(P[0]) + 8, Y(P[1]) - 8, `P(${fmt(P[0])}, ${fmt(P[1])})`, { a: "start", f: 13 });
+      if (st.beeld) s += lijn(X(P[0]), Y(P[1]), X(Q[0]), Y(Q[1]), grijs, 1.8, "5 4") + `<circle cx="${X(Q[0])}" cy="${Y(Q[1])}" r="5" style="fill:${rood}"/>` + t(X(Q[0]) + (soort === "y" && Q[0] < k ? -8 : 8), Y(Q[1]) + (soort === "x" && Q[1] < k ? 18 : -8), `P'(${fmt(Q[0])}, ${fmt(Q[1])})`, { a: soort === "y" && Q[0] < k ? "end" : "start", f: 13, k: rood });
+      if (st.wijs === "afstand") s += `<line class="wijs" x1="${X(P[0])}" y1="${Y(P[1])}" x2="${X(Q[0])}" y2="${Y(Q[1])}"/>`;
+    }
+  }
+  if (sc === "constructie") {
+    const A = [70, 230], sch = 40, AB = 6, AC = st.kort ? 2 : 5, BC = st.kort ? 3 : 4, B = [A[0] + AB * sch, 230];
+    s += lijn(A[0], A[1], B[0], B[1], ink, 3) + `<circle cx="${A[0]}" cy="${A[1]}" r="4" style="fill:${ink}"/><circle cx="${B[0]}" cy="${B[1]}" r="4" style="fill:${ink}"/>` + t(A[0] - 10, A[1] + 18, "A") + t(B[0] + 10, B[1] + 18, "B") + t((A[0] + B[0]) / 2, 252, `${AB} cm`, { f: 13 });
+    const xc = (AB * AB + AC * AC - BC * BC) / (2 * AB), yc2 = AC * AC - xc * xc, C = yc2 > 0 ? [A[0] + xc * sch, A[1] - Math.sqrt(yc2) * sch] : null;
+    if ((st.stap || 0) >= 2) {
+      const boog = (P, r, van, tot) => { const p = a => [P[0] + r * Math.cos(rad(a)), P[1] + r * Math.sin(rad(a))], [x1, y1] = p(van), [x2, y2] = p(tot); return `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)}" style="fill:none;stroke:${rood};stroke-width:2"/>`; };
+      s += boog(A, AC * sch, -80, -15) + boog(B, BC * sch, -165, -100) + t(A[0] + 20, A[1] - AC * sch + 10, `${AC} cm`, { a: "start", f: 12, k: rood }) + t(B[0] - 20, B[1] - BC * sch + 10, `${BC} cm`, { a: "end", f: 12, k: rood });
+    }
+    if ((st.stap || 0) >= 3 && C) s += lijn(A[0], A[1], C[0], C[1]) + lijn(B[0], B[1], C[0], C[1]) + `<circle cx="${C[0]}" cy="${C[1]}" r="5" style="fill:${rood}"/>` + t(C[0], C[1] - 12, "C");
+    if (st.kort) s += t(170, 60, "2 + 3 = 5: korter dan 6", { f: 14, k: rood }) + t(170, 80, "de bogen raken elkaar niet", { f: 13, k: rood });
+  }
+  return s + "</svg>";
+}
+
+// Parabool y = ax² + bx + c met snijpunten, eventueel een horizontale lijn y = k (H4 abc-formule)
+function kwSVG(st) {
+  const U = 22, x0 = st.x0 ?? -6, x1 = st.x1 ?? 7, y0 = st.y0 ?? -10, y1 = st.y1 ?? 12, W = (x1 - x0) * U, H = (y1 - y0) * U;
+  const X = x => 20 + U * (x - x0), Y = y => 10 + U * (y1 - y);
+  let s = `<svg viewBox="0 0 ${W + 40} ${H + 20}" class="plot uitleg-plot" role="img" aria-label="Parabool met snijpunten"><defs><clipPath id="kw-clip"><rect x="${X(x0)}" y="${Y(y1)}" width="${W}" height="${H}"/></clipPath></defs>`;
+  for (let i = x0; i <= x1; i++) s += `<line class="g-grid" x1="${X(i)}" y1="${Y(y1)}" x2="${X(i)}" y2="${Y(y0)}"/>`;
+  for (let j = y0; j <= y1; j++) s += `<line class="g-grid" x1="${X(x0)}" y1="${Y(j)}" x2="${X(x1)}" y2="${Y(j)}"/>`;
+  s += `<line class="g-axis" x1="${X(0)}" y1="${Y(y1)}" x2="${X(0)}" y2="${Y(y0)}"/><line class="g-axis" x1="${X(x0)}" y1="${Y(0)}" x2="${X(x1)}" y2="${Y(0)}"/>`;
+  for (let i = x0 + 1; i < x1; i++) if (i && i % 2 === 0) s += `<text class="g-lbl" x="${X(i)}" y="${Y(0) + 15}" text-anchor="middle">${fmt(i)}</text>`;
+  for (let j = y0 + 1; j < y1; j++) if (j && j % 4 === 0) s += `<text class="g-lbl" x="${X(0) - 5}" y="${Y(j) + 4}" text-anchor="end">${fmt(j)}</text>`;
+  for (const [a, b, c, kleur, label] of st.p || []) {
+    let d = ""; for (let x = x0; x <= x1 + 0.001; x += 0.05) d += `${d ? "L" : "M"}${X(x).toFixed(1)},${Y(a * x * x + b * x + c).toFixed(1)}`;
+    s += `<path class="g-line" clip-path="url(#kw-clip)" d="${d}" style="${kleur ? "stroke:" + kleur : ""}"/>`;
+    if (label) s += `<text class="g-tril" x="${X(x1) - 4}" y="${Y(y1) + 16}" text-anchor="end" style="${kleur ? "fill:" + kleur : ""}">${label}</text>`;
+  }
+  if (st.k !== undefined) s += `<line x1="${X(x0)}" y1="${Y(st.k)}" x2="${X(x1)}" y2="${Y(st.k)}" style="stroke:var(--red);stroke-width:2.5"/><text class="g-tril" x="${X(x0) + 4}" y="${Y(st.k) - 6}" style="fill:var(--red)">y = ${fmt(st.k)}</text>`;
+  for (const [x, y, label] of st.pts || []) s += `<circle class="g-pt" cx="${X(x)}" cy="${Y(y)}" r="5"/>${label ? `<text class="g-ptl" x="${X(x)}" y="${Y(y) + (y > 0 ? -10 : 20)}" text-anchor="middle">${label}</text>` : ""}`;
+  for (const [x, y] of st.wijs || []) s += `<circle class="wijs" cx="${X(x)}" cy="${Y(y)}" r="14"/>`;
   return s + "</svg>";
 }
 
