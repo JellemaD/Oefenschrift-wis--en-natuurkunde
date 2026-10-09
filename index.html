@@ -1104,6 +1104,100 @@ const ONDERWERPEN = [
     }
   },
   {
+    id: "resulterend", vak: "nat", titel: "Resulterende kracht",
+    sub: "Optellen, aftrekken, evenwicht",
+    uitleg: `<ul><li>Zelfde richting: krachten <b>optellen</b>.</li>
+      <li>Tegengestelde richting: krachten <b>aftrekken</b>; F_res wijst naar de grootste kracht.</li>
+      <li>Evenwicht: ${F("F_res = 0")}, de krachten heffen elkaar op.</li>
+      <li>Krachtenschaal, bijvoorbeeld 1 cm ≙ 10 N: lengte in cm = kracht / 10.</li></ul>`,
+    gen() {
+      const v = pick(["op", "af", "even", "schaal", "schaalN"]);
+      if (v === "op") { const a = pick([20, 30, 40, 50, 80, 120]), b = pick([10, 15, 25, 60, 100]);
+        return { vraag: `Twee kinderen duwen een kast in dezelfde richting: de een met ${a} N, de ander met ${b} N. Hoe groot is de resulterende kracht?`,
+          velden: [{ label: "F_res =", val: a + b, tol: AFRONDEN, eenheid: "N", tips: [[Math.abs(a - b), "Je hebt afgetrokken. Ze duwen in dezelfde richting: dan tel je op."]] }],
+          hint: `Zelfde richting: optellen.`, stappen: `F_res = ${a} + ${b} = <b>${a + b} N</b>` }; }
+      if (v === "af") { const a = pick([60, 80, 100, 150, 200, 250]), b = pick([20, 30, 45, 50]);
+        return { vraag: `Bij touwtrekken trekt team A met ${a} N naar links en team B met ${b} N naar rechts. Hoe groot is de resulterende kracht?`,
+          velden: [{ label: "F_res =", val: a - b, tol: AFRONDEN, eenheid: "N", tips: [[a + b, "Je hebt opgeteld. Ze trekken tegen elkaar in: dan trek je af."]] }],
+          hint: `Tegengestelde richting: trek de kleinste kracht af van de grootste.`, stappen: `F_res = ${a} − ${b} = <b>${a - b} N</b> (naar links)` }; }
+      if (v === "even") { const m = pick([2, 5, 10, 20, 50]), Fz = m * 10;
+        const Fspier = pick([40, 60, 80]), Fw = Fspier;
+        return pick([
+          { vraag: `Een doos ligt stil op tafel. De zwaartekracht op de doos is ${Fz} N. Hoe groot is de normaalkracht van de tafel?`,
+            velden: [{ label: "Fn =", val: Fz, tol: AFRONDEN, eenheid: "N", tips: [[0, "De doos is in evenwicht, maar de normaalkracht is niet 0. Die heft de zwaartekracht op."]] }],
+            hint: `De doos ligt stil: evenwicht, dus F_res = 0.`, stappen: `Evenwicht: Fn = Fz = <b>${Fz} N</b>` },
+          { vraag: `Je duwt een kar met ${Fspier} N vooruit. De kar rijdt met constante snelheid. Hoe groot is de wrijvingskracht?`,
+            velden: [{ label: "Fw =", val: Fw, tol: AFRONDEN, eenheid: "N", tips: [[0, "Constante snelheid betekent evenwicht: F_res = 0. De wrijving is dus niet 0, maar even groot als jouw duw."]] }],
+            hint: `Constante snelheid: evenwicht, dus F_res = 0.`, stappen: `Evenwicht: Fw = F_duw = <b>${Fw} N</b>` }]); }
+      if (v === "schaal") { const sch = pick([10, 20, 50]), F = sch * pick([2, 3, 4, 5, 6]);
+        return { vraag: `De krachtenschaal is 1 cm ≙ ${sch} N. Hoe lang teken je de pijl van een kracht van ${F} N?`,
+          velden: [{ label: "lengte =", val: F / sch, tol: AFRONDEN, eenheid: "cm", tips: [[F * sch, "Andersom: deel de kracht door het aantal newton per centimeter."]] }],
+          hint: `Elke centimeter is ${sch} N. Hoeveel keer past ${sch} in ${F}?`, stappen: `lengte = ${F} / ${sch} = <b>${fmt(F / sch)} cm</b>` }; }
+      const sch = pick([10, 20, 50]), L = pick([1.5, 2, 2.5, 3, 4, 4.5]);
+      return { vraag: `De krachtenschaal is 1 cm ≙ ${sch} N. Een krachtpijl is ${fmt(L)} cm lang. Hoe groot is de kracht?`,
+        velden: [{ label: "F =", val: L * sch, tol: AFRONDEN, eenheid: "N", tips: [[L / sch, "Andersom: elke centimeter is " + sch + " N, dus vermenigvuldig."]] }],
+        hint: `Elke centimeter is ${sch} N.`, stappen: `F = ${fmt(L)} · ${sch} = <b>${fmt(L * sch)} N</b>` };
+    }
+  },
+  {
+    id: "hefboom", vak: "nat", titel: "Hefboomwet",
+    sub: "M = F · r, links = rechts",
+    uitleg: `<ul><li>Moment: ${F("M = F · r")} (kracht keer arm), in newtonmeter (Nm).</li>
+      <li>Arm r: afstand van het draaipunt tot de kracht.</li>
+      <li>Evenwicht: ${F("F₁ · r₁ = F₂ · r₂")} (moment linksom = moment rechtsom).</li>
+      <li>Onbekende kracht: ${F("F₂ = F₁ · r₁ / r₂")}.</li></ul>`,
+    gen() {
+      const v = pick(["M", "F", "F", "r"]);
+      if (v === "M") { const F_ = pick([20, 50, 120, 300, 450]), r = pick([0.2, 0.5, 0.8, 1.2, 2]);
+        return { vraag: `Je duwt met ${F_} N op een deurklink. De arm is ${fmt(r)} m. Hoe groot is het moment?`,
+          velden: [{ label: "M =", val: F_ * r, tol: AFRONDEN, eenheid: "Nm", tips: [[F_ / r, "Je hebt gedeeld. Het moment is kracht keer arm."]] }],
+          hint: `${F("M = F · r")}`, stappen: `M = ${F_} · ${fmt(r)} = <b>${fmt(F_ * r)} Nm</b>` }; }
+      if (v === "F") { const F1 = pick([200, 300, 400, 500, 600]), r1 = pick([1, 1.5, 2]), r2 = pick([0.5, 1, 1.2, 2.5, 3].filter(x => x !== r1)), F2 = F1 * r1 / r2;
+        return { vraag: `Op een wip zit links iemand van ${F1} N op ${fmt(r1)} m van het draaipunt. Rechts zit iemand op ${fmt(r2)} m. De wip is in evenwicht. Hoe zwaar is de persoon rechts (in N)?`,
+          velden: [{ label: "F₂ =", val: F2, tol: AFRONDEN, eenheid: "N", tips: [[F1 * r2 / r1, "Je hebt de armen omgedraaid. Reken eerst het moment links uit: F₁ · r₁."]] }],
+          hint: `Moment links = ${F1} · ${fmt(r1)}. Dat moet gelijk zijn aan F₂ · ${fmt(r2)}.`,
+          stappen: `M links = ${F1} · ${fmt(r1)} = ${fmt(F1 * r1)} Nm<br>F₂ · ${fmt(r2)} = ${fmt(F1 * r1)} → F₂ = ${fmt(F1 * r1)} / ${fmt(r2)} = <b>${fmt(F2)} N</b>` }; }
+      const F1 = pick([300, 400, 600]), r1 = pick([1, 1.5, 2]), F2 = pick([200, 500, 800, 1200].filter(x => x !== F1)), r2 = F1 * r1 / F2;
+      return { vraag: `Links op een wip zit iemand van ${F1} N op ${fmt(r1)} m van het draaipunt. Rechts zit iemand van ${F2} N. Op hoeveel meter van het draaipunt moet die zitten voor evenwicht?`,
+        velden: [{ label: "r₂ =", val: r2, tol: AFRONDEN, eenheid: "m", tips: [[F2 * r1 / F1, "Reken eerst het moment links uit, en deel dat door de kracht rechts."]] }],
+        hint: `Moment links = ${F1} · ${fmt(r1)}. Deel dat door ${F2}.`,
+        stappen: `M links = ${fmt(F1 * r1)} Nm<br>r₂ = ${fmt(F1 * r1)} / ${F2} = <b>${fmt(r2, 2)} m</b>` };
+    }
+  },
+  {
+    id: "werktuig", vak: "nat", titel: "Werktuigen",
+    sub: "Koevoet, katrol en takel",
+    uitleg: `<ul><li>Koevoet: een hefboom. ${F("F_jij · r_jij = F_last · r_last")}</li>
+      <li>Vaste katrol: zelfde kracht, andere richting.</li>
+      <li>Losse katrol: last hangt aan 2 touwdelen, dus ${F("F = Fz / 2")}; je haalt 2 keer zoveel touw binnen.</li>
+      <li>Takel met n touwdelen: ${F("F = Fz / n")}; touw binnenhalen = n · hoogte.</li>
+      <li>Massa gegeven? Eerst ${F("Fz = m · g")} met g = 9,81 N/kg.</li></ul>`,
+    gen() {
+      const v = pick(["koevoet", "los", "takel", "touw", "massa"]);
+      if (v === "koevoet") { const Fl = pick([600, 800, 900, 1200, 1500]), rl = pick([0.05, 0.1, 0.15]), rj = pick([0.6, 0.75, 0.9, 1.2]), Fj = Fl * rl / rj;
+        return { vraag: `Met een koevoet til je een steen op. De steen drukt met ${Fl} N op ${fmt(rl * 100)} cm van het draaipunt. Jij duwt op ${fmt(rj * 100)} cm van het draaipunt. Hoe groot moet jouw kracht zijn?`,
+          velden: [{ label: "F =", val: Fj, tol: AFRONDEN, eenheid: "N", tips: [[Fl * rj / rl, "Je hebt de armen omgedraaid. Moment van de steen: F_last · r_last."]] }],
+          hint: `Moment van de steen = ${Fl} · ${fmt(rl * 100)}. Deel dat door jouw arm ${fmt(rj * 100)} (cm mag, als beide armen in cm staan).`,
+          stappen: `F · ${fmt(rj * 100)} = ${Fl} · ${fmt(rl * 100)} → F = ${fmt(Fl * rl * 100)} / ${fmt(rj * 100)} = <b>${fmt(Fj, 1)} N</b>` }; }
+      if (v === "los") { const Fz = pick([200, 300, 500, 800, 1000]);
+        return { vraag: `Je hijst een last met een zwaartekracht van ${Fz} N op met een losse katrol. Hoe groot is de kracht waarmee je moet trekken?`,
+          velden: [{ label: "F =", val: Fz / 2, tol: AFRONDEN, eenheid: "N", tips: [[Fz, "Bij een vaste katrol klopt dit, maar dit is een losse katrol: de last hangt aan 2 touwdelen."], [Fz * 2, "Andersom: de katrol maakt de kracht kleiner, niet groter."]] }],
+          hint: `De last hangt aan 2 touwdelen.`, stappen: `F = ${Fz} / 2 = <b>${Fz / 2} N</b>` }; }
+      if (v === "takel") { const n = pick([3, 4, 6]), Fz = n * pick([50, 100, 150, 200]);
+        return { vraag: `Een takel heeft ${n} touwdelen die de last dragen. De zwaartekracht op de last is ${Fz} N. Met welke kracht moet je trekken?`,
+          velden: [{ label: "F =", val: Fz / n, tol: AFRONDEN, eenheid: "N", tips: [[Fz * n, "Andersom: de takel maakt de kracht kleiner. Deel door het aantal touwdelen."]] }],
+          hint: `${F("F = Fz / n")}`, stappen: `F = ${Fz} / ${n} = <b>${fmt(Fz / n)} N</b>` }; }
+      if (v === "touw") { const n = pick([2, 3, 4]), h = pick([0.5, 1, 1.5, 2, 3]);
+        return { vraag: `Je hijst een last ${fmt(h)} m omhoog met een takel met ${n} touwdelen. Hoeveel meter touw moet je binnenhalen?`,
+          velden: [{ label: "touw =", val: n * h, tol: AFRONDEN, eenheid: "m", tips: [[h / n, "Andersom: een kleinere kracht betekent méér touw binnenhalen."]] }],
+          hint: `Elk touwdeel moet ${fmt(h)} m korter worden.`, stappen: `touw = ${n} · ${fmt(h)} = <b>${fmt(n * h)} m</b>` }; }
+      const m = pick([20, 40, 50, 80, 100]), Fz = m * 9.81;
+      return { vraag: `Met een losse katrol hijs je een zak cement van ${m} kg op. Hoe groot is je trekkracht? (g = 9,81 N/kg)`,
+        velden: [{ label: "F =", val: Fz / 2, tol: AFRONDEN, eenheid: "N", tips: [[m / 2, "Reken eerst de zwaartekracht uit in newton: Fz = m · g."], [Fz, "Dat is de zwaartekracht. Bij een losse katrol heb je maar de helft nodig."]] }],
+        hint: `Eerst ${F("Fz = m · g")}, dan delen door 2.`, stappen: `Fz = ${m} · 9,81 = ${fmt(Fz, 1)} N<br>F = ${fmt(Fz, 1)} / 2 = <b>${fmt(Fz / 2, 1)} N</b>` };
+    }
+  },
+  {
     id: "zwaartekracht", vak: "nat", titel: "Zwaartekracht",
     sub: "Fz = m · g",
     uitleg: `<p>${F("Fz = m · g")}, met Fz in newton (N), m in kilogram (kg) en g = 9,81 N/kg.</p>
@@ -1282,7 +1376,7 @@ const KOPPELING = {
   "tabel": { hfst: "1", par: "1.1" }, "verhaal": { hfst: "1", par: "1.1" }, "vergelijking": { hfst: "1", par: "1.2" },
   "par-invullen": { hfst: "2", par: "2.1" }, "par-symmetrie": { hfst: "2", par: "2.2" },
   "par-top": { hfst: "2", par: "2.2" }, "par-vormen": { hfst: "2", par: "2.5" },
-"stroomkring": { hfst: "1", par: "1.1" }, "vermogen": { hfst: "1", par: "1.2" }, "huisinstallatie": { hfst: "1", par: "1.3" }, "veiligheid": { hfst: "1", par: "1.4" }, "energiebehoud": { hfst: "3", par: "3.1" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" },
+"stroomkring": { hfst: "1", par: "1.1" }, "vermogen": { hfst: "1", par: "1.2" }, "huisinstallatie": { hfst: "1", par: "1.3" }, "veiligheid": { hfst: "1", par: "1.4" }, "energiebehoud": { hfst: "3", par: "3.1" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" }, "resulterend": { hfst: "2", par: "2.2" }, "hefboom": { hfst: "2", par: "2.3" }, "werktuig": { hfst: "2", par: "2.4" },
   "snelheid": { hfst: "4", par: "4.2" }, "ohm": { hfst: "5", par: "5.2" },
   "omrekenen": { hfst: "V", par: "V2" }, "diagram": { hfst: "V", par: "V8" },
   "dichtheid": { hfst: "herhaling" }
@@ -1925,7 +2019,7 @@ const UITLEGGEN = {
     ]
   },
   "nat:2.2": {
-    vak: "nat", hfst: "2", docent: "volta", titel: "Meer dan één kracht", oefen: "",
+    vak: "nat", hfst: "2", docent: "volta", titel: "Meer dan één kracht", oefen: "resulterend",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "Samen: de resulterende kracht F_res", teken: { scene: "blok", p: [[210, 205, 270, 205, "30 N", "ink", 0, -10], [210, 235, 250, 235, "20 N", "ink", 24, 5]] },
@@ -1940,12 +2034,12 @@ const UITLEGGEN = {
         zeg: "Een blok dat stil op de vloer ligt, is ook in evenwicht. De normaalkracht omhoog is even groot als de zwaartekracht omlaag." },
       { tekst: "Krachtenschaal", teken: { scene: "blok", schaal: true, p: [[210, 220, 330, 220, "30 N", "ink", -20, -10]] },
         zeg: "Om krachten precies te tekenen, gebruik je een krachtenschaal. Bijvoorbeeld: 1 centimeter is 10 newton. Een kracht van 30 newton teken je dan als een pijl van 3 centimeter." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "blok" }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 2.2 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "blok" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "nat:2.3": {
-    vak: "nat", hfst: "2", docent: "volta", titel: "Hefbomen", oefen: "",
+    vak: "nat", hfst: "2", docent: "volta", titel: "Hefbomen", oefen: "hefboom",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "Een hefboom draait om een draaipunt", teken: { scene: "hefboom", wijs: "dp" },
@@ -1960,12 +2054,12 @@ const UITLEGGEN = {
         zeg: "Weet je één kracht niet? Gebruik de hefboomwet. Links is het moment 600 newtonmeter. Rechts staat F keer 1. Dus F keer 1 is 600, en F is 600 newton." },
       { tekst: "Lange arm → kleine kracht", teken: { scene: "hefboom", F: [[-1.8, 200, "200 N"], [0.6, 600, "600 N"]], armen: true, M: "200 × 1,8 = 360 Nm", M2: "600 × 0,6 = 360 Nm" },
         zeg: "Daarom werkt een lange arm zo goed. Hoe langer de arm, hoe kleiner de kracht die je nodig hebt voor hetzelfde moment. Met een arm van 1,8 meter houd je 600 newton omhoog met maar 200 newton." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "hefboom", F: [[-1.5, 400, "400 N"], [1, 600, "600 N"]] }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 2.3 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "hefboom", F: [[-1.5, 400, "400 N"], [1, 600, "600 N"]] }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "nat:2.4": {
-    vak: "nat", hfst: "2", docent: "volta", titel: "Werktuigen", oefen: "",
+    vak: "nat", hfst: "2", docent: "volta", titel: "Werktuigen", oefen: "werktuig",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "Werktuig: kleine kracht, groot effect", teken: { scene: "hefboom", dp: 250, sch: 150, x0: 60, x1: 290, F: [[-0.9, 100, "jij: 100 N"], [0.1, 900, "900 N"]] },
@@ -1980,8 +2074,8 @@ const UITLEGGEN = {
         zeg: "Er is wel een prijs. Om de last 1 meter op te tillen, moet je 2 meter touw binnenhalen. Een kleinere kracht, maar een langere weg. Gratis energie bestaat niet." },
       { tekst: "Takel: F = Fz ÷ aantal touwdelen", teken: { scene: "katrol", los: true, Ftekst: "F = ¼ · Fz" },
         zeg: "Een takel combineert meerdere katrollen. Hangt de last aan 4 touwdelen, dan heb je maar een vierde van de zwaartekracht nodig. Maar je haalt dan wel 4 keer zo veel touw binnen." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "katrol", los: true }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 2.4 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "katrol", los: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "1.5": {
