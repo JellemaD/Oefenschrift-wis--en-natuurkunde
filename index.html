@@ -64,6 +64,11 @@ button,input,textarea{font:inherit}
   .t-score{width:100%}
 }
 
+/* Tabbladen wiskunde / natuurkunde */
+.tabs{display:flex;gap:.4rem;margin:1.5rem 0 .75rem;border-bottom:2px solid var(--ink)}
+.tabs button{flex:1;max-width:14rem;border:2px solid var(--ink);border-bottom:0;border-radius:8px 8px 0 0;background:var(--card);color:var(--ink);font-family:var(--hand);font-size:1.3rem;font-weight:700;padding:.45rem 1rem;cursor:pointer;margin-bottom:-2px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+
 /* Hoofdstukken wiskunde */
 details.hfst{background:var(--card);border:1px solid var(--grid-strong);border-radius:6px;margin:0 0 .6rem;padding:.2rem 1rem .4rem}
 details.hfst summary{cursor:pointer;font-weight:700;color:var(--ink);padding:.6rem 0;list-style-position:outside}
@@ -214,13 +219,18 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <h1>Esra's oefenschrift</h1>
     <p class="intro">Wiskunde en natuurkunde voor havo 3. Kies een onderwerp en oefen zoveel je wilt: elke som is nieuw. Kom je er niet uit? Vraag een hint, bekijk de uitwerking of stel je vraag.</p>
 
-    <h2>Wiskunde</h2>
-    <p class="klein" style="margin-top:-.25rem">Zoals in je boek <i>Moderne Wiskunde</i> (13e editie, havo 3). Per paragraaf staan er uitlegfilmpjes.</p>
-    <div id="lijst-wis"></div>
-
-    <h2>Natuurkunde</h2>
-    <p class="klein" style="margin-top:-.25rem">Zoals in je boek <i>Nova</i> (3 havo). Per paragraaf staan er uitlegfilmpjes.</p>
-    <div id="lijst-nat"></div>
+    <div class="tabs" role="tablist" aria-label="Kies een vak">
+      <button type="button" role="tab" id="tab-wis" data-tab="wis" aria-selected="true">Wiskunde</button>
+      <button type="button" role="tab" id="tab-nat" data-tab="nat" aria-selected="false">Natuurkunde</button>
+    </div>
+    <div class="tabpaneel" id="paneel-wis" role="tabpanel" aria-labelledby="tab-wis">
+      <p class="klein">Zoals in je boek <i>Moderne Wiskunde</i> (13e editie, havo 3).</p>
+      <div id="lijst-wis"></div>
+    </div>
+    <div class="tabpaneel hidden" id="paneel-nat" role="tabpanel" aria-labelledby="tab-nat">
+      <p class="klein">Zoals in je boek <i>Nova</i> (3 havo).</p>
+      <div id="lijst-nat"></div>
+    </div>
 
     <h2>Alles op een rij</h2>
     <div class="schrift">
@@ -1262,6 +1272,15 @@ function init() {
     if (e.target.closest("[data-home]")) { if (som && geprobeerd && !afgerond) telMee(false); som = null; renderHome(); toon("home"); }
   });
   $("naar-spiek").onclick = () => toon("spiekbrief");
+  const kiesTab = vak => {
+    for (const v of ["wis", "nat"]) {
+      $("tab-" + v).setAttribute("aria-selected", v === vak);
+      $("paneel-" + v).classList.toggle("hidden", v !== vak);
+    }
+    try { localStorage.setItem("oefenschrift-tab", vak); } catch (e) {}
+  };
+  document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => kiesTab(b.dataset.tab));
+  try { if (localStorage.getItem("oefenschrift-tab") === "nat") kiesTab("nat"); } catch (e) {}
   $("reset").onclick = () => { if (confirm("Alle scores wissen?")) { scores = {}; bewaarScores(scores); renderHome(); } };
   $("b-check").onclick = controleer;
   $("b-hint").onclick = hint;
