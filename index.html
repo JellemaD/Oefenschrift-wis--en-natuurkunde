@@ -439,7 +439,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     </div>
   </section>
 </main>
-<footer>Gemaakt voor Esra om te oefenen. Scores worden alleen op dit apparaat bewaard.</footer>
+<footer>Gemaakt voor Esra om te oefenen. Scores worden alleen op dit apparaat bewaard.<br><span class="klein" id="versie"></span></footer>
 
 <button class="vraagknop" id="vraagknop">Vraag stellen</button>
 
@@ -525,9 +525,16 @@ function formule(a, b, x = "x", y = "y") {
   return s;
 }
 const F = s => `<span class="formule">${s}</span>`;
+// Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
+const VERSIE = "2026.10.09-2";
+// a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
+const lijnF = (a, L, b) => `${coef(a)}${L}${b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : ""}`;
+const tabelHTML = (xs, ys, kx = "x", ky = "y") => `<div class="tabelwrap"><table class="tabel"><tr><th>${kx}</th>${xs.map(x => `<td>${typeof x === "number" ? fmt(x) : x}</td>`).join("")}</tr><tr><th>${ky}</th>${ys.map(y => `<td>${typeof y === "number" ? fmt(y) : y}</td>`).join("")}</tr></table></div>`;
 // Kwadratische formules netjes schrijven
 const coef = a => (a === 1 ? "" : a === -1 ? "−" : fmt(a));
 const lin = k => (k === 0 ? "x" : k > 0 ? `x + ${fmt(k)}` : `x − ${fmt(-k)}`);
+// factor in een product: x of (x − 3)
+const fac = k => (k === 0 ? "x" : `(${lin(k)})`);
 function kw(a, b, c, x = "x", y = "y") {
   let s = `${y} = ${coef(a)}${x}²`;
   if (b) s += ` ${b < 0 ? "−" : "+"} ${Math.abs(b) === 1 ? "" : fmt(Math.abs(b))}${x}`;
@@ -722,6 +729,128 @@ const ONDERWERPEN = [
     }
   },
 
+  {
+    id: "snijpunt", vak: "wis", titel: "Snijpunt berekenen",
+    sub: "Twee formules gelijkstellen",
+    uitleg: `<p>In het snijpunt hebben beide lijnen dezelfde x én dezelfde y.</p>
+      <ol><li>Stel de twee formules aan elkaar gelijk.</li><li>Los de vergelijking op met de balansmethode: dat geeft x.</li>
+      <li>Vul x in één van de formules in: dat geeft y.</li><li>Controleer met de andere formule.</li></ol>
+      <p>Voorbeeld: 2x + 1 = −x + 7 → 3x + 1 = 7 → 3x = 6 → x = 2. Dan y = 2 · 2 + 1 = 5. Snijpunt (2, 5).</p>`,
+    gen() {
+      let a1, a2; do { a1 = pick([-3, -2, -1, 1, 2, 3, 4]); a2 = pick([-3, -2, -1, 1, 2, 3, 4]); } while (a1 === a2);
+      const x = R(-4, 5), y = R(-6, 9), b1 = y - a1 * x, b2 = y - a2 * x;
+      return {
+        vraag: `Bereken het snijpunt van de lijnen ${F(formule(a1, b1))} en ${F(formule(a2, b2))}.`,
+        velden: [{ label: "x =", val: x, tol: EXACT }, { label: "y =", val: y, tol: EXACT }],
+        hint: `Stel de formules gelijk: ${formule(a1, b1).slice(4)} = ${formule(a2, b2).slice(4)}. Breng alle x-en naar één kant en alle getallen naar de andere kant.`,
+        stappen: `${formule(a1, b1).slice(4)} = ${formule(a2, b2).slice(4)}<br>${fmt(a1 - a2)}x = ${fmt(b2 - b1)}<br>x = ${fmt(b2 - b1)} / ${par(a1 - a2)} = <b>${fmt(x)}</b><br>y = ${fmt(a1)} · ${par(x)} ${b1 < 0 ? "−" : "+"} ${fmt(Math.abs(b1))} = <b>${fmt(y)}</b><br>Controle: ${fmt(a2)} · ${par(x)} ${b2 < 0 ? "−" : "+"} ${fmt(Math.abs(b2))} = ${fmt(y)} ✓`
+      };
+    }
+  },
+  {
+    id: "subst-formule", vak: "wis", titel: "Formule invullen in formule",
+    sub: "Substitueren en haakjes wegwerken",
+    uitleg: `<p>Substitueren betekent: de ene formule invullen in de andere.</p>
+      <ol><li>Vervang de letter door de hele andere formule, <b>met haakjes</b>.</li><li>Werk de haakjes weg: vermenigvuldig met álles tussen de haakjes.</li><li>Neem de getallen samen.</li></ol>
+      <p>Voorbeeld: P = 3a + 5 en a = 2n + 1. Dan P = 3(2n + 1) + 5 = 6n + 3 + 5 = 6n + 8.</p>`,
+    gen() {
+      const a = pick([2, 3, 4, 5, -2]), b = (R(1, 9)) * pick([1, -1]), c = pick([2, 3, 4, -3]), d = R(1, 8) * pick([1, -1]);
+      const [L, M, N] = pick([["P", "a", "n"], ["K", "q", "t"], ["W", "s", "x"], ["y", "u", "x"]]), k = a * c, m = a * d + b;
+      return {
+        vraag: `Gegeven zijn ${F(`${L} = ${lijnF(a, M, b)}`)} en ${F(`${M} = ${lijnF(c, N, d)}`)}. Schrijf ${L} als formule van ${N}, in de vorm ${L} = … ${N} + …`,
+        velden: [{ label: `getal voor ${N}:`, val: k, tol: EXACT, tips: [[c, `Vermenigvuldig ook de ${fmt(c)}${N} met ${fmt(a)}.`]] },
+                 { label: "getal erachter:", val: m, tol: EXACT, tips: [[d + b, `Haakjes vergeten? Vermenigvuldig ook ${fmt(d)} met ${fmt(a)}.`]] }],
+        hint: `Vervang ${M} door (${lijnF(c, N, d)}). Werk daarna de haakjes weg.`,
+        stappen: `${L} = ${fmt(a)}(${lijnF(c, N, d)}) ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}<br>${L} = ${lijnF(k, N, a * d)} ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}<br>${L} = <b>${lijnF(k, N, m)}</b>`
+      };
+    }
+  },
+  {
+    id: "subst-waarde", vak: "wis", titel: "Rekenen met twee formules",
+    sub: "Eerst de tussenstap, dan het eindantwoord",
+    uitleg: `<p>Hangen twee formules aan elkaar (n → a → P), dan reken je in twee stappen:</p>
+      <ol><li>Vul n in de formule van a in: zo krijg je a.</li><li>Vul die a in de formule van P in: zo krijg je P.</li></ol>
+      <p>Voorbeeld: a = 2n + 1 en P = 3a + 5. Bij n = 2: a = 5, en P = 3 · 5 + 5 = 20.</p>`,
+    gen() {
+      const a = pick([2, 3, 4, 5]), b = R(1, 12), c = pick([2, 3, 4, 5]), d = R(-5, 6), n = R(1, 8);
+      const [L, M, N] = pick([["P", "a", "n"], ["K", "q", "t"], ["W", "s", "x"]]), tus = c * n + d, eind = a * tus + b;
+      return {
+        vraag: `Gegeven zijn ${F(`${L} = ${lijnF(a, M, b)}`)} en ${F(`${M} = ${lijnF(c, N, d)}`)}. Bereken ${M} en ${L} als ${N} = ${n}.`,
+        velden: [{ label: `${M} =`, val: tus, tol: EXACT }, { label: `${L} =`, val: eind, tol: EXACT, tips: [[a * n + b, `Je hebt ${N} in de formule van ${L} gezet. Vul daar ${M} in.`]] }],
+        hint: `Eerst ${M}: vul ${N} = ${n} in ${lijnF(c, N, d)}. Vul die uitkomst daarna in voor ${M}.`,
+        stappen: `${M} = ${fmt(c)} · ${n} ${d < 0 ? "−" : "+"} ${fmt(Math.abs(d))} = <b>${fmt(tus)}</b><br>${L} = ${fmt(a)} · ${par(tus)} + ${b} = <b>${fmt(eind)}</b>`
+      };
+    }
+  },
+  {
+    id: "groeifactor", vak: "wis", titel: "Groeifactor bepalen",
+    sub: "Uit een percentage of een tabel",
+    uitleg: `<p>Bij exponentiële groei vermenigvuldig je per stap met hetzelfde getal: de <b>groeifactor</b> g.</p>
+      <ul><li>Groei met 5% per jaar: 100% + 5% = 105%, dus g = 1,05.</li><li>Afname met 20%: 100% − 20% = 80%, dus g = 0,8.</li>
+      <li>Uit een tabel: deel een waarde door de waarde ervoor, bijvoorbeeld 150 / 100 = 1,5.</li></ul>`,
+    gen() {
+      if (Math.random() < 0.6) {
+        const pc = pick([2, 3, 5, 8, 10, 12, 15, 20, 25, 40, 50]), op = Math.random() < 0.6, g = op ? 1 + pc / 100 : 1 - pc / 100;
+        const zin = op ? pick([`Een bedrag groeit met ${pc}% per jaar.`, `Het aantal volgers groeit met ${pc}% per maand.`]) : pick([`De waarde van een auto neemt af met ${pc}% per jaar.`, `De hoeveelheid medicijn in het bloed neemt af met ${pc}% per uur.`]);
+        return { vraag: `${zin} Wat is de groeifactor?`,
+          velden: [{ label: "g =", val: g, tol: EXACT, tips: [[pc / 100, "Dat is alleen de verandering. Reken met 100% erbij: 100% " + (op ? "+" : "−") + " " + pc + "%."], [op ? 1 - pc / 100 : 1 + pc / 100, op ? "Het groeit: tel het percentage erbij op." : "Het neemt af: trek het percentage eraf."], [op ? 100 + pc : 100 - pc, "Schrijf het als factor: " + (op ? 100 + pc : 100 - pc) + "% = " + fmt(g) + "."]] }],
+          hint: `${op ? "100% + " + pc + "%" : "100% − " + pc + "%"} = ${op ? 100 + pc : 100 - pc}%. Deel door 100.`,
+          stappen: `${op ? "100% + " + pc + "%" : "100% − " + pc + "%"} = ${op ? 100 + pc : 100 - pc}% → <b>g = ${fmt(g)}</b>` };
+      }
+      const N0 = pick([20, 40, 50, 100, 200, 400]), g = pick([1.5, 2, 3, 0.5, 0.8, 1.2, 1.1]), ys = [0, 1, 2, 3].map(t => N0 * g ** t);
+      return { vraag: `Bij deze tabel hoort exponentiële groei. Wat is de groeifactor per stap?${tabelHTML([0, 1, 2, 3], ys, "t", "N")}`,
+        velden: [{ label: "g =", val: g, tol: EXACT, tips: [[ys[1] - ys[0], "Dat is het verschil. Bij exponentiële groei deel je: N bij t = 1 gedeeld door N bij t = 0."], [ys[0] / ys[1], "Andersom: deel de latere waarde door de eerdere."]] }],
+        hint: `Deel een waarde door de waarde ervoor: ${fmt(ys[1])} / ${fmt(ys[0])}.`,
+        stappen: `g = ${fmt(ys[1])} / ${fmt(ys[0])} = <b>${fmt(g)}</b> (controle: ${fmt(ys[2])} / ${fmt(ys[1])} = ${fmt(g)})` };
+    }
+  },
+  {
+    id: "exp-formule", vak: "wis", titel: "Rekenen met N = b · gᵗ",
+    sub: "Eerst de macht, dan keer",
+    uitleg: `<p>${F("N = b · gᵗ")}: b is de beginwaarde (bij t = 0), g de groeifactor.</p>
+      <ul><li>Reken eerst de macht uit (gᵗ), daarna keer b.</li><li>Niet: b · g · t. De t is een exponent.</li></ul>
+      <p>Voorbeeld: N = 50 · 2ᵗ bij t = 3: 2³ = 8, 50 · 8 = 400.</p>`,
+    gen() {
+      const b = pick([20, 50, 100, 200, 500, 1000]), g = pick([2, 3, 1.5, 0.5, 1.1, 0.8, 1.2]), t = R(2, 5), N = b * g ** t;
+      return { vraag: `Gegeven is ${F(`N = ${fmt(b)} · ${fmt(g)}ᵗ`)}. Bereken N als t = ${t}. Rond af op twee decimalen als dat nodig is.`,
+        velden: [{ label: "N =", val: N, tol: { abs: 0.01, rel: 0.002 }, tips: [[b * g * t, "Je hebt keer t gedaan. Het is g tot de macht t: " + fmt(g) + " · " + fmt(g) + " · …"], [(b * g) ** t, "Eerst de macht, dan keer b: reken eerst " + fmt(g) + "^" + t + " uit."]] }],
+        hint: `Reken eerst ${fmt(g)}^${t} uit, en doe dat daarna keer ${fmt(b)}.`,
+        stappen: `${fmt(g)}^${t} = ${fmt(g ** t, 4)}<br>N = ${fmt(b)} · ${fmt(g ** t, 4)} = <b>${fmt(N, 2)}</b>` };
+    }
+  },
+  {
+    id: "groeitijd", vak: "wis", titel: "Groeifactor per andere tijd",
+    sub: "Per jaar → per 3 jaar of per maand",
+    uitleg: `<p>Ken je de groeifactor per jaar, dan vind je de groeifactor per andere tijd met een macht:</p>
+      <ul><li>Per 3 jaar: ${F("g³")} (drie keer achter elkaar keer g). Niet 3 · g!</li><li>Per maand: ${F("g^(1/12)")}. Rekenmachine: g ^ (1 ÷ 12).</li></ul>
+      <p>Voorbeeld: g = 1,2 per jaar. Per 3 jaar: 1,2³ = 1,728. Per maand: 1,2^(1/12) ≈ 1,015.</p>`,
+    gen() {
+      const g = pick([1.05, 1.1, 1.2, 1.5, 0.9, 0.8, 2]);
+      if (Math.random() < 0.65) { const n = pick([2, 3, 4, 5, 10]);
+        return { vraag: `De groeifactor per jaar is ${fmt(g)}. Bereken de groeifactor per ${n} jaar. Rond af op drie decimalen.`,
+          velden: [{ label: "g =", val: g ** n, tol: { abs: 0.002, rel: 0.001 }, tips: [[g * n, `Niet keer ${n}: het is ${n} keer achter elkaar keer ${fmt(g)}, dus ${fmt(g)}^${n}.`]] }],
+          hint: `Per ${n} jaar: ${fmt(g)}^${n}.`, stappen: `g per ${n} jaar = ${fmt(g)}^${n} = <b>${fmt(g ** n, 3)}</b>` }; }
+      const [n, eenh, per] = pick([[12, "maand", "jaar"], [7, "dag", "week"], [4, "week", "4 weken"]]);
+      return { vraag: `De groeifactor per ${per} is ${fmt(g)}. Bereken de groeifactor per ${eenh}. Rond af op drie decimalen.`,
+        velden: [{ label: "g =", val: g ** (1 / n), tol: { abs: 0.002, rel: 0.001 }, tips: [[g / n, `Niet delen: het is ${fmt(g)} tot de macht 1/${n}.`]] }],
+        hint: `Rekenmachine: ${fmt(g)} ^ (1 ÷ ${n}).`, stappen: `g per ${eenh} = ${fmt(g)}^(1/${n}) = <b>${fmt(g ** (1 / n), 3)}</b>` };
+    }
+  },
+  {
+    id: "verdubbeling", vak: "wis", titel: "Verdubbelings- en halveringstijd",
+    sub: "Proberen met de rekenmachine",
+    uitleg: `<p>De <b>verdubbelingstijd</b> is de tijd tot een hoeveelheid twee keer zo groot is: zoek t met ${F("gᵗ = 2")}.</p>
+      <p>De <b>halveringstijd</b>: zoek t met ${F("gᵗ = 0,5")}.</p>
+      <p>Proberen: reken g², g³, g⁴ … uit tot je over de 2 (of onder de 0,5) komt. Voorbeeld g = 1,2: 1,2³ = 1,73 en 1,2⁴ = 2,07, dus na 4 jaar is het voor het eerst verdubbeld.</p>`,
+    gen() {
+      const groei = Math.random() < 0.6, g = groei ? pick([1.05, 1.08, 1.1, 1.15, 1.2, 1.25, 1.3, 1.5]) : pick([0.9, 0.85, 0.8, 0.75, 0.7, 0.6]);
+      const doel = groei ? 2 : 0.5, t = Math.ceil(Math.log(doel) / Math.log(g) - 1e-9);
+      return { vraag: groei ? `Een bedrag groeit met groeifactor ${fmt(g)} per jaar. Na hoeveel hele jaren is het voor het eerst meer dan verdubbeld?` : `Een hoeveelheid neemt af met groeifactor ${fmt(g)} per uur. Na hoeveel hele uren is het voor het eerst minder dan de helft?`,
+        velden: [{ label: "t =", val: t, tol: EXACT, tips: [[t - 1, `Bijna. Na ${t - 1} is ${fmt(g)}^${t - 1} = ${fmt(g ** (t - 1), 2)}: nog net niet ${groei ? "boven de 2" : "onder de 0,5"}. Probeer één verder.`]] }],
+        hint: `Reken ${fmt(g)}², ${fmt(g)}³, … uit tot je ${groei ? "boven de 2" : "onder de 0,5"} komt.`,
+        stappen: `${fmt(g)}^${t - 1} = ${fmt(g ** (t - 1), 3)} (nog niet)<br>${fmt(g)}^${t} = ${fmt(g ** t, 3)} (wel)<br>Dus <b>t = ${t}</b>` };
+    }
+  },
   // ================= NATUURKUNDE =================
   // ---------- Wiskunde H2 Parabolen (Moderne Wiskunde 13e havo 3) ----------
   {
@@ -793,7 +922,7 @@ const ONDERWERPEN = [
       <p>Tip: vraag je af welke x het stuk tussen haakjes 0 maakt. Bij (x + 3) is dat x = −3.</p>`,
     gen() {
       const a = pick([1, -1, 2, -2, 0.5, 3]);
-      if (Math.random() < 0.5) {
+      if (this.alleen ? this.alleen === "top" : Math.random() < 0.5) {
         const p = R(-6, 6) || 2, q = R(-8, 8);
         return {
           vraag: `Gegeven is ${F(`y = ${coef(a)}(${lin(-p)})²${q ? ` ${q < 0 ? "−" : "+"} ${fmt(Math.abs(q))}` : ""}`)}. Wat is de top van de parabool?`,
@@ -804,7 +933,7 @@ const ONDERWERPEN = [
       }
       let d = R(-6, 5), e = d + R(1, 7);
       return {
-        vraag: `Gegeven is ${F(`y = ${coef(a)}(${lin(-d)})(${lin(-e)})`)}. In welke punten snijdt de grafiek de x-as? Geef de x-waarden, de kleinste eerst.`,
+        vraag: `Gegeven is ${F(`y = ${coef(a)}${fac(-d)}${fac(-e)}`)}. In welke punten snijdt de grafiek de x-as? Geef de x-waarden, de kleinste eerst.`,
         velden: [
           { label: "x =", val: d, tol: EXACT, tips: [[-d, "Let op het teken: welke x maakt het stuk tussen haakjes 0?"], [-e, "Let op het teken: welke x maakt het stuk tussen haakjes 0?"]] },
           { label: "en x =", val: e, tol: EXACT, tips: [[-e, "Let op het teken: welke x maakt het stuk tussen haakjes 0?"], [-d, "Let op het teken: welke x maakt het stuk tussen haakjes 0?"]] }
@@ -812,6 +941,81 @@ const ONDERWERPEN = [
         hint: `Op de x-as is y = 0. Een product is 0 als één van de stukken 0 is. Wanneer is (${lin(-d)}) = 0, en wanneer (${lin(-e)}) = 0?`,
         stappen: `y = 0 als (${lin(-d)}) = 0 of (${lin(-e)}) = 0<br>(${lin(-d)}) = 0 geeft <b>x = ${fmt(d)}</b><br>(${lin(-e)}) = 0 geeft <b>x = ${fmt(e)}</b><br>De snijpunten met de x-as zijn (${fmt(d)}, 0) en (${fmt(e)}, 0).`
       };
+    }
+  },
+  {
+    id: "par-dalberg", vak: "wis", titel: "Dal of berg en snijpunt met de y-as",
+    sub: "Kijk naar a en c",
+    uitleg: `<p>Bij ${F("y = ax² + bx + c")} zie je zonder rekenen al veel:</p>
+      <ul><li>a positief → <b>dalparabool</b>; a negatief → <b>bergparabool</b>.</li>
+      <li>De grafiek snijdt de y-as bij y = c (vul x = 0 in).</li></ul>`,
+    gen() {
+      const a = pick([1, -1, 2, -2, 3, -3, 0.5, -0.5]), b = R(-6, 6), c = R(1, 9) * pick([1, -1]);
+      return { vraag: `Gegeven is ${F(kw(a, b, c))}. Is het een dalparabool (1) of een bergparabool (2)? En bij welke y snijdt de grafiek de y-as?`,
+        velden: [{ label: "dal = 1, berg = 2:", val: a > 0 ? 1 : 2, tol: EXACT, tips: [[a > 0 ? 2 : 1, "Kijk naar het getal vóór x². Positief: dal. Negatief: berg."]] },
+                 { label: "snijpunt y-as: y =", val: c, tol: EXACT, tips: [[b, "Dat is b. Vul x = 0 in: dan blijft alleen c over."]] }],
+        hint: `Kijk naar het getal vóór x² (a) en naar het losse getal aan het eind (c).`,
+        stappen: `a = ${fmt(a)}, ${a > 0 ? "positief → <b>dalparabool (1)</b>" : "negatief → <b>bergparabool (2)</b>"}<br>x = 0 invullen: y = c = <b>${fmt(c)}</b>` };
+    }
+  },
+  {
+    id: "par-tabel", vak: "wis", titel: "Tabel invullen",
+    sub: "y-waarden voor de grafiek",
+    uitleg: `<p>Een parabool teken je in drie stappen: <b>tabel</b>, <b>punten</b>, <b>vloeiende lijn</b>.</p>
+      <ul><li>Reken voor elke x de y uit: eerst het kwadraat, dan keer, dan plus en min.</li>
+      <li>Negatieve x? Haakjes: (−2)² = 4.</li><li>Controle: de y-waarden komen in omgekeerde volgorde terug rond de top.</li></ul>`,
+    gen() {
+      const a = pick([1, 1, -1]), p = R(-2, 3), q = R(-5, 5), b = -2 * a * p, c = a * p * p + q, f = x => a * x * x + b * x + c;
+      const xs = [p - 2, p - 1, p, p + 1, p + 2], vraagX = [p - 2, p, p + 1];
+      const ys = xs.map(x => vraagX.includes(x) ? "?" : f(x));
+      return { vraag: `Maak de tabel af voor ${F(kw(a, b, c))}.${tabelHTML(xs, ys)}`,
+        velden: vraagX.map(x => ({ label: `x = ${fmt(x)}: y =`, val: f(x), tol: EXACT, tips: x < 0 ? [[-a * x * x + b * x + c, `Let op het kwadraat: ${par(x)}² = ${fmt(x * x)}.`]] : [] })),
+        hint: `Vul elke x in. Gebruik haakjes bij negatieve x. Tip: de tabel is symmetrisch rond x = ${fmt(p)}.`,
+        stappen: vraagX.map(x => `x = ${fmt(x)}: y = ${termen(a, b, c, par(x))} = <b>${fmt(f(x))}</b>`).join("<br>") };
+    }
+  },
+  {
+    id: "par-tabeltop", vak: "wis", titel: "Top uit een tabel",
+    sub: "Gebruik de symmetrie",
+    uitleg: `<p>Een parabool is symmetrisch. In een tabel zie je dat aan y-waarden die terugkomen.</p>
+      <ul><li>Zoek twee x-waarden met dezelfde y. De top ligt precies in het midden.</li><li>De y van de top lees je af (of reken je uit) bij die x.</li></ul>`,
+    gen() {
+      const a = pick([1, -1, 2]), p = R(-2, 3), q = R(-6, 6), f = x => a * (x - p) ** 2 + q, start = p - R(1, 3), xs = [0, 1, 2, 3, 4, 5].map(i => start + i);
+      return { vraag: `Bij een parabool hoort deze tabel. Wat is de top?${tabelHTML(xs, xs.map(f))}`,
+        velden: [{ label: "x-top =", val: p, tol: EXACT }, { label: "y-top =", val: q, tol: EXACT }],
+        hint: `Zoek twee kolommen met dezelfde y. De top ligt precies in het midden.`,
+        stappen: `f(${fmt(p - 1)}) = f(${fmt(p + 1)}) = ${fmt(f(p - 1))}, dus de top ligt bij <b>x = ${fmt(p)}</b><br>y-top = <b>${fmt(q)}</b>` };
+    }
+  },
+  {
+    id: "par-vorm", vak: "wis", titel: "Vorm en ligging",
+    sub: "Dal of berg, aantal snijpunten met de x-as",
+    uitleg: `<p>Bij ${F("y = ax² + c")}:</p>
+      <ul><li>a positief: dal; a negatief: berg.</li><li>Hoe groter a (zonder min-teken), hoe smaller de parabool.</li>
+      <li>c schuift de parabool omhoog of omlaag; de top is (0, c).</li>
+      <li>Snijpunten met de x-as: dal met top onder de x-as → 2; top op de x-as → 1; top erboven → 0. Bij een berg andersom.</li></ul>`,
+    gen() {
+      const a = pick([1, -1, 2, -2, 3, -3, 0.5, -0.5]), c = pick([R(-8, -1), 0, R(1, 8)]);
+      const n = c === 0 ? 1 : (a > 0) === (c < 0) ? 2 : 0;
+      return { vraag: `Gegeven is ${F(kw(a, 0, c))}. Is het een dalparabool (1) of een bergparabool (2)? En hoeveel snijpunten heeft de grafiek met de x-as?`,
+        velden: [{ label: "dal = 1, berg = 2:", val: a > 0 ? 1 : 2, tol: EXACT, tips: [[a > 0 ? 2 : 1, "Kijk naar het teken van a, het getal vóór x²."]] },
+                 { label: "aantal snijpunten:", val: n, tol: EXACT, tips: [0, 1, 2].filter(x => x !== n).map(x => [x, `De top is (0, ${fmt(c)}). Ligt die boven, op of onder de x-as? En gaat de parabool dan naar boven (dal) of naar beneden (berg)?`]) }],
+        hint: `De top is (0, ${fmt(c)}). Teken in gedachten een ${a > 0 ? "dal" : "berg"} met die top.`,
+        stappen: `a = ${fmt(a)} → <b>${a > 0 ? "dal (1)" : "berg (2)"}</b><br>top (0, ${fmt(c)}) ligt ${c === 0 ? "op" : c > 0 ? "boven" : "onder"} de x-as → <b>${n} snijpunt${n === 1 ? "" : "en"}</b>` };
+    }
+  },
+  {
+    id: "par-smal", vak: "wis", titel: "Smal of breed",
+    sub: "Vergelijk a",
+    uitleg: `<p>Hoe groter a is (zonder op het min-teken te letten), hoe sneller de parabool stijgt of daalt, dus hoe <b>smaller</b>.</p>
+      <p>Voorbeeld: y = 3x² is smaller dan y = 0,5x². En y = −4x² is smaller dan y = 2x².</p>`,
+    gen() {
+      let a1, a2; do { a1 = pick([0.25, 0.5, 1, 2, 3, 4, -0.5, -1, -2, -3]); a2 = pick([0.25, 0.5, 1, 2, 3, 4, -0.5, -1, -2, -3]); } while (Math.abs(a1) === Math.abs(a2));
+      const c1 = R(-5, 5), c2 = R(-5, 5), smal = Math.abs(a1) > Math.abs(a2) ? 1 : 2;
+      return { vraag: `Welke parabool is het smalst? (1) ${F(kw(a1, 0, c1))} of (2) ${F(kw(a2, 0, c2))}`,
+        velden: [{ label: "parabool", val: smal, tol: EXACT, tips: [[3 - smal, "Juist andersom: hoe groter a (zonder min-teken), hoe smaller. Het getal c verandert alleen de hoogte."]] }],
+        hint: `Vergelijk alleen de getallen vóór x², zonder op het min-teken te letten.`,
+        stappen: `|a| = ${fmt(Math.abs(a1))} tegen ${fmt(Math.abs(a2))} → parabool <b>${smal}</b> is het smalst.` };
     }
   },
   {
@@ -855,7 +1059,7 @@ const ONDERWERPEN = [
       <li>Er loopt alleen stroom als de kring <b>gesloten</b> is.</li>
       <li>1 A = 1000 mA (milliampère) en 1 kV = 1000 V (kilovolt).</li></ul>`,
     gen() {
-      const v = pick(["mA", "A", "kV", "keuze", "keuze"]);
+      const v = pick(this.alleen || ["mA", "A", "kV", "keuze", "keuze"]);
       if (v === "mA") { const I = pick([0.02, 0.05, 0.15, 0.25, 0.4, 1.2, 2.5]);
         return { vraag: `Een stroommeter geeft ${fmt(I)} A aan. Hoeveel milliampère (mA) is dat?`,
           velden: [{ label: "I =", val: I * 1000, tol: AFRONDEN, eenheid: "mA" }], hint: `1 A = 1000 mA. Van A naar mA: keer 1000.`,
@@ -892,7 +1096,7 @@ const ONDERWERPEN = [
       <li>Stroom per apparaat: ${F("I = P / U")} met U = 230 V.</li>
       <li>Meestal maximaal 16 A per groep, dus ${F("P_max = 230 · 16 = 3680 W")}.</li></ul>`,
     gen() {
-      const v = pick(["som", "I", "rest", "past"]);
+      const v = pick(this.alleen || ["som", "I", "rest", "past"]);
       const APP = [["een waterkoker", 2300], ["een wasmachine", 2070], ["een stofzuiger", 920], ["een föhn", 1150], ["een tv", 115], ["een magnetron", 1380], ["een laptop", 69], ["een lamp", 46]];
       if (v === "som") { const I = [pick([0.5, 1, 2, 3]), pick([4, 5, 6, 8]), pick([0.2, 0.3, 1.5])];
         return { vraag: `In één groep staan drie apparaten aan. Er loopt ${I.map(fmt).join(" A, ")} A doorheen. Hoe groot is de stroom in de groepsleiding?`,
@@ -932,7 +1136,8 @@ const ONDERWERPEN = [
         ["Een föhn heeft een plastic behuizing en het symbool met twee vierkantjes. Heeft hij randaarde nodig?", "1 = ja, 2 = nee, hij is dubbel geïsoleerd", 2, "Een dubbel geïsoleerd apparaat heeft geen randaarde nodig."],
         ["Welke draad staat onder spanning en is daarom het gevaarlijkst?", "1 = fasedraad, 2 = nuldraad, 3 = aardedraad", 1, "De fasedraad staat onder spanning."]
       ];
-      const [vr, opties, a, uit] = pick(V), n = (opties.match(/\d =/g) || []).length, reden = uit.split(". ").length > 1 ? uit.split(". ")[0] + "." : "Kijk nog eens in de uitleg bij deze paragraaf.";
+      const lijst = this.alleen === "draden" ? V.slice(4) : this.alleen === "beveiliging" ? V.slice(0, 4) : V;
+      const [vr, opties, a, uit] = pick(lijst), n = (opties.match(/\d =/g) || []).length, reden = uit.split(". ").length > 1 ? uit.split(". ")[0] + "." : "Kijk nog eens in de uitleg bij deze paragraaf.";
       return { vraag: `${vr}<br>Vul in: ${opties.replace(/(\d) =/g, "<b>$1</b> =")}.`,
         velden: [{ label: "antwoord =", val: a, tol: EXACT, tips: Array.from({ length: n }, (_, i) => i + 1).filter(x => x !== a).map(x => [x, "Nog niet. " + reden]) }],
         hint: `Bedenk eerst wat er misgaat: een te grote stroom, of stroom die weglekt?`, stappen: `Antwoord <b>${a}</b>. ${uit}` };
@@ -946,7 +1151,7 @@ const ONDERWERPEN = [
       <li>Kosten = aantal kWh × prijs per kWh.</li>
       <li>W naar kW: delen door 1000. Minuten naar uren: delen door 60.</li></ul>`,
     gen() {
-      const v = pick(["P", "I", "kWh", "kosten", "J"]);
+      const v = pick(this.alleen || ["P", "I", "kWh", "kosten", "J"]);
       if (v === "P") {
         const U = pick([6, 12, 230]), I = U === 230 ? pick([0.5, 2, 5, 8, 10]) : pick([0.5, 1, 1.5, 2, 3]), P = U * I;
         return { vraag: `Een apparaat werkt op ${U} V en er loopt een stroom van ${fmt(I)} A doorheen. Bereken het vermogen P.`,
@@ -1111,7 +1316,7 @@ const ONDERWERPEN = [
       <li>Evenwicht: ${F("F_res = 0")}, de krachten heffen elkaar op.</li>
       <li>Krachtenschaal, bijvoorbeeld 1 cm ≙ 10 N: lengte in cm = kracht / 10.</li></ul>`,
     gen() {
-      const v = pick(["op", "af", "even", "schaal", "schaalN"]);
+      const v = pick(this.alleen || ["op", "af", "even", "schaal", "schaalN"]);
       if (v === "op") { const a = pick([20, 30, 40, 50, 80, 120]), b = pick([10, 15, 25, 60, 100]);
         return { vraag: `Twee kinderen duwen een kast in dezelfde richting: de een met ${a} N, de ander met ${b} N. Hoe groot is de resulterende kracht?`,
           velden: [{ label: "F_res =", val: a + b, tol: AFRONDEN, eenheid: "N", tips: [[Math.abs(a - b), "Je hebt afgetrokken. Ze duwen in dezelfde richting: dan tel je op."]] }],
@@ -1147,7 +1352,7 @@ const ONDERWERPEN = [
       <li>Evenwicht: ${F("F₁ · r₁ = F₂ · r₂")} (moment linksom = moment rechtsom).</li>
       <li>Onbekende kracht: ${F("F₂ = F₁ · r₁ / r₂")}.</li></ul>`,
     gen() {
-      const v = pick(["M", "F", "F", "r"]);
+      const v = pick(this.alleen || ["M", "F", "F", "r"]);
       if (v === "M") { const F_ = pick([20, 50, 120, 300, 450]), r = pick([0.2, 0.5, 0.8, 1.2, 2]);
         return { vraag: `Je duwt met ${F_} N op een deurklink. De arm is ${fmt(r)} m. Hoe groot is het moment?`,
           velden: [{ label: "M =", val: F_ * r, tol: AFRONDEN, eenheid: "Nm", tips: [[F_ / r, "Je hebt gedeeld. Het moment is kracht keer arm."]] }],
@@ -1173,7 +1378,7 @@ const ONDERWERPEN = [
       <li>Takel met n touwdelen: ${F("F = Fz / n")}; touw binnenhalen = n · hoogte.</li>
       <li>Massa gegeven? Eerst ${F("Fz = m · g")} met g = 9,81 N/kg.</li></ul>`,
     gen() {
-      const v = pick(["koevoet", "los", "takel", "touw", "massa"]);
+      const v = pick(this.alleen || ["koevoet", "los", "takel", "touw", "massa"]);
       if (v === "koevoet") { const Fl = pick([600, 800, 900, 1200, 1500]), rl = pick([0.05, 0.1, 0.15]), rj = pick([0.6, 0.75, 0.9, 1.2]), Fj = Fl * rl / rj;
         return { vraag: `Met een koevoet til je een steen op. De steen drukt met ${Fl} N op ${fmt(rl * 100)} cm van het draaipunt. Jij duwt op ${fmt(rj * 100)} cm van het draaipunt. Hoe groot moet jouw kracht zijn?`,
           velden: [{ label: "F =", val: Fj, tol: AFRONDEN, eenheid: "N", tips: [[Fl * rj / rl, "Je hebt de armen omgedraaid. Moment van de steen: F_last · r_last."]] }],
@@ -1371,12 +1576,30 @@ const BOEKEN = {
 };
 
 // Bij welk hoofdstuk en welke paragraaf van het boek een oefenonderwerp hoort
+// Eén generator, twee tabbladen: de bestaande oefening houdt haar id (en scores), de tweede krijgt een eigen id
+(function splitsOefeningen() {
+  const S = [
+    ["par-vormen", { titel: "Top aflezen", sub: "Uit y = a(x − p)² + q", alleen: "top" }, { id: "par-snijpunten", titel: "Snijpunten met de x-as aflezen", sub: "Uit y = a(x − d)(x − e)", alleen: "snij" }],
+    ["stroomkring", { titel: "Meters en stroomkring", sub: "Welke meter, serie of parallel", alleen: ["keuze"] }, { id: "omrekenen-el", titel: "mA, A en kV omrekenen", sub: "Keer of gedeeld door 1000", alleen: ["mA", "A", "kV"] }, true],
+    ["vermogen", { titel: "Vermogen P = U · I", sub: "Vermogen of stroomsterkte", alleen: ["P", "I"] }, { id: "energie-kosten", titel: "Energie en kosten", sub: "E = P · t in kWh of J, en de kosten", alleen: ["kWh", "kosten", "J"] }],
+    ["huisinstallatie", { titel: "Stroom in een groep", sub: "Stromen optellen, I = P / U", alleen: ["som", "I"] }, { id: "groep-max", titel: "Past het op de groep?", sub: "Maximaal 16 A = 3680 W", alleen: ["rest", "past"] }],
+    ["veiligheid", { titel: "Zekering, aardlek of randaarde", sub: "Wat beschermt je?", alleen: "beveiliging" }, { id: "draden", titel: "Draden en isolatie", sub: "Fase, nul, aarde; dubbel geïsoleerd", alleen: "draden" }],
+    ["resulterend", { titel: "Resulterende kracht", sub: "Optellen, aftrekken, evenwicht", alleen: ["op", "af", "even"] }, { id: "krachtenschaal", titel: "Krachtenschaal", sub: "Pijllengte en kracht", alleen: ["schaal", "schaalN"] }],
+    ["hefboom", { titel: "Hefboomwet", sub: "F₁ · r₁ = F₂ · r₂", alleen: ["F", "r"] }, { id: "moment", titel: "Moment M = F · r", sub: "Kracht keer arm", alleen: ["M"] }, true],
+    ["werktuig", { titel: "Koevoet", sub: "Een hefboom als werktuig", alleen: ["koevoet"] }, { id: "katrol", titel: "Katrol en takel", sub: "Kracht kleiner, touw langer", alleen: ["los", "takel", "touw", "massa"] }]
+  ];
+  for (const [id, oud, nieuw, ervoor] of S) {
+    const i = ONDERWERPEN.findIndex(o => o.id === id);
+    Object.assign(ONDERWERPEN[i], oud);
+    ONDERWERPEN.splice(ervoor ? i : i + 1, 0, { ...ONDERWERPEN[i], ...nieuw });
+  }
+})();
 const KOPPELING = {
   "rc-punten": { hfst: "1", par: "1.1" }, "rc-grafiek": { hfst: "1", par: "1.1" },
-  "tabel": { hfst: "1", par: "1.1" }, "verhaal": { hfst: "1", par: "1.1" }, "vergelijking": { hfst: "1", par: "1.2" },
-  "par-invullen": { hfst: "2", par: "2.1" }, "par-symmetrie": { hfst: "2", par: "2.2" },
+  "tabel": { hfst: "1", par: "1.1" }, "verhaal": { hfst: "1", par: "1.1" }, "vergelijking": { hfst: "1", par: "1.2" }, "snijpunt": { hfst: "1", par: "1.2" }, "subst-formule": { hfst: "1", par: "1.3" }, "subst-waarde": { hfst: "1", par: "1.3" }, "groeifactor": { hfst: "1", par: "1.4" }, "exp-formule": { hfst: "1", par: "1.4" }, "groeitijd": { hfst: "1", par: "1.5" }, "verdubbeling": { hfst: "1", par: "1.5" },
+  "par-invullen": { hfst: "2", par: "2.1" }, "par-dalberg": { hfst: "2", par: "2.1" }, "par-tabel": { hfst: "2", par: "2.3" }, "par-tabeltop": { hfst: "2", par: "2.3" }, "par-vorm": { hfst: "2", par: "2.4" }, "par-smal": { hfst: "2", par: "2.4" }, "par-snijpunten": { hfst: "2", par: "2.5" }, "par-symmetrie": { hfst: "2", par: "2.2" },
   "par-top": { hfst: "2", par: "2.2" }, "par-vormen": { hfst: "2", par: "2.5" },
-"stroomkring": { hfst: "1", par: "1.1" }, "vermogen": { hfst: "1", par: "1.2" }, "huisinstallatie": { hfst: "1", par: "1.3" }, "veiligheid": { hfst: "1", par: "1.4" }, "energiebehoud": { hfst: "3", par: "3.1" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" }, "resulterend": { hfst: "2", par: "2.2" }, "hefboom": { hfst: "2", par: "2.3" }, "werktuig": { hfst: "2", par: "2.4" },
+"stroomkring": { hfst: "1", par: "1.1" }, "omrekenen-el": { hfst: "1", par: "1.1" }, "energie-kosten": { hfst: "1", par: "1.2" }, "groep-max": { hfst: "1", par: "1.3" }, "draden": { hfst: "1", par: "1.4" }, "krachtenschaal": { hfst: "2", par: "2.2" }, "moment": { hfst: "2", par: "2.3" }, "katrol": { hfst: "2", par: "2.4" }, "vermogen": { hfst: "1", par: "1.2" }, "huisinstallatie": { hfst: "1", par: "1.3" }, "veiligheid": { hfst: "1", par: "1.4" }, "energiebehoud": { hfst: "3", par: "3.1" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" }, "resulterend": { hfst: "2", par: "2.2" }, "hefboom": { hfst: "2", par: "2.3" }, "werktuig": { hfst: "2", par: "2.4" },
   "snelheid": { hfst: "4", par: "4.2" }, "ohm": { hfst: "5", par: "5.2" },
   "omrekenen": { hfst: "V", par: "V2" }, "diagram": { hfst: "V", par: "V8" },
   "dichtheid": { hfst: "herhaling" }
@@ -1453,6 +1676,11 @@ function kiesKlas(vak, nr) {
   k[vak] = nr; try { localStorage.setItem("oefenschrift-klas", JSON.stringify(k)); } catch (e) {}
   renderHome();
 }
+function toonVersie() {
+  const d = new Date(document.lastModified), el = document.getElementById("versie");
+  if (el) el.textContent = `Versie ${VERSIE} · laatste update ${isNaN(d) ? "onbekend" : d.toLocaleString("nl-NL", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}`;
+}
+if (typeof document !== "undefined" && document.getElementById) toonVersie();
 function renderHome() {
   const open = new Set([...document.querySelectorAll("details.hfst[open]")].map(d => d.dataset.key));
   for (const vak of ["wis", "nat"]) {
@@ -2079,7 +2307,7 @@ const UITLEGGEN = {
     ]
   },
   "1.5": {
-    vak: "wis", hfst: "1", docent: "delta", titel: "Groeifactor en tijd", oefen: "tabel",
+    vak: "wis", hfst: "1", docent: "delta", titel: "Groeifactor en tijd", oefen: "groeitijd",
     teken: st => tijdSVG(st),
     stappen: [
       { tekst: `${F("N = 100 · 1,2ᵗ")} (t in jaren)`, teken: { wijs: "start" },
@@ -2103,7 +2331,7 @@ const UITLEGGEN = {
     ]
   },
   "1.4": {
-    vak: "wis", hfst: "1", docent: "delta", titel: "Exponentiële groei", oefen: "tabel",
+    vak: "wis", hfst: "1", docent: "delta", titel: "Exponentiële groei", oefen: "groeifactor",
     teken: st => groeiSVG(st),
     stappen: [
       { tekst: "Lineair: steeds erbij. Exponentieel: steeds keer.", teken: { pts: true },
@@ -2127,7 +2355,7 @@ const UITLEGGEN = {
     ]
   },
   "1.3": {
-    vak: "wis", hfst: "1", docent: "delta", titel: "Formules substitueren", oefen: "verhaal",
+    vak: "wis", hfst: "1", docent: "delta", titel: "Formules substitueren", oefen: "subst-formule",
     teken: st => ketenSVG(st),
     stappen: [
       { tekst: `${F("P = 3a + 5")} en ${F("a = 2n + 1")}`, teken: { wijs: "keten" },
@@ -2241,7 +2469,7 @@ const UITLEGGEN = {
     ]
   },
   "2.3": {
-    vak: "wis", hfst: "2", docent: "delta", titel: "Parabolen tekenen", oefen: "par-invullen",
+    vak: "wis", hfst: "2", docent: "delta", titel: "Parabolen tekenen", oefen: "par-tabel",
     teken: st => parabSVG(st),
     stappen: [
       { tekst: `Teken ${F("y = x² − 6x + 5")}`, teken: { kaal: true },
@@ -2265,7 +2493,7 @@ const UITLEGGEN = {
     ]
   },
   "2.4": {
-    vak: "wis", hfst: "2", docent: "delta", titel: "De vorm en de ligging van de parabool", oefen: "par-invullen",
+    vak: "wis", hfst: "2", docent: "delta", titel: "De vorm en de ligging van de parabool", oefen: "par-vorm",
     teken: st => vormSVG(st),
     stappen: [
       { tekst: `${F("y = ax² + bx + c")}: wat zeggen a en c?`, teken: { k: [[1, 0, "blauw", "y = x²", 2.6]] },
