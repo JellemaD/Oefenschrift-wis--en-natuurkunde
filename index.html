@@ -526,7 +526,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.09-2";
+const VERSIE = "2026.10.09-3";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 const lijnF = (a, L, b) => `${coef(a)}${L}${b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : ""}`;
 const tabelHTML = (xs, ys, kx = "x", ky = "y") => `<div class="tabelwrap"><table class="tabel"><tr><th>${kx}</th>${xs.map(x => `<td>${typeof x === "number" ? fmt(x) : x}</td>`).join("")}</tr><tr><th>${ky}</th>${ys.map(y => `<td>${typeof y === "number" ? fmt(y) : y}</td>`).join("")}</tr></table></div>`;
@@ -1776,6 +1776,8 @@ function controleer() {
   let alles = true, leeg = false, tip = "";
   som.velden.forEach((v, i) => {
     const inp = $("f" + i), x = parseNum(inp.value);
+    // Afrondmarge (2%) alleen als er echt afgerond moet worden; een geheel antwoord moet (vrijwel) precies kloppen
+    if (v.tol === AFRONDEN && Number.isInteger(v.val)) v = { ...v, tol: { abs: 0.01, rel: 0.001 } };
     inp.classList.remove("ok", "fout");
     if (isNaN(x)) { leeg = true; alles = false; inp.classList.add("fout"); return; }
     if (dichtbij(x, v.val, v.tol)) { inp.classList.add("ok"); return; }
