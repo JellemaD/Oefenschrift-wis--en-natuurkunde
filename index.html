@@ -1589,6 +1589,30 @@ const UITLEGGEN = {
         zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf, en lees de top of de snijpunten af. Succes!" }
     ]
   },
+  "2.3": {
+    vak: "wis", hfst: "2", docent: "delta", titel: "Parabolen tekenen", oefen: "par-invullen",
+    teken: st => parabSVG(st),
+    stappen: [
+      { tekst: `Teken ${F("y = x² − 6x + 5")}`, teken: { kaal: true },
+        zeg: "Hoi! Dit is paragraaf 2.3: parabolen tekenen. We tekenen samen de parabool y is x kwadraat min 6 x plus 5. Dat gaat in drie stappen: een tabel, punten, en een vloeiende lijn." },
+      { tekst: `Stap 1: maak een tabel<br><table class="tabel u-tab"><tr><th>x</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td></tr><tr><th>y</th><td>5</td><td>0</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr></table>`, teken: { kaal: true, pts: [0, 1], wijs: "pts" },
+        zeg: "Stap 1: maak een tabel. Kies x-waarden, bijvoorbeeld 0 tot en met 6, en reken bij elke x de y uit. Bij x is 0 is y 5. Bij x is 1 is y 1 min 6 plus 5, en dat is 0." },
+      { tekst: F("x = 2: y = 2² − 6 · 2 + 5 = −3"), teken: { kaal: true, pts: [0, 1, 2], wijs: "pts" },
+        zeg: "Nu x is 2. Eerst het kwadraat: 2 kwadraat is 4. Dan min 6 keer 2, dat is min 12. Plus 5. 4 min 12 plus 5 is min 3." },
+      { tekst: `Hele tabel<br><table class="tabel u-tab"><tr><th>x</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td></tr><tr><th>y</th><td>5</td><td>0</td><td>−3</td><td>−4</td><td>−3</td><td>0</td><td>5</td></tr></table>`, teken: { kaal: true, tabel: true, wijs: "top" },
+        zeg: "Zo maak je de hele tabel af. Kijk naar de y-waarden: 5, 0, min 3, min 4, en dan weer min 3, 0, 5. Ze komen terug in omgekeerde volgorde. Bij min 4 zit het midden: daar is de top." },
+      { tekst: "Stap 2: zet de punten in het assenstelsel", teken: { kaal: true, tabel: true, wijs: "alle" },
+        zeg: "Stap 2: zet alle punten uit de tabel in het assenstelsel. Let goed op de min-tekens: min 3 en min 4 liggen onder de x-as." },
+      { tekst: "Stap 3: één vloeiende lijn", teken: { tabel: true, wijs: "lijn" },
+        zeg: "Stap 3: teken door alle punten één vloeiende, gebogen lijn. Geen rechte stukjes tussen de punten, en onderaan bij de top een ronde bocht, geen punt." },
+      { tekst: "Controle: symmetrieas en top", teken: { tabel: true, as: true, aslabel: true, top: true, wijs: ["as", "top"] },
+        zeg: "Controleer je tekening. De parabool is symmetrisch om de lijn x is 3. Links en rechts is precies hetzelfde. De top is 3 komma min 4, het laagste punt." },
+      { tekst: `Tip: negatieve x? Haakjes!<br>${F("(−1)² = 1")}`, teken: { tabel: true },
+        zeg: "Een tip. Kies je ook negatieve x-waarden, zet dan haakjes eromheen op je rekenmachine. Min 1 kwadraat is plus 1, niet min 1." },
+      { tekst: "Nu jij!", teken: { tabel: true, top: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf, en reken de y-waarden voor je tabel uit. Succes!" }
+    ]
+  },
   "2.2": {
     vak: "wis", hfst: "2", docent: "delta", titel: "Symmetrie en top", oefen: "par-symmetrie",
     teken: st => parabSVG(st),
@@ -1660,7 +1684,8 @@ function parabSVG(st) {
   s += `<text class="g-name" x="${X(9) - 2}" y="${Y(0) - 6}" text-anchor="end">x</text><text class="g-name" x="${X(0) + 6}" y="${Y(9) + 14}">y</text>`;
   let d = "";
   for (let x = -0.6; x <= 6.6; x += 0.1) d += `${d ? "L" : "M"}${X(x).toFixed(1)},${Y(x * x - 6 * x + 5).toFixed(1)}`;
-  s += `<path class="g-line" clip-path="url(#u-clip)" d="${d}"/>`;
+  if (!st.kaal) s += `<path class="g-line" clip-path="url(#u-clip)" d="${d}"/>`;
+  for (const x of st.pts || []) s += `<circle class="g-pt" cx="${X(x)}" cy="${Y(x * x - 6 * x + 5)}" r="5"/><text class="g-ptl" x="${X(x) + 9}" y="${Y(x * x - 6 * x + 5) + 5}">(${x}, ${fmt(x * x - 6 * x + 5)})</text>`;
   if (st.berg) {
     let d2 = "";
     for (let x = -0.6; x <= 6.6; x += 0.1) d2 += `${d2 ? "L" : "M"}${X(x).toFixed(1)},${Y(-x * x + 6 * x - 5).toFixed(1)}`;
@@ -1688,6 +1713,8 @@ function parabSVG(st) {
     if (w === "spiegel") for (const x of [0, 6]) s += `<circle class="wijs" cx="${X(x)}" cy="${Y(5)}" r="15"/>`;
     if (w === "as") s += `<line class="wijs" x1="${X(3)}" y1="${Y(9)}" x2="${X(3)}" y2="${Y(-6)}"/>`;
     if (w === "afstand") s += `<line class="wijs" x1="${X(1)}" y1="${Y(-1)}" x2="${X(5)}" y2="${Y(-1)}"/>`;
+    if (w === "pts") for (const x of st.pts || []) s += `<circle class="wijs" cx="${X(x)}" cy="${Y(x * x - 6 * x + 5)}" r="15"/>`;
+    if (w === "alle") for (const x of [0, 1, 2, 3, 4, 5, 6]) s += `<circle class="wijs" cx="${X(x)}" cy="${Y(x * x - 6 * x + 5)}" r="13"/>`;
     if (w === "lijn") s += `<rect class="wijs" x="${X(-0.6)}" y="${Y(9)}" width="${7.2 * U}" height="${15 * U}" rx="14"/>`;
   }
   return s + "</svg>";
