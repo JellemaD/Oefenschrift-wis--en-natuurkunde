@@ -109,6 +109,24 @@ svg.uitleg-plot{max-width:380px}
 .vraagknop{transition:transform .25s ease}
 .vraagknop.weg{transform:translateY(160%)}
 
+/* Verder waar je was */
+.verder{display:flex;align-items:center;gap:.8rem;width:100%;text-align:left;cursor:pointer;background:var(--ink);color:var(--paper);border:0;border-radius:12px;padding:.9rem 1.1rem;margin:0 0 1.25rem;font:inherit;box-shadow:3px 3px 0 var(--marker)}
+.vd-tekst{flex:1;display:flex;flex-direction:column}
+.vd-label{font-size:.85rem;opacity:.85;text-transform:uppercase;letter-spacing:.03em}
+.verder b{font-size:1.15rem}
+.vd-sub{font-size:.92rem;opacity:.85}
+.vd-pijl{font-size:1.6rem}
+details.later{margin:.6rem 0}
+details.later>summary{cursor:pointer;color:var(--pencil);font-weight:700;padding:.7rem .2rem;min-height:44px}
+/* Grotere tikvlakken op de telefoon */
+@media (max-width:540px){
+  .klein,.t-sub,.h-info,.kruimel{font-size:.95rem}
+  .keuze{min-height:44px;padding:.45rem 1rem;font-size:.95rem}
+  details.filmpjes summary{min-height:44px;display:flex;align-items:center;font-size:.95rem}
+  .leesbalk button{width:2.75rem;height:2.75rem}
+  .btn{min-height:44px}
+}
+
 /* Tabbladen wiskunde / natuurkunde */
 .tabs{display:flex;gap:.4rem;margin:1.5rem 0 .75rem;border-bottom:2px solid var(--ink)}
 .tabs button{flex:1;max-width:14rem;border:2px solid var(--ink);border-bottom:0;border-radius:8px 8px 0 0;background:var(--card);color:var(--ink);font-family:var(--hand);font-size:1.3rem;font-weight:700;padding:.45rem 1rem;cursor:pointer;margin-bottom:-2px}
@@ -192,9 +210,11 @@ table.tabel th{background:var(--marker-soft);color:var(--ink)}
 .btn.licht:hover{background:var(--grid)}
 .btn.hoofd{background:var(--ink);color:var(--paper)}
 .btn:hover{filter:brightness(1.08)}
-.feedback{font-family:var(--hand);font-size:1.3rem;min-height:1.8rem;margin:1rem 0 0}
+.feedback{font-family:var(--body);font-size:1.05rem;font-weight:700;line-height:1.4;min-height:1.6rem;margin:1rem 0 0}
 .feedback.goed{color:var(--green)}
+.feedback.goed::before{content:"✓ ";font-size:1.2rem}
 .feedback.fout{color:var(--red)}
+.feedback.fout::before{content:"✗ ";font-size:1.2rem}
 .hint{background:var(--marker-soft);border-radius:6px;padding:.75rem 1rem;margin:1rem 0 0}
 .stappen{border-left:5px solid var(--marker);padding:.5rem 0 .5rem 1rem;margin:1rem 0 0;line-height:1.9}
 .stappen b{color:var(--ink)}
@@ -302,7 +322,8 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
   <!-- STARTSCHERM -->
   <section id="home">
     <h1>Esra's oefenschrift</h1>
-    <p class="intro">Wiskunde en natuurkunde voor havo 3. Kies een onderwerp en oefen zoveel je wilt: elke som is nieuw. Kom je er niet uit? Vraag een hint, bekijk de uitwerking of stel je vraag.</p>
+    <p class="intro">Kies een paragraaf. Vast? Vraag het de professor.</p>
+    <button class="verder hidden" id="verder"><span class="vd-tekst"><span class="vd-label">Verder waar je was</span><b id="verder-titel"></b><span class="vd-sub" id="verder-sub"></span></span><span class="vd-pijl" aria-hidden="true">→</span></button>
 
     <div class="tabs" role="tablist" aria-label="Kies een vak">
       <button type="button" role="tab" id="tab-wis" data-tab="wis" aria-selected="true">Wiskunde</button>
@@ -464,6 +485,7 @@ const CONFIG = {
   workerUrl: "https://oefenschrift-docent.djellema.workers.dev", // link van de Cloudflare Worker
   niveau: "havo3",    // moet gelijk zijn aan een naam in NIVEAUS hieronder én in worker.js
   bijnaam: "",        // naam waarmee de professor de leerling aanspreekt; leeg = geen naam
+  nuInDeKlas: { wis: "2", nat: "1" }, // hoofdstuk dat nu in de klas loopt: staat standaard open
   stemVoorkeur: { delta: "", volta: "" }, // deel van een stemnaam, bijvoorbeeld { delta: "Colette", volta: "Frank" }
   begeleider: "Durk",
   whatsapp: "",   // bijvoorbeeld "31612345678" (landcode 31, zonder 0 en zonder +)
@@ -1093,7 +1115,7 @@ function paragraafBlokken(vak, h, oef) {
     blokken.push({ nr: p.nr, titel: p.titel, u, o });
   }
   const los = oef.filter(t => !h.par.some(p => p.nr === KOPPELING[t.id].par));
-  if (los.length) { los.forEach((t, i) => { NUMMER[t.id] = `${h.nr ? h.nr + "." : "K2."}${i + 1}`; }); blokken.push({ nr: "", titel: h.par.length ? "Overig" : "", u: null, o: los }); }
+  if (los.length) { los.forEach((t, i) => { if (h.nr) NUMMER[t.id] = `${h.nr}.${i + 1}`; else delete NUMMER[t.id]; }); blokken.push({ nr: "", titel: h.par.length ? "Overig" : "", u: null, o: los }); }
   const rijen = blokken.map(b => {
     if (!b.nr) return b.o.map(topicKnop).join("");
     const goed = b.o.reduce((n, t) => n + ((scores[t.id] || {}).goed || 0), 0), tot = b.o.reduce((n, t) => n + ((scores[t.id] || {}).tot || 0), 0);
@@ -1112,16 +1134,32 @@ function renderHome() {
     const groepen = boek.hoofdstukken.map(h => ({ ...h, oef: ONDERWERPEN.filter(o => o.vak === vak && KOPPELING[o.id] && KOPPELING[o.id].hfst === h.nr) }));
     const rest = ONDERWERPEN.filter(o => o.vak === vak && KOPPELING[o.id] && KOPPELING[o.id].hfst === "herhaling");
     if (rest.length) groepen.push({ nr: "", deel: "", titel: "Herhaling uit klas 2", par: [], oef: rest });
-    const eerste = groepen.find(g => g.oef.length);
-    $("lijst-" + vak).innerHTML = groepen.map(h => {
+    const metInhoud = groepen.filter(h => h.oef.length || Object.values(UITLEGGEN).some(u => u.vak === vak && u.hfst === h.nr));
+    const later = groepen.filter(h => !metInhoud.includes(h));
+    let laatst = null; try { laatst = JSON.parse(localStorage.getItem("oefenschrift-laatst")); } catch (e) {}
+    const openNr = laatst && laatst.vak === vak ? laatst.hfst : CONFIG.nuInDeKlas[vak];
+    const standaard = metInhoud.find(h => h.nr === openNr) || metInhoud[0];
+    const hfst = (h, kanOpen) => {
       const key = vak + h.nr + h.titel;
-      const isOpen = open.size ? open.has(key) : h === eerste;
+      const isOpen = kanOpen && (open.size ? open.has(key) : h === standaard);
+      const n = h.oef.length;
       return `<details class="hfst" data-key="${key}"${isOpen ? " open" : ""}>
-      <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}<span class="h-info">${h.deel ? "deel " + h.deel + " · " : ""}${h.oef.length ? h.oef.length + " oefenonderwerp" + (h.oef.length > 1 ? "en" : "") : "oefensommen volgen"}</span></summary>
+      <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}<span class="h-info">${n ? n + " oefening" + (n > 1 ? "en" : "") : "alleen filmpjes"}</span></summary>
       ${paragraafBlokken(vak, h, h.oef)}
       ${h.par.some(p => p.v.length) ? `<details class="filmpjes"><summary>Filmpjes bij dit hoofdstuk</summary><ul class="paragrafen">${h.par.filter(p => p.v.length).map(p => `<li><b>${p.nr}</b> ${p.titel} · ${filmpje(p.v[0])}</li>`).join("")}</ul></details>` : ""}
     </details>`;
-    }).join("");
+    };
+    $("lijst-" + vak).innerHTML = metInhoud.map(h => hfst(h, true)).join("")
+      + (later.length ? `<details class="later"><summary>Later dit jaar · ${later.length} hoofdstukken</summary>${later.map(h => hfst(h, false)).join("")}</details>` : "");
+  }
+  // 1. kaart "Verder waar je was"
+  let laatst = null; try { laatst = JSON.parse(localStorage.getItem("oefenschrift-laatst")); } catch (e) {}
+  const lo = laatst && ONDERWERPEN.find(o => o.id === laatst.id), lp = lo && paragraafVan(lo.id);
+  $("verder").classList.toggle("hidden", !lo);
+  if (lo) {
+    $("verder-titel").textContent = lp ? `${lp.nr} ${lp.titel}` : lo.titel;
+    $("verder-sub").textContent = `${lo.vak === "wis" ? "Wiskunde" : "Natuurkunde"} · ${NUMMER[lo.id] || ""} ${lo.titel}`;
+    $("verder").onclick = () => start(lo.id);
   }
 }
 function start(id) {
@@ -1139,7 +1177,8 @@ function start(id) {
   const eigen = Object.entries(UITLEGGEN).find(([kk, u]) => u.oefen === id || (par && kk === par.nr && u.vak === onderwerp.vak));
   $("o-uitlegknop").innerHTML = eigen ? `<button class="uitlegbalk" data-uitleg="${eigen[0]}"><span class="ub-icoon" aria-hidden="true">▶</span><span><b>Uitleg van ${DOCENT[eigen[1].docent].naam}</b><span class="klein">Paragraaf ${eigen[0]} in ongeveer ${uitlegDuur(eigen[1])} minuten</span></span></button>` : "";
   $("o-uitlegtekst").innerHTML = onderwerp.uitleg + (par && par.v.length ? `<p class="videolink klein">Liever een filmpje? <a href="${yt(par.v[0][0])}" target="_blank" rel="noopener">Uitleg bij paragraaf ${par.nr}</a> <span class="duur">(${par.v[0][2]})</span></p>` : "");
-  $("o-uitleg").open = !(scores[id] && scores[id].tot);
+  $("o-uitleg").open = false; // geschreven uitleg dicht: de uitlegbalk is het startpunt, de som staat hoger
+  try { localStorage.setItem("oefenschrift-laatst", JSON.stringify({ id, vak: onderwerp.vak, hfst: k.hfst })); } catch (e) {}
   toon("oefen");
   nieuweSom();
 }
@@ -1170,6 +1209,7 @@ function nieuweSom() {
   const fp = $("fb-prof"); if (fp) { fp.innerHTML = ""; fp.classList.remove("knik", "frons"); }
   $("o-hint").classList.add("hidden");
   $("o-stappen").classList.add("hidden");
+  $("b-uitw").classList.add("hidden");
   const f0 = $("f0"); if (f0) f0.focus({ preventScroll: true });
 }
 
@@ -1202,7 +1242,7 @@ function controleer() {
     fb.textContent = pick(LOF) + (!uitwerkingGezien && !afgerond && r >= 3 ? ` Al ${r} op rij!` : "") + " Kies Nieuwe som voor de volgende.";
     telMee(!uitwerkingGezien);
   } else {
-    fb.className = "feedback fout"; reageer("fout");
+    fb.className = "feedback fout"; reageer("fout"); $("b-uitw").classList.remove("hidden");
     fb.textContent = tip || "Nog niet goed. Kijk naar de rode vakjes, of vraag een hint.";
   }
 }
@@ -1217,7 +1257,7 @@ function reageer(soort) {
   svg.dataset.mond = soort === "goed" ? "2" : "1";
   clearTimeout(box._t); box._t = setTimeout(() => { svg.dataset.mond = "0"; }, 1400);
 }
-function hint() { $("o-hint").innerHTML = "<b>Hint:</b> " + som.hint; $("o-hint").classList.remove("hidden"); }
+function hint() { $("o-hint").innerHTML = "<b>Hint:</b> " + som.hint; $("o-hint").classList.remove("hidden"); $("b-uitw").classList.remove("hidden"); }
 function uitwerking() {
   uitwerkingGezien = true;
   $("o-stappen").innerHTML = som.stappen;
