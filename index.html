@@ -76,14 +76,20 @@ svg.uitleg-plot{max-width:380px}
 .u-zelf{display:block;margin:1rem auto 0;font-size:1.15rem}
 .spelerbalk{display:flex;align-items:center;gap:.35rem;margin:1rem auto .4rem;max-width:560px;background:var(--card);border:2px solid var(--grid-strong);border-radius:999px;padding:.3rem .5rem}
 .ikoon.speel{width:3rem;height:3rem}
-#u-vraag{width:3rem;height:3rem;background:var(--marker);color:#1F2733;border:2px solid #1F2733;box-shadow:2px 2px 0 #1F2733}
-#u-vraag svg{width:1.6rem;height:1.6rem}
-#u-vraag:hover{filter:brightness(1.05)}
+.vraagpil{background:var(--marker);color:#1F2733;border:2px solid #1F2733;border-radius:999px;padding:.45rem 1rem;font-family:var(--hand);font-size:1.1rem;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 #1F2733;white-space:nowrap;flex:none}
+.vraagpil:hover{filter:brightness(1.05)}
 .ikoon:disabled{opacity:.35;cursor:default;background:transparent}
 .u-balk{flex:1;height:6px;background:var(--grid-strong);border-radius:3px;overflow:hidden;margin:0 .3rem}
 #u-balk{height:100%;width:0;background:var(--ink);transition:width .5s linear}
 #u-rest{min-width:4.5rem;text-align:right;font-variant-numeric:tabular-nums}
-@media (max-width:540px){#u-av{width:84px;height:84px}.u-tekst{font-size:1.2rem}}
+@media (max-width:540px){#u-av{width:84px;height:84px}.u-tekst{font-size:1.2rem}
+  .vraagknop{padding:.55rem 1rem;font-size:1.05rem;right:.75rem}
+  .spelerbalk{flex-wrap:wrap;border-radius:18px;justify-content:center}
+  .spelerbalk .u-balk{order:-2;flex:1 1 calc(100% - 7rem);margin:.3rem .3rem .2rem}
+  .spelerbalk #u-rest{order:-1;margin-top:.1rem;min-width:0;flex:none}
+}
+.vraagknop{transition:transform .25s ease}
+.vraagknop.weg{transform:translateY(160%)}
 
 /* Tabbladen wiskunde / natuurkunde */
 .tabs{display:flex;gap:.4rem;margin:1.5rem 0 .75rem;border-bottom:2px solid var(--ink)}
@@ -324,7 +330,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
       <button type="button" class="ikoon" id="u-verder" aria-label="Volgende stap" title="Volgende stap"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
       <div class="u-balk"><div id="u-balk"></div></div>
       <span class="klein" id="u-rest"></span>
-      <button type="button" class="ikoon" id="u-vraag" aria-label="Stel een vraag" title="Stel een vraag"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2zm7 11h2v-2h-2zm1-9a3 3 0 0 0-3 3h2a1 1 0 1 1 1 1 1 1 0 0 0-1 1v1h2v-.2A3 3 0 0 0 12 6z"/></svg></button>
+      <button type="button" class="vraagpil" id="u-vraag">Vraag stellen</button>
     </div>
     <p class="klein" id="u-status" aria-live="polite"></p>
     <button class="btn hoofd u-zelf hidden" id="u-zelf">Probeer het zelf →</button>
@@ -667,7 +673,7 @@ const ONDERWERPEN = [
       return {
         vraag: `Gegeven is de formule ${F(kw(a, b, c))}. Bereken y als x = ${fmt(x)}.`,
         velden: [{ label: "y =", val: y, tol: EXACT, tips: x < 0 ? [[fout, `Let op het kwadraat: ${par(x)}² = ${fmt(x * x)}. Een kwadraat is nooit negatief.`]] : [] }],
-        hint: `Vul x = ${fmt(x)} in met haakjes eromheen: ${par(x)}. Reken eerst ${par(x)}² uit, daarna de rest.`,
+        hint: x < 0 ? `Vul x = ${fmt(x)} in met haakjes eromheen: ${par(x)}. Reken eerst ${par(x)}² uit, daarna de rest.` : `Vul x = ${fmt(x)} in. Reken eerst ${fmt(x)}² uit, daarna de rest.`,
         stappen: `y = ${termen(a, b, c, par(x))}<br>y = ${fmt(a)} · ${fmt(x * x)} ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))} · ${par(x)} ${c < 0 ? "−" : "+"} ${fmt(Math.abs(c))}<br>y = ${fmt(a * x * x)} ${b * x < 0 ? "−" : "+"} ${fmt(Math.abs(b * x))} ${c < 0 ? "−" : "+"} ${fmt(Math.abs(c))} = <b>${fmt(y)}</b><br>a is ${a > 0 ? "positief, dus dit is een dalparabool" : "negatief, dus dit is een bergparabool"}.`
       };
     }
@@ -680,8 +686,8 @@ const ONDERWERPEN = [
       <p>${F("x-top = (x₁ + x₂) / 2")}</p>
       <p>Voorbeeld: de punten (−1, 5) en (7, 5). x-top = (−1 + 7) / 2 = 6 / 2 = 3. De symmetrieas is de lijn x = 3.</p>`,
     gen() {
-      const a = pick([1, -1, 2, -2]), xt = R(-4, 4) + pick([0, 0, 0.5]), d = R(1, 5) + (Number.isInteger(xt) ? 0 : 0.5), q = R(-6, 6);
-      const x1 = xt - d, x2 = xt + d, y = a * d * d + q;
+      const xt = R(-4, 4) + pick([0, 0, 0.5]), d = R(1, 5) + (Number.isInteger(xt) ? 0 : 0.5), y = R(-9, 9);
+      const x1 = xt - d, x2 = xt + d;
       return {
         vraag: `Een parabool gaat door de punten <b>(${fmt(x1)}, ${fmt(y)})</b> en <b>(${fmt(x2)}, ${fmt(y)})</b>. Wat is de x-coördinaat van de top?`,
         velden: [{ label: "x-top =", val: xt, tol: EXACT, tips: [[(x2 - x1) / 2, "Je hebt het verschil gehalveerd. Je zoekt het midden: tel de twee x-waarden op en deel door 2."]] }],
@@ -1481,6 +1487,14 @@ function init() {
     if (e.target.closest("[data-home]")) { if (som && geprobeerd && !afgerond) telMee(false); som = null; renderHome(); toon("home"); }
   });
   $("naar-spiek").onclick = () => toon("spiekbrief");
+  // Gele vraagknop wijkt bij naar beneden scrollen (dekt dan geen tekst af) en komt terug bij omhoog scrollen
+  let vorigeY = window.scrollY;
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY, k = $("vraagknop");
+    if (Math.abs(y - vorigeY) < 8) return;
+    k.classList.toggle("weg", y > vorigeY && y > 120 && y + innerHeight < document.body.scrollHeight - 40);
+    vorigeY = y;
+  }, { passive: true });
   $("u-terug").onclick = () => toonStap(uStap - 1);
   $("u-verder").onclick = () => toonStap(uStap + 1);
   $("u-pauze").onclick = () => { uSpeelt = !uSpeelt; toonStap(uStap); };
