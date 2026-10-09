@@ -1497,6 +1497,30 @@ function spreek(wie, tekst, opt = {}) {
 // Elke uitleg is een reeks stappen: wat de professor zegt (zeg), wat er groot in beeld staat (tekst)
 // en wat er in de tekening staat (teken). Maximaal ongeveer 4 minuten, één idee per uitleg.
 const UITLEGGEN = {
+  "1.4": {
+    vak: "wis", hfst: "1", docent: "delta", titel: "Exponentiële groei", oefen: "tabel",
+    teken: st => groeiSVG(st),
+    stappen: [
+      { tekst: "Lineair: steeds erbij. Exponentieel: steeds keer.", teken: { pts: true },
+        zeg: "Hoi! Dit is paragraaf 1.4: exponentiële groei. Bij lineaire groei komt er per stap steeds hetzelfde getal bij. Bij exponentiële groei vermenigvuldig je per stap steeds met hetzelfde getal." },
+      { tekst: `<table class="tabel u-tab"><tr><th>t</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td></tr><tr><th>N</th><td>50</td><td>100</td><td>200</td><td>400</td><td>800</td></tr></table>`, teken: { pts: true, keer: true, wijs: "pts" },
+        zeg: "Kijk naar deze tabel: 50, 100, 200, 400, 800. Elke stap gaat het keer 2. Dat getal heet de groeifactor. Hier is de groeifactor 2." },
+      { tekst: "Beginwaarde b = 50 (bij t = 0)", teken: { pts: true, wijs: "start" },
+        zeg: "Het getal bij t is 0 heet de beginwaarde. Hier is de beginwaarde 50." },
+      { tekst: `${F("N = b · gᵗ")} → ${F("N = 50 · 2ᵗ")}`, teken: { pts: true, kromme: true },
+        zeg: "De formule is N is b keer g tot de macht t. b is de beginwaarde en g is de groeifactor. Hier dus: N is 50 keer 2 tot de macht t. De grafiek is geen rechte lijn, maar een kromme die steeds steiler wordt." },
+      { tekst: `${F("t = 3: N = 50 · 2³ = 50 · 8 = 400")}`, teken: { pts: true, kromme: true, wijs: "t3" },
+        zeg: "Reken N uit bij t is 3. Let op: eerst de macht, dan pas keer. 2 tot de macht 3 is 8. 50 keer 8 is 400. Klopt met de tabel." },
+      { tekst: "Exponentieel wint het altijd van lineair", teken: { pts: true, kromme: true, lin: true },
+        zeg: "Vergelijk met de grijze lijn: daar komt er steeds 100 bij. In het begin is die lijn hoger. Maar de exponentiële groei gaat steeds sneller en haalt de lijn in." },
+      { tekst: `Procenten → groeifactor<br>+5% → ${F("g = 1,05")} · −20% → ${F("g = 0,8")}`, teken: { kromme: true },
+        zeg: "Vaak krijg je een percentage. Groeit iets met 5 procent per jaar, dan heb je 100 procent plus 5 procent is 105 procent. De groeifactor is dan 1,05. Neemt iets af met 20 procent, dan houd je 80 procent over. De groeifactor is dan 0,8." },
+      { tekst: "g tussen 0 en 1 → exponentiële afname", teken: { kromme: true, af: true, wijs: "af" },
+        zeg: "Is de groeifactor kleiner dan 1, dan wordt het steeds minder. Dat heet exponentiële afname. De rode grafiek begint bij 800 en halveert elke stap: de groeifactor is 0,5." },
+      { tekst: "Nu jij!", teken: { pts: true, kromme: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Kijk in een tabel altijd: komt er steeds hetzelfde bij, of gaat het steeds keer hetzelfde? Klik op probeer het zelf. Succes!" }
+    ]
+  },
   "1.3": {
     vak: "wis", hfst: "1", docent: "delta", titel: "Formules substitueren", oefen: "verhaal",
     teken: st => ketenSVG(st),
@@ -1760,6 +1784,29 @@ function ketenSVG(st) {
     if (v === "a") s += `<circle class="wijs" cx="${bx[1]}" cy="${by}" r="36"/>`;
     if (v === "direct") s += `<rect class="wijs" x="${bx[0] - 10}" y="168" width="${bx[2] - bx[0] + 20}" height="66" rx="14"/>`;
     if (v === "keten") s += `<rect class="wijs" x="14" y="${by - 44}" width="312" height="110" rx="16"/>`;
+  }
+  return s + "</svg>";
+}
+
+// Exponentiële groei voor 1.4: N = 50 · 2^t (blauw), lineair N = 50 + 100t (grijs), afname N = 800 · 0,5^t (rood)
+function groeiSVG(st) {
+  const X = t => 60 + 52 * t, Y = n => 20 + (900 - n) * 0.44;
+  let s = `<svg viewBox="0 0 340 440" class="plot uitleg-plot" role="img" aria-label="Grafiek van exponentiële groei"><defs><clipPath id="e-clip"><rect x="${X(0)}" y="${Y(900)}" width="${X(5) - X(0)}" height="${Y(0) - Y(900)}"/></clipPath></defs>`;
+  for (let t = 0; t <= 5; t++) s += `<line class="g-grid" x1="${X(t)}" y1="${Y(900)}" x2="${X(t)}" y2="${Y(0)}"/><text class="g-lbl" x="${X(t)}" y="${Y(0) + 16}" text-anchor="middle">${t}</text>`;
+  for (let n = 0; n <= 900; n += 100) s += `<line class="g-grid" x1="${X(0)}" y1="${Y(n)}" x2="${X(5)}" y2="${Y(n)}"/>${n % 200 === 0 && n ? `<text class="g-lbl" x="${X(0) - 6}" y="${Y(n) + 4}" text-anchor="end">${n}</text>` : ""}`;
+  s += `<line class="g-axis" x1="${X(0)}" y1="${Y(900)}" x2="${X(0)}" y2="${Y(0)}"/><line class="g-axis" x1="${X(0)}" y1="${Y(0)}" x2="${X(5)}" y2="${Y(0)}"/>`;
+  s += `<text class="g-name" x="${X(5)}" y="${Y(0) - 6}" text-anchor="end">t</text><text class="g-name" x="${X(0) + 6}" y="${Y(900) + 14}">N</text>`;
+  const kromme = (f, stijl) => { let d = ""; for (let t = 0; t <= 5.001; t += 0.05) d += `${d ? "L" : "M"}${X(t).toFixed(1)},${Y(f(t)).toFixed(1)}`; return `<path class="g-line" clip-path="url(#e-clip)" d="${d}" style="${stijl}"/>`; };
+  if (st.lin) s += kromme(t => 50 + 100 * t, "stroke:var(--pencil);stroke-dasharray:7 4") + `<text class="g-tril" x="${X(4.9)}" y="${Y(560)}" text-anchor="end" style="fill:var(--pencil)">lineair: +100</text>`;
+  if (st.af) s += kromme(t => 800 * 0.5 ** t, "stroke:var(--red)") + `<text class="g-tril" x="${X(1.6)}" y="${Y(560)}" style="fill:var(--red)">afname: × 0,5</text>`;
+  if (st.kromme) s += kromme(t => 50 * 2 ** t, "") + `<text class="g-tril" x="${X(3.6)}" y="${Y(860)}" text-anchor="end">N = 50 · 2ᵗ</text>`;
+  if (st.pts) for (let t = 0; t <= 4; t++) s += `<circle class="g-pt" cx="${X(t)}" cy="${Y(50 * 2 ** t)}" r="5"/><text class="g-ptl" x="${X(t) - 8}" y="${Y(50 * 2 ** t) - 6}" text-anchor="end">${50 * 2 ** t}</text>`;
+  if (st.keer) for (let t = 0; t < 4; t++) s += `<text class="g-tril" x="${X(t + 0.5)}" y="${Y(0) - 8 - 22 * t}" text-anchor="middle" style="fill:var(--red)">× 2</text>`;
+  for (const w of [].concat(st.wijs || [])) {
+    if (w === "start") s += `<circle class="wijs" cx="${X(0)}" cy="${Y(50)}" r="15"/>`;
+    if (w === "t3") s += `<circle class="wijs" cx="${X(3)}" cy="${Y(400)}" r="15"/>`;
+    if (w === "pts") for (let t = 0; t <= 4; t++) s += `<circle class="wijs" cx="${X(t)}" cy="${Y(50 * 2 ** t)}" r="13"/>`;
+    if (w === "af") s += `<circle class="wijs" cx="${X(0)}" cy="${Y(800)}" r="15"/>`;
   }
   return s + "</svg>";
 }
