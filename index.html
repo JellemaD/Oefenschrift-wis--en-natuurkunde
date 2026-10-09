@@ -66,6 +66,7 @@ button,input,textarea{font:inherit}
 
 /* Uitleg van de professor */
 .u-kop{display:flex;align-items:center;gap:.8rem;margin:.25rem 0 .5rem}
+.u-terugbalk{position:sticky;top:0;z-index:3;background:var(--paper);padding:.6rem 0 .4rem;margin:-.6rem 0 0;border-bottom:1px solid var(--grid)}
 #u-av{width:110px;height:110px;flex:none}
 #u-av svg{width:100%;height:100%;display:block}
 .u-scherm{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:1rem}
@@ -338,7 +339,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
   <!-- SPIEKBRIEF -->
   <!-- UITLEG VAN DE PROFESSOR -->
   <section id="uitleg" class="hidden">
-    <button class="linkbtn" data-home>← Onderwerpen</button>
+    <div class="u-terugbalk"><button class="linkbtn" id="u-naar">← Terug</button></div>
     <h2 id="u-titel" style="font-size:1.6rem;margin-top:1rem"></h2>
     <div class="u-kop"><div id="u-av"></div><div><b id="u-naam"></b><div class="klein" id="u-voortgang"></div></div></div>
     <div class="u-scherm">
@@ -1074,7 +1075,7 @@ function paragraafBlokken(vak, h, oef) {
   }
   const los = oef.filter(t => !h.par.some(p => p.nr === KOPPELING[t.id].par));
   if (los.length) { los.forEach((t, i) => { NUMMER[t.id] = `${h.nr ? h.nr + "." : "K2."}${i + 1}`; }); blokken.push({ nr: "", titel: h.par.length ? "Overig" : "", u: null, o: los }); }
-  return blokken.map(b => `<div class="par-blok">${b.titel ? `<div class="par-kop">${b.nr ? `<span class="par-nr">${b.nr}</span>` : ""}${b.titel}</div>` : ""}<div class="schrift">${b.u ? uitlegKnop(b.nr, b.u) : ""}${b.o.map(topicKnop).join("")}</div></div>`).join("");
+  return blokken.map(b => `<div class="par-blok" data-par="${vak}-${b.nr}">${b.titel ? `<div class="par-kop">${b.nr ? `<span class="par-nr">${b.nr}</span>` : ""}${b.titel}</div>` : ""}<div class="schrift">${b.u ? uitlegKnop(b.nr, b.u) : ""}${b.o.map(topicKnop).join("")}</div></div>`).join("");
 }
 // Eén filmpje per paragraaf: dat van de docent die het boek volgt
 const filmpje = v => `<a href="${yt(v[0])}" target="_blank" rel="noopener">▶ filmpje</a> <span class="duur">${v[2]}</span>`;
@@ -1517,8 +1518,11 @@ function toonTijd() {
   $("u-balk").style.width = `${Math.round(100 * (1 - rest / totaal))}%`;
 }
 function uitlegDuur(u) { return Math.max(1, Math.ceil((u.stappen.reduce((n, s) => n + s.zeg.length, 0) / 12 + u.stappen.length) / 60)); }
+let uHerkomst = "home";
 function startUitleg(key) {
   uitleg = UITLEGGEN[key]; if (!uitleg) return;
+  uHerkomst = !$("oefen").classList.contains("hidden") ? "oefen" : "home";
+  $("u-naar").textContent = `← ${key} ${uitleg.titel}`;
   const h = BOEKEN[uitleg.vak].hoofdstukken.find(h => h.nr === uitleg.hfst), p = h && h.par.find(p => p.nr === key);
   $("u-titel").textContent = `${key} ${uitleg.titel}`;
   $("u-av").innerHTML = DOCENT[uitleg.docent].svg;
@@ -1602,6 +1606,18 @@ function init() {
   $("u-verder").onclick = () => toonStap(uStap + 1);
   $("u-pauze").onclick = () => { uSpeelt = !uSpeelt; toonStap(uStap); };
   $("u-zelf").onclick = () => start(uitleg.oefen);
+  // Terug naar de paragraaf: de oefening waar Esra vandaan kwam, of het blok op de startpagina
+  $("u-naar").onclick = () => {
+    if (uHerkomst === "oefen") { toon("oefen"); return; }
+    const key = Object.keys(UITLEGGEN).find(k => UITLEGGEN[k] === uitleg);
+    renderHome(); toon("home");
+    for (const v of ["wis", "nat"]) {
+      $("tab-" + v).setAttribute("aria-selected", v === uitleg.vak);
+      $("paneel-" + v).classList.toggle("hidden", v !== uitleg.vak);
+    }
+    const blok = document.querySelector(`.par-blok[data-par="${uitleg.vak}-${key}"]`);
+    if (blok) { const d = blok.closest("details.hfst"); if (d) d.open = true; blok.scrollIntoView({ block: "start" }); window.scrollBy(0, -12); }
+  };
   const kiesTab = vak => {
     for (const v of ["wis", "nat"]) {
       $("tab-" + v).setAttribute("aria-selected", v === vak);
