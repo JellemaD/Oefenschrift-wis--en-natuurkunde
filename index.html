@@ -848,6 +848,97 @@ const ONDERWERPEN = [
     }
   },
   {
+    id: "stroomkring", vak: "nat", titel: "Spanning en stroomsterkte",
+    sub: "Volt, ampère, meters en omrekenen",
+    uitleg: `<ul><li>Spanning U in volt (V), meet je met een <b>spanningsmeter</b>: parallel over het apparaat.</li>
+      <li>Stroomsterkte I in ampère (A), meet je met een <b>stroommeter</b>: in serie, in de kring.</li>
+      <li>Er loopt alleen stroom als de kring <b>gesloten</b> is.</li>
+      <li>1 A = 1000 mA (milliampère) en 1 kV = 1000 V (kilovolt).</li></ul>`,
+    gen() {
+      const v = pick(["mA", "A", "kV", "keuze", "keuze"]);
+      if (v === "mA") { const I = pick([0.02, 0.05, 0.15, 0.25, 0.4, 1.2, 2.5]);
+        return { vraag: `Een stroommeter geeft ${fmt(I)} A aan. Hoeveel milliampère (mA) is dat?`,
+          velden: [{ label: "I =", val: I * 1000, tol: AFRONDEN, eenheid: "mA" }], hint: `1 A = 1000 mA. Van A naar mA: keer 1000.`,
+          stappen: `${fmt(I)} A · 1000 = <b>${fmt(I * 1000)} mA</b>` }; }
+      if (v === "A") { const mA = pick([20, 60, 150, 300, 450, 800, 1500]);
+        return { vraag: `Door een lampje loopt een stroom van ${mA} mA. Hoeveel ampère (A) is dat?`,
+          velden: [{ label: "I =", val: mA / 1000, tol: AFRONDEN, eenheid: "A" }], hint: `Van mA naar A: delen door 1000.`,
+          stappen: `${mA} mA / 1000 = <b>${fmt(mA / 1000)} A</b>` }; }
+      if (v === "kV") { const kV = pick([10, 50, 110, 150, 380]);
+        return { vraag: `Een hoogspanningskabel heeft een spanning van ${kV} kV. Hoeveel volt (V) is dat?`,
+          velden: [{ label: "U =", val: kV * 1000, tol: AFRONDEN, eenheid: "V" }], hint: `1 kV = 1000 V. Van kV naar V: keer 1000.`,
+          stappen: `${kV} kV · 1000 = <b>${fmt(kV * 1000)} V</b>` }; }
+      const V = [
+        ["Je wilt de stroomsterkte door een lampje meten. Welke meter gebruik je?", "1 = stroommeter, 2 = spanningsmeter", 1, "De stroomsterkte meet je met een stroommeter."],
+        ["Je wilt de spanning over een lampje meten. Welke meter gebruik je?", "1 = stroommeter, 2 = spanningsmeter", 2, "De spanning meet je met een spanningsmeter."],
+        ["Hoe sluit je een stroommeter aan?", "1 = in serie (in de kring), 2 = parallel (over het apparaat)", 1, "Een stroommeter zet je in de kring, in serie: alle stroom moet erdoorheen."],
+        ["Hoe sluit je een spanningsmeter aan?", "1 = in serie (in de kring), 2 = parallel (over het apparaat)", 2, "Een spanningsmeter zet je parallel, over het apparaat heen."],
+        ["De schakelaar in de kring staat open. Brandt het lampje?", "1 = ja, 2 = nee", 2, "Bij een open schakelaar is de kring onderbroken: er loopt geen stroom."],
+        ["In welke eenheid meet je de stroomsterkte?", "1 = ampère, 2 = volt", 1, "Stroomsterkte I meet je in ampère (A)."],
+        ["In welke eenheid meet je de spanning?", "1 = ampère, 2 = volt", 2, "Spanning U meet je in volt (V)."],
+        ["Waarom gebruik je hoogspanning om energie te vervoeren?", "1 = dan is de stroom klein en gaat er minder energie verloren, 2 = dan gaat de stroom sneller", 1, "Bij hoge spanning is de stroom klein. Een kleine stroom maakt de draden minder warm, dus minder verlies."]
+      ];
+      const [vr, opties, a, uit] = pick(V);
+      return { vraag: `${vr}<br>Vul in: ${opties.replace(/(\d) =/g, "<b>$1</b> =")}.`,
+        velden: [{ label: "antwoord =", val: a, tol: EXACT, tips: [[3 - a, "Nog niet. " + uit]] }],
+        hint: `Stroommeter: in serie, meet ampère. Spanningsmeter: parallel, meet volt. Stroom loopt alleen in een gesloten kring.`, stappen: `Antwoord <b>${a}</b>. ${uit}` };
+    }
+  },
+  {
+    id: "huisinstallatie", vak: "nat", titel: "Groepen in huis",
+    sub: "Stromen optellen, maximaal 16 A",
+    uitleg: `<ul><li>Apparaten in huis zijn <b>parallel</b> geschakeld: elk krijgt 230 V.</li>
+      <li>In één groep tellen de stromen op: ${F("I_totaal = I₁ + I₂ + …")}</li>
+      <li>Stroom per apparaat: ${F("I = P / U")} met U = 230 V.</li>
+      <li>Meestal maximaal 16 A per groep, dus ${F("P_max = 230 · 16 = 3680 W")}.</li></ul>`,
+    gen() {
+      const v = pick(["som", "I", "rest", "past"]);
+      const APP = [["een waterkoker", 2300], ["een wasmachine", 2070], ["een stofzuiger", 920], ["een föhn", 1150], ["een tv", 115], ["een magnetron", 1380], ["een laptop", 69], ["een lamp", 46]];
+      if (v === "som") { const I = [pick([0.5, 1, 2, 3]), pick([4, 5, 6, 8]), pick([0.2, 0.3, 1.5])];
+        return { vraag: `In één groep staan drie apparaten aan. Er loopt ${I.map(fmt).join(" A, ")} A doorheen. Hoe groot is de stroom in de groepsleiding?`,
+          velden: [{ label: "I =", val: I[0] + I[1] + I[2], tol: AFRONDEN, eenheid: "A" }], hint: `Bij parallel geschakelde apparaten tellen de stromen op.`,
+          stappen: `I = ${I.map(fmt).join(" + ")} = <b>${fmt(I[0] + I[1] + I[2])} A</b>` }; }
+      if (v === "I") { const [naam, P] = pick(APP);
+        return { vraag: `Je zet ${naam} van ${P} W aan op het stopcontact (230 V). Hoe groot is de stroomsterkte?`,
+          velden: [{ label: "I =", val: P / 230, tol: AFRONDEN, eenheid: "A", tips: [[P * 230, "Je hebt vermenigvuldigd. Gebruik I = P / U."]] }], hint: `${F("I = P / U")}`,
+          stappen: `I = P / U = ${P} / 230 = <b>${fmt(P / 230, 2)} A</b>` }; }
+      if (v === "rest") { const a = pick(APP), b = pick(APP.filter(x => x !== a)), Pt = a[1] + b[1], rest = 3680 - Pt;
+        if (rest <= 0) return this.gen();
+        return { vraag: `Op een groep van maximaal 16 A staan ${a[0]} (${a[1]} W) en ${b[0]} (${b[1]} W) aan. Hoeveel watt mag er nog bij, voordat de groep overbelast is?`,
+          velden: [{ label: "nog =", val: rest, tol: AFRONDEN, eenheid: "W" }], hint: `Het maximum is 230 · 16 = 3680 W. Trek daar het vermogen van wat al aanstaat van af.`,
+          stappen: `P_max = 230 · 16 = 3680 W<br>al aan: ${a[1]} + ${b[1]} = ${Pt} W<br>nog = 3680 − ${Pt} = <b>${rest} W</b>` }; }
+      const a = pick(APP), b = pick(APP.filter(x => x !== a)), Pt = a[1] + b[1], ok = Pt <= 3680 ? 1 : 2;
+      return { vraag: `Je zet ${a[0]} (${a[1]} W) en ${b[0]} (${b[1]} W) tegelijk aan op één groep van 16 A. Kan dat?<br>Vul in: <b>1</b> = ja, <b>2</b> = nee, de groep wordt overbelast.`,
+        velden: [{ label: "antwoord =", val: ok, tol: EXACT, tips: [[3 - ok, `Nog niet. Samen is het ${Pt} W, en het maximum is 3680 W.`]] }], hint: `Tel de vermogens op en vergelijk met 230 · 16 = 3680 W.`,
+        stappen: `samen: ${a[1]} + ${b[1]} = ${Pt} W; maximum 3680 W → <b>${ok === 1 ? "1 = ja" : "2 = nee"}</b>` };
+    }
+  },
+  {
+    id: "veiligheid", vak: "nat", titel: "Veilig met elektriciteit",
+    sub: "Zekering, aardlekschakelaar, randaarde",
+    uitleg: `<ul><li><b>Zekering</b>: schakelt uit bij een te grote stroom (kortsluiting of overbelasting).</li>
+      <li><b>Aardlekschakelaar</b>: schakelt uit als er stroom weglekt, bijvoorbeeld door iemand heen.</li>
+      <li><b>Randaarde</b>: voert lekstroom van een metalen behuizing af via de aardedraad.</li>
+      <li>Draden: fase = bruin, nul = blauw, aarde = geel-groen.</li></ul>`,
+    gen() {
+      const V = [
+        ["De fasedraad en de nuldraad raken elkaar direct (kortsluiting). Wat schakelt de groep uit?", "1 = zekering, 2 = aardlekschakelaar, 3 = randaarde", 1, "Bij kortsluiting wordt de stroom heel groot. De zekering schakelt uit bij een te grote stroom."],
+        ["Er staan te veel apparaten aan op één groep (overbelasting). Wat schakelt uit?", "1 = zekering, 2 = aardlekschakelaar, 3 = randaarde", 1, "Bij overbelasting is de stroom te groot. De zekering schakelt uit."],
+        ["Iemand raakt een kapotte draad aan, en er lekt stroom door hem heen naar de aarde. Wat schakelt binnen een fractie van een seconde uit?", "1 = zekering, 2 = aardlekschakelaar, 3 = randaarde", 2, "De aardlekschakelaar merkt dat de stroom heen en terug niet gelijk is, en schakelt uit."],
+        ["De fasedraad raakt de metalen behuizing van een wasmachine. Wat zorgt ervoor dat de stroom niet door jou gaat?", "1 = zekering, 2 = aardlekschakelaar, 3 = randaarde", 3, "Via de randaarde loopt de lekstroom weg door de aardedraad, niet door jou."],
+        ["Welke kleur heeft de fasedraad?", "1 = bruin, 2 = blauw, 3 = geel-groen", 1, "De fasedraad is bruin."],
+        ["Welke kleur heeft de nuldraad?", "1 = bruin, 2 = blauw, 3 = geel-groen", 2, "De nuldraad is blauw."],
+        ["Welke kleur heeft de aardedraad?", "1 = bruin, 2 = blauw, 3 = geel-groen", 3, "De aardedraad is geel-groen."],
+        ["Een föhn heeft een plastic behuizing en het symbool met twee vierkantjes. Heeft hij randaarde nodig?", "1 = ja, 2 = nee, hij is dubbel geïsoleerd", 2, "Een dubbel geïsoleerd apparaat heeft geen randaarde nodig."],
+        ["Welke draad staat onder spanning en is daarom het gevaarlijkst?", "1 = fasedraad, 2 = nuldraad, 3 = aardedraad", 1, "De fasedraad staat onder spanning."]
+      ];
+      const [vr, opties, a, uit] = pick(V), n = (opties.match(/\d =/g) || []).length;
+      return { vraag: `${vr}<br>Vul in: ${opties.replace(/(\d) =/g, "<b>$1</b> =")}.`,
+        velden: [{ label: "antwoord =", val: a, tol: EXACT, tips: Array.from({ length: n }, (_, i) => i + 1).filter(x => x !== a).map(x => [x, "Nog niet. " + uit]) }],
+        hint: `Bedenk eerst wat er misgaat: een te grote stroom, of stroom die weglekt?`, stappen: `Antwoord <b>${a}</b>. ${uit}` };
+    }
+  },
+  {
     id: "vermogen", vak: "nat", titel: "Vermogen, energie en kosten",
     sub: "P = U · I en E = P · t",
     uitleg: `<ul><li>${F("P = U · I")}: vermogen P in watt (W).</li>
@@ -1191,7 +1282,7 @@ const KOPPELING = {
   "tabel": { hfst: "1", par: "1.1" }, "verhaal": { hfst: "1", par: "1.1" }, "vergelijking": { hfst: "1", par: "1.2" },
   "par-invullen": { hfst: "2", par: "2.1" }, "par-symmetrie": { hfst: "2", par: "2.2" },
   "par-top": { hfst: "2", par: "2.2" }, "par-vormen": { hfst: "2", par: "2.5" },
-  "vermogen": { hfst: "1", par: "1.2" }, "energiebehoud": { hfst: "3", par: "3.1" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" },
+"stroomkring": { hfst: "1", par: "1.1" }, "vermogen": { hfst: "1", par: "1.2" }, "huisinstallatie": { hfst: "1", par: "1.3" }, "veiligheid": { hfst: "1", par: "1.4" }, "energiebehoud": { hfst: "3", par: "3.1" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" },
   "snelheid": { hfst: "4", par: "4.2" }, "ohm": { hfst: "5", par: "5.2" },
   "omrekenen": { hfst: "V", par: "V2" }, "diagram": { hfst: "V", par: "V8" },
   "dichtheid": { hfst: "herhaling" }
@@ -1290,7 +1381,7 @@ function renderHome() {
       <summary>${h.nr ? `<span class="h-nr">${h.nr === "V" ? "" : "H"}${h.nr}</span> ` : ""}${h.titel}${h.nr && h.nr === klas ? `<span class="nu-klas">📍 nu in de klas</span>` : ""}<span class="h-info">${n ? n + " oefening" + (n > 1 ? "en" : "") : "alleen filmpjes"}</span></summary>
       ${paragraafBlokken(vak, h, h.oef)}
       ${h.nr && h.nr !== klas ? `<button type="button" class="linkbtn klas-kies" data-klas="${vak}|${h.nr}">📍 Dit hebben we nu in de klas</button>` : ""}
-      ${h.par.some(p => p.v.length) ? `<details class="filmpjes"><summary>Filmpjes bij dit hoofdstuk</summary><ul class="paragrafen">${h.par.filter(p => p.v.length).map(p => `<li><b>${p.nr}</b> ${p.titel} · ${filmpje(p.v[0])}</li>`).join("")}</ul></details>` : ""}
+      ${h.par.some(p => p.v.length) ? `<details class="filmpjes"><summary>YouTube-filmpjes bij dit hoofdstuk</summary><ul class="paragrafen">${h.par.filter(p => p.v.length).map(p => `<li><b>${p.nr}</b> ${p.titel} · ${filmpje(p.v[0])}</li>`).join("")}</ul></details>` : ""}
     </details>`;
     };
     $("lijst-" + vak).innerHTML = metInhoud.map(h => hfst(h, true)).join("")
@@ -1726,7 +1817,7 @@ const UITLEGGEN = {
     ]
   },
   "nat:1.1": {
-    vak: "nat", hfst: "1", docent: "volta", titel: "Elektrische energie vervoeren", oefen: "",
+    vak: "nat", hfst: "1", docent: "volta", titel: "Elektrische energie vervoeren", oefen: "stroomkring",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "Van centrale naar stopcontact", teken: { scene: "net", wijs: [0, 4] },
@@ -1743,8 +1834,8 @@ const UITLEGGEN = {
         zeg: "Terug naar het net. Een transformator maakt de spanning heel hoog, tot wel 380 duizend volt. Bij een hoge spanning is de stroom klein. Een kleine stroom maakt de draden minder warm. Zo gaat er onderweg minder energie verloren." },
       { tekst: "Bij je huis: 230 V", teken: { scene: "net", wijs: [3, 4] },
         zeg: "Vlak bij je huis maakt een transformator de spanning weer lager. Uit het stopcontact komt 230 volt." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "net" }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 1.1 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "net" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "nat:1.2": {
@@ -1770,7 +1861,7 @@ const UITLEGGEN = {
     ]
   },
   "nat:1.3": {
-    vak: "nat", hfst: "1", docent: "volta", titel: "Elektriciteit in huis", oefen: "",
+    vak: "nat", hfst: "1", docent: "volta", titel: "Elektriciteit in huis", oefen: "huisinstallatie",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "De meterkast", teken: { scene: "huis", wijs: "kast" },
@@ -1785,12 +1876,12 @@ const UITLEGGEN = {
         zeg: "In één groep tellen de stromen van alle apparaten bij elkaar op. Hoe meer apparaten aan, hoe groter de stroom in die groep." },
       { tekst: `Max. 16 A per groep<br>${F("P = 230 × 16 = 3680 W")}`, teken: { scene: "huis", zekering: true, wijs: "zekering" },
         zeg: "Een groep kan meestal maximaal 16 ampère hebben. Het grootste vermogen is dan 230 keer 16, en dat is 3680 watt. Zet je een wasmachine en een waterkoker op dezelfde groep, dan wordt het al snel te veel." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "huis", spanning: true }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 1.3 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "huis", spanning: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "nat:1.4": {
-    vak: "nat", hfst: "1", docent: "volta", titel: "Elektriciteit en veiligheid", oefen: "",
+    vak: "nat", hfst: "1", docent: "volta", titel: "Elektriciteit en veiligheid", oefen: "veiligheid",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "Gevaarlijk: stroom door je lichaam", teken: { scene: "veilig", lek: true, persoon: true },
@@ -1807,8 +1898,8 @@ const UITLEGGEN = {
         zeg: "De aardlekschakelaar vergelijkt de stroom die heen gaat met de stroom die terugkomt. Is er een verschil, dan lekt er stroom weg, misschien door iemand heen. Dan schakelt hij binnen een fractie van een seconde uit." },
       { tekst: "Dubbel geïsoleerd: geen randaarde nodig", teken: { scene: "veilig" },
         zeg: "Apparaten met een plastic behuizing zijn dubbel geïsoleerd. Die hebben geen randaarde nodig. Je herkent ze aan het symbool met twee vierkantjes in elkaar." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "veilig", aarde: true }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 1.4 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "veilig", aarde: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "nat:2.1": {
