@@ -492,7 +492,7 @@ const CONFIG = {
   email: ""       // bijvoorbeeld "naam@voorbeeld.nl"
 };
 // Niveaus: label en spreektempo. Later mavo en vmbo toevoegen (zelfde naam in worker.js).
-const NIVEAUS = { havo3: { label: "havo 3", tempo: 1.0 } };
+const NIVEAUS = { havo3: { label: "havo 3", tempo: 0.95 } }; // spreektempo: 0,95 = iets langzamer dan normaal
 /* ===================================================================== */
 
 // ---------- hulpfuncties ----------
@@ -1618,7 +1618,7 @@ function parabSVG(st) {
 
 let uitleg = null, uStap = 0, uSpeelt = false, uId = 0;
 // Geschatte spreektijd per stap in seconden (ongeveer 12 tekens per seconde plus een korte pauze)
-const stapSec = st => st.zeg.length / 12 + 1;
+const stapSec = st => st.zeg.length / (12 * (NIVEAUS[CONFIG.niveau] || NIVEAUS.havo3).tempo) + 1;
 let uStart = 0, uKlok = null;
 function toonTijd() {
   if (!uitleg) return;
@@ -1629,7 +1629,7 @@ function toonTijd() {
   $("u-rest").textContent = uitleg.stappen[uStap].eind ? "klaar" : `nog ${Math.floor(r / 60)}:${String(r % 60).padStart(2, "0")}`;
   $("u-balk").style.width = `${Math.round(100 * (1 - rest / totaal))}%`;
 }
-function uitlegDuur(u) { return Math.max(1, Math.ceil((u.stappen.reduce((n, s) => n + s.zeg.length, 0) / 12 + u.stappen.length) / 60)); }
+function uitlegDuur(u) { return Math.max(1, Math.ceil(u.stappen.reduce((n, s) => n + stapSec(s), 0) / 60)); }
 let uHerkomst = "home";
 function startUitleg(key) {
   uitleg = UITLEGGEN[key]; if (!uitleg) return;
