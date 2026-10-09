@@ -885,6 +885,134 @@ const ONDERWERPEN = [
     }
   },
   {
+    id: "energiebehoud", vak: "nat", titel: "Energie wordt omgezet",
+    sub: "Wat erin gaat, komt er ook weer uit",
+    uitleg: `<p>Energie kan niet verdwijnen en niet uit het niets ontstaan. Een apparaat <b>zet energie om</b>.</p>
+      <ul><li>${F("E_in = E_nuttig + E_verloren")}</li>
+      <li>Wat niet nuttig is, gaat meestal verloren als warmte.</li>
+      <li>Zoek je de verloren energie? ${F("E_verloren = E_in − E_nuttig")}</li></ul>`,
+    gen() {
+      const v = pick(["centrale", "zon", "lamp"]);
+      if (v === "centrale") {
+        const chem = pick([500, 800, 1000, 1200, 1500]), el = Math.round(chem * pick([0.35, 0.4, 0.45]));
+        return { vraag: `Een kolencentrale zet per seconde ${chem} MJ chemische energie om. Er komt ${el} MJ elektrische energie uit. Hoeveel MJ wordt er omgezet in warmte?`,
+          velden: [{ label: "warmte =", val: chem - el, tol: AFRONDEN, eenheid: "MJ", tips: [[chem + el, "Je hebt opgeteld. Wat erin gaat, is samen wat eruit komt: trek af."]] }],
+          hint: `Wat erin gaat (${chem} MJ) is samen elektrische energie plus warmte.`,
+          stappen: `warmte = E_in − E_elektrisch = ${chem} − ${el} = <b>${chem - el} MJ</b>` };
+      }
+      if (v === "zon") {
+        const in_ = pick([500, 800, 1000, 1200]), el = Math.round(in_ * pick([0.15, 0.2, 0.25])), w = in_ - el;
+        return { vraag: `Op een zonnepaneel valt ${in_} J stralingsenergie. Daarvan wordt ${w} J omgezet in warmte. De rest wordt elektrische energie. Hoeveel J elektrische energie levert het paneel?`,
+          velden: [{ label: "E_elektrisch =", val: el, tol: AFRONDEN, eenheid: "J", tips: [[in_ + w, "Je hebt opgeteld. Trek de warmte af van de energie die erin gaat."]] }],
+          hint: `Stralingsenergie erin = elektrische energie + warmte.`,
+          stappen: `E_elektrisch = ${in_} − ${w} = <b>${el} J</b>` };
+      }
+      const in_ = pick([60, 100, 40, 75]), licht = Math.round(in_ * pick([0.05, 0.1, 0.4])), w = in_ - licht;
+      return { vraag: `Een lamp krijgt per seconde ${in_} J elektrische energie. Hij geeft per seconde ${w} J warmte af. Hoeveel J licht maakt de lamp per seconde?`,
+        velden: [{ label: "E_licht =", val: licht, tol: AFRONDEN, eenheid: "J", tips: [[in_ + w, "Je hebt opgeteld. Wat erin gaat, is licht plus warmte samen."]] }],
+        hint: `Elektrische energie erin = licht + warmte.`,
+        stappen: `E_licht = ${in_} − ${w} = <b>${licht} J</b>` };
+    }
+  },
+  {
+    id: "verwarmen", vak: "nat", titel: "Warmte om te verwarmen",
+    sub: "Q = c · m · ΔT",
+    uitleg: `<p>${F("Q = c · m · ΔT")}</p>
+      <ul><li>Q: warmte in joule (J)</li><li>c: soortelijke warmte; water: c = 4180 J/(kg·°C)</li>
+      <li>m: massa in kg (gram eerst delen door 1000)</li><li>ΔT: temperatuurstijging = eindtemperatuur − begintemperatuur</li>
+      <li>Aardgas: verbrandingswarmte ongeveer 32 MJ per m³, dus ${F("E = 32 · V")} in MJ.</li></ul>`,
+    gen() {
+      const c = 4180, v = pick(["Q", "Q", "dT", "m", "gas"]);
+      if (v === "Q") {
+        const m = pick([0.5, 1, 1.5, 2, 5]), T1 = pick([10, 15, 20]), T2 = pick([40, 60, 80, 100]), dT = T2 - T1, Q = c * m * dT;
+        return { vraag: `Je verwarmt ${fmt(m)} kg water van ${T1} °C tot ${T2} °C. Bereken hoeveel warmte Q daarvoor nodig is. (c water = 4180 J/(kg·°C))`,
+          velden: [{ label: "Q =", val: Q, tol: AFRONDEN, eenheid: "J", tips: [[c * m * T2, "Gebruik het temperatuurverschil ΔT, niet de eindtemperatuur."]] }],
+          hint: `Reken eerst ΔT uit: ${T2} − ${T1}. Gebruik dan ${F("Q = c · m · ΔT")}.`,
+          stappen: `ΔT = ${T2} − ${T1} = ${dT} °C<br>Q = 4180 · ${fmt(m)} · ${dT} = <b>${fmt(Q)} J</b>` };
+      }
+      if (v === "dT") {
+        const m = pick([0.5, 1, 2]), dT = pick([10, 20, 25, 40, 50]), Q = c * m * dT;
+        return { vraag: `Je geeft ${fmt(Q)} J warmte aan ${fmt(m)} kg water. Hoeveel graden wordt het water warmer?`,
+          velden: [{ label: "ΔT =", val: dT, tol: AFRONDEN, eenheid: "°C" }],
+          hint: `Schrijf de formule om: ${F("ΔT = Q / (c · m)")}.`,
+          stappen: `ΔT = Q / (c · m) = ${fmt(Q)} / (4180 · ${fmt(m)}) = <b>${dT} °C</b>` };
+      }
+      if (v === "m") {
+        const m = pick([0.5, 1, 2, 3]), dT = pick([10, 20, 40, 50]), Q = c * m * dT;
+        return { vraag: `Met ${fmt(Q)} J warmte wordt een hoeveelheid water ${dT} °C warmer. Hoeveel kg water is het?`,
+          velden: [{ label: "m =", val: m, tol: AFRONDEN, eenheid: "kg" }],
+          hint: `Schrijf de formule om: ${F("m = Q / (c · ΔT)")}.`,
+          stappen: `m = Q / (c · ΔT) = ${fmt(Q)} / (4180 · ${dT}) = <b>${fmt(m)} kg</b>` };
+      }
+      const V = pick([0.5, 1, 1.5, 2, 3, 4]), E = 32 * V;
+      return { vraag: `Een cv-ketel verbrandt ${fmt(V)} m³ aardgas. De verbrandingswarmte van aardgas is 32 MJ per m³. Hoeveel MJ warmte komt er vrij?`,
+        velden: [{ label: "E =", val: E, tol: AFRONDEN, eenheid: "MJ" }],
+        hint: `Per m³ komt 32 MJ vrij. Doe 32 keer het aantal m³.`,
+        stappen: `E = 32 · ${fmt(V)} = <b>${fmt(E)} MJ</b>` };
+    }
+  },
+  {
+    id: "warmtetransport", vak: "nat", titel: "Geleiding, stroming of straling?",
+    sub: "Welke manier van warmtetransport",
+    uitleg: `<ul><li><b>1 Geleiding</b>: warmte gaat door een stof heen, van deeltje naar deeltje (metalen geleiden goed).</li>
+      <li><b>2 Stroming</b>: warme lucht of warm water beweegt en neemt warmte mee (tocht, radiator, cv-water).</li>
+      <li><b>3 Straling</b>: warmte gaat zonder stof door de ruimte, zelfs door vacuüm (zon, vuur, folie kaatst terug).</li></ul>`,
+    gen() {
+      const S = [
+        ["De handgreep van een metalen pan op het vuur wordt heet.", 1], ["Warmte gaat door de muur van je huis naar buiten.", 1],
+        ["Een metalen lepel in hete thee wordt aan de bovenkant ook warm.", 1], ["Je voeten worden koud op een stenen vloer.", 1],
+        ["Warme lucht stijgt op boven de radiator en verwarmt de hele kamer.", 2], ["Door een kier onder de deur komt koude lucht binnen.", 2],
+        ["Warm water in de cv-leidingen brengt warmte naar de radiatoren.", 2], ["De warme lucht van een föhn droogt je haar.", 2],
+        ["Je voelt de warmte van de zon op je gezicht.", 3], ["Je voelt de warmte van een kampvuur op een paar meter afstand.", 3],
+        ["Glanzende folie achter de radiator kaatst warmte terug de kamer in.", 3], ["Warmte van de zon bereikt de aarde door het lege heelal.", 3]
+      ];
+      const [zin, a] = pick(S), naam = ["", "geleiding", "stroming", "straling"];
+      const uitleg = { 1: "Bij geleiding gaat de warmte door de stof zelf heen, van deeltje naar deeltje.", 2: "Bij stroming beweegt warme lucht of warm water, en dat neemt de warmte mee.", 3: "Bij straling is er geen stof nodig: de warmte gaat als straling door de ruimte." };
+      return { vraag: `${zin}<br>Welke manier van warmtetransport is dit? Vul in: <b>1</b> = geleiding, <b>2</b> = stroming, <b>3</b> = straling.`,
+        velden: [{ label: "manier =", val: a, tol: EXACT, tips: [1, 2, 3].filter(x => x !== a).map(x => [x, `Niet ${naam[x]}. ${uitleg[x]} Past dat hier?`]) }],
+        hint: `Vraag jezelf af: beweegt er lucht of water mee (stroming)? Gaat het door een stof heen (geleiding)? Of gaat het zonder stof (straling)?`,
+        stappen: `Dit is <b>${a} = ${naam[a]}</b>. ${uitleg[a]}` };
+    }
+  },
+  {
+    id: "rendement", vak: "nat", titel: "Rendement",
+    sub: "nuttig gedeeld door erin, keer 100%",
+    uitleg: `<p>${F("rendement = E_nuttig / E_in · 100%")}</p>
+      <ul><li>Met vermogens werkt het net zo: ${F("P_nuttig / P_in · 100%")}.</li>
+      <li>Het rendement is altijd kleiner dan 100%.</li>
+      <li>Zoek je de nuttige energie? ${F("E_nuttig = rendement / 100 · E_in")}</li></ul>`,
+    gen() {
+      const v = pick(["eta", "eta", "P", "nuttig", "in"]);
+      if (v === "eta") {
+        const in_ = pick([100, 200, 500, 1000, 2000]), r = pick([5, 10, 25, 40, 60, 80, 90]), n = in_ * r / 100;
+        const ding = pick(["Een lamp", "Een motor", "Een zonnepaneel", "Een ketel"]);
+        return { vraag: `${ding} krijgt ${in_} J energie. Daarvan wordt ${fmt(n)} J nuttig gebruikt. Bereken het rendement.`,
+          velden: [{ label: "rendement =", val: r, tol: AFRONDEN, eenheid: "%", tips: [[r / 100, "Bijna: vergeet niet keer 100%."], [in_ / n * 100, "Je hebt het omgedraaid. Het is nuttig gedeeld door wat erin gaat."]] }],
+          hint: `${F("rendement = E_nuttig / E_in · 100%")}`,
+          stappen: `rendement = ${fmt(n)} / ${in_} · 100% = <b>${r}%</b>` };
+      }
+      if (v === "P") {
+        const Pin = pick([500, 1000, 1500, 2000, 2500]), r = pick([60, 75, 80, 90]), Pn = Pin * r / 100;
+        return { vraag: `Een waterkoker neemt ${Pin} W op. Hij geeft ${fmt(Pn)} W aan het water. Bereken het rendement.`,
+          velden: [{ label: "rendement =", val: r, tol: AFRONDEN, eenheid: "%", tips: [[r / 100, "Bijna: vergeet niet keer 100%."], [Pin / Pn * 100, "Je hebt het omgedraaid. Het is nuttig gedeeld door wat erin gaat."]] }],
+          hint: `Met vermogens: ${F("P_nuttig / P_in · 100%")}.`,
+          stappen: `rendement = ${fmt(Pn)} / ${Pin} · 100% = <b>${r}%</b>` };
+      }
+      if (v === "nuttig") {
+        const in_ = pick([200, 500, 1000, 2000]), r = pick([20, 25, 40, 75, 90]), n = in_ * r / 100;
+        return { vraag: `Een elektromotor heeft een rendement van ${r}%. Hij krijgt ${in_} J elektrische energie. Hoeveel J wordt nuttige bewegingsenergie?`,
+          velden: [{ label: "E_nuttig =", val: n, tol: AFRONDEN, eenheid: "J", tips: [[in_ * r, "Deel het percentage eerst door 100."]] }],
+          hint: `${r}% van ${in_} J: doe ${r} / 100 · ${in_}.`,
+          stappen: `E_nuttig = ${r} / 100 · ${in_} = <b>${fmt(n)} J</b>` };
+      }
+      const r = pick([20, 25, 40, 50, 80]), n = pick([100, 200, 400, 600]), in_ = n * 100 / r;
+      return { vraag: `Een ledlamp heeft een rendement van ${r}%. Hij geeft ${n} J licht. Hoeveel J elektrische energie ging erin?`,
+        velden: [{ label: "E_in =", val: in_, tol: AFRONDEN, eenheid: "J", tips: [[n * r / 100, "Andersom: wat erin gaat is méér dan het nuttige deel. Deel door het rendement."]] }],
+        hint: `${F("E_in = E_nuttig / rendement · 100%")}.`,
+        stappen: `E_in = ${n} / ${r} · 100 = <b>${fmt(in_)} J</b>` };
+    }
+  },
+  {
     id: "zwaartekracht", vak: "nat", titel: "Zwaartekracht",
     sub: "Fz = m · g",
     uitleg: `<p>${F("Fz = m · g")}, met Fz in newton (N), m in kilogram (kg) en g = 9,81 N/kg.</p>
@@ -1063,7 +1191,7 @@ const KOPPELING = {
   "tabel": { hfst: "1", par: "1.1" }, "verhaal": { hfst: "1", par: "1.1" }, "vergelijking": { hfst: "1", par: "1.2" },
   "par-invullen": { hfst: "2", par: "2.1" }, "par-symmetrie": { hfst: "2", par: "2.2" },
   "par-top": { hfst: "2", par: "2.2" }, "par-vormen": { hfst: "2", par: "2.5" },
-  "vermogen": { hfst: "1", par: "1.2" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" },
+  "vermogen": { hfst: "1", par: "1.2" }, "energiebehoud": { hfst: "3", par: "3.1" }, "verwarmen": { hfst: "3", par: "3.2" }, "warmtetransport": { hfst: "3", par: "3.3" }, "rendement": { hfst: "3", par: "3.4" }, "zwaartekracht": { hfst: "2", par: "2.1" }, "veer": { hfst: "2", par: "2.1" },
   "snelheid": { hfst: "4", par: "4.2" }, "ohm": { hfst: "5", par: "5.2" },
   "omrekenen": { hfst: "V", par: "V2" }, "diagram": { hfst: "V", par: "V8" },
   "dichtheid": { hfst: "herhaling" }
@@ -1514,7 +1642,7 @@ function spreek(wie, tekst, opt = {}) {
 // en wat er in de tekening staat (teken). Maximaal ongeveer 4 minuten, één idee per uitleg.
 const UITLEGGEN = {
   "nat:3.1": {
-    vak: "nat", hfst: "3", docent: "volta", titel: "Energiebronnen", oefen: "",
+    vak: "nat", hfst: "3", docent: "volta", titel: "Energiebronnen", oefen: "energiebehoud",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "Waar komt energie vandaan?", teken: { scene: "bronnen" },
@@ -1531,12 +1659,12 @@ const UITLEGGEN = {
         zeg: "De stoom laat een turbine draaien: dat is bewegingsenergie. De generator zet die bewegingsenergie om in elektrische energie." },
       { tekst: "Windturbine: korter", teken: { scene: "rij", rij: [["wind", "bewegingsenergie", ""], ["wieken + generator", "omzetten", ""], ["stopcontact", "elektrische energie", ""]], wijs: [0, 2] },
         zeg: "Bij een windturbine gaat het korter. De wind geeft bewegingsenergie aan de wieken, en de generator maakt er meteen elektrische energie van. Zonder verbranden." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "bronnen" }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 3.1 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "bronnen" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "nat:3.2": {
-    vak: "nat", hfst: "3", docent: "volta", titel: "Verwarmen", oefen: "",
+    vak: "nat", hfst: "3", docent: "volta", titel: "Verwarmen", oefen: "verwarmen",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "Warmte stroomt van warm naar koud", teken: { scene: "warmte", stroom: true, T: "20 °C", wijs: "vlam" },
@@ -1551,12 +1679,12 @@ const UITLEGGEN = {
         zeg: "Een voorbeeld. Je verwarmt 2 kilogram water van 20 tot 100 graden. Delta T is dan 80 graden. Q is 4180 keer 2 keer 80, en dat is 668 800 joule. Ongeveer 0,67 miljoen joule." },
       { tekst: "Verbrandingswarmte: aardgas ≈ 32 MJ per m³", teken: { scene: "warmte", stroom: true, heet: true, T: "100 °C", bron: "aardgas", wijs: "vlam" },
         zeg: "Die energie komt bijvoorbeeld uit aardgas. De verbrandingswarmte zegt hoeveel energie je krijgt per kubieke meter of per kilogram brandstof. Aardgas geeft ongeveer 32 miljoen joule per kubieke meter." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "warmte", stroom: true, heet: true, T: "100 °C" }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 3.2 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "warmte", stroom: true, heet: true, T: "100 °C" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "nat:3.3": {
-    vak: "nat", hfst: "3", docent: "volta", titel: "Isoleren", oefen: "",
+    vak: "nat", hfst: "3", docent: "volta", titel: "Isoleren", oefen: "warmtetransport",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "Warmte lekt weg: drie manieren", teken: { scene: "isohuis", alle: true },
@@ -1571,12 +1699,12 @@ const UITLEGGEN = {
         zeg: "Zo isoleer je een huis. Spouwmuurisolatie en dakisolatie gaan geleiding tegen. Tochtstrips gaan stroming tegen. En dubbel glas: tussen de twee ruiten zit lucht of gas, en dat geleidt slecht." },
       { tekst: "Folie achter de radiator: straling terug", teken: { scene: "isohuis", iso: true, straling: true },
         zeg: "Glanzende folie achter de radiator kaatst de warmtestraling terug de kamer in. Zo gaat er minder warmte de muur in." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "isohuis", iso: true }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 3.3 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "isohuis", iso: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "nat:3.4": {
-    vak: "nat", hfst: "3", docent: "volta", titel: "Rendement", oefen: "",
+    vak: "nat", hfst: "3", docent: "volta", titel: "Rendement", oefen: "rendement",
     teken: st => natSVG(st),
     stappen: [
       { tekst: "Niet alle energie is nuttig", teken: { scene: "diagram", f: 0.05, in: "100 J elektrisch", nuttig: "5 J licht", verlies: "95 J warmte" },
@@ -1593,8 +1721,8 @@ const UITLEGGEN = {
         zeg: "Je kunt het rendement ook uitrekenen met vermogens. Een waterkoker neemt 2000 watt op en geeft 1800 watt aan het water. 1800 gedeeld door 2000, keer 100 procent, is 90 procent." },
       { tekst: "Rendement is altijd kleiner dan 100%", teken: { scene: "diagram", f: 0.9, in: "2000 W erin", nuttig: "1800 W water", verlies: "200 W", wijs: "verlies" },
         zeg: "Het rendement is altijd kleiner dan 100 procent. Er gaat altijd wel wat energie verloren, want energie kan niet uit het niets ontstaan. Kom je boven de 100 procent uit? Dan heb je je verrekend." },
-      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "diagram", f: 0.4, in: "100 J", nuttig: "40 J licht", verlies: "60 J warmte" }, eind: true,
-        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 3.4 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+      { tekst: "Nu jij!", teken: { scene: "diagram", f: 0.4, in: "100 J", nuttig: "40 J licht", verlies: "60 J warmte" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf. Succes!" }
     ]
   },
   "nat:1.1": {
