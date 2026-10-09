@@ -228,6 +228,8 @@ table.tabel th{background:var(--marker-soft);color:var(--ink)}
 .spiek dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;margin:0}
 .spiek dt{white-space:nowrap}
 .spiek dd{margin:0;color:var(--pencil)}
+.spiek dd{min-width:0}
+@media (max-width:540px){ .spiek dl{grid-template-columns:1fr;gap:.1rem} .spiek dt{white-space:normal;font-weight:700;margin-top:.5rem} }
 
 /* Vraag-knop en venster */
 .vraagknop:disabled{background:var(--grid-strong);color:var(--pencil);border-color:var(--pencil);box-shadow:none;cursor:not-allowed}
@@ -607,7 +609,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.09-6";
+const VERSIE = "2026.10.09-7";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 const lijnF = (a, L, b) => `${coef(a)}${L}${b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : ""}`;
 const tabelHTML = (xs, ys, kx = "x", ky = "y") => `<div class="tabelwrap"><table class="tabel"><tr><th>${kx}</th>${xs.map(x => `<td>${typeof x === "number" ? fmt(x) : x}</td>`).join("")}</tr><tr><th>${ky}</th>${ys.map(y => `<td>${typeof y === "number" ? fmt(y) : y}</td>`).join("")}</tr></table></div>`;
