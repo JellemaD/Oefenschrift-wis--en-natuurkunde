@@ -1497,6 +1497,52 @@ function spreek(wie, tekst, opt = {}) {
 // Elke uitleg is een reeks stappen: wat de professor zegt (zeg), wat er groot in beeld staat (tekst)
 // en wat er in de tekening staat (teken). Maximaal ongeveer 4 minuten, één idee per uitleg.
 const UITLEGGEN = {
+  "1.1": {
+    vak: "wis", hfst: "1", docent: "delta", titel: "Lineaire formules opstellen", oefen: "rc-punten",
+    teken: st => lijnSVG(st),
+    stappen: [
+      { tekst: `Lineaire formule: ${F("y = ax + b")}`, teken: { lijn: true },
+        zeg: "Hoi! Dit is paragraaf 1.1: lineaire formules opstellen. Bij een lineaire formule hoort een rechte lijn. De formule heeft altijd de vorm y is a x plus b." },
+      { tekst: "b is het startgetal", teken: { lijn: true, start: true, wijs: "start" },
+        zeg: "b is het startgetal. Dat is de y bij x is 0, dus waar de lijn de y-as snijdt. Hier is het startgetal 1." },
+      { tekst: "a is de richtingscoëfficiënt (rc)", teken: { lijn: true, start: true, stap: true, wijs: "stap" },
+        zeg: "a is de richtingscoëfficiënt, ook wel het hellingsgetal. Die zegt: per stap naar rechts gaat y zoveel omhoog. Hier gaat de lijn per stap 2 omhoog. Dus a is 2." },
+      { tekst: F("y = 2x + 1"), teken: { lijn: true, start: true, stap: true },
+        zeg: "De formule van deze lijn is dus y is 2 x plus 1." },
+      { tekst: "Twee punten: (1, 3) en (4, 9)", teken: { lijn: true, punten: true, wijs: "punten" },
+        zeg: "Vaak krijg je geen tekening, maar twee punten. Bijvoorbeeld 1 komma 3 en 4 komma 9. Hoe vind je dan de formule?" },
+      { tekst: `${F("a = Δy / Δx = 6 / 3 = 2")}`, teken: { lijn: true, punten: true, drie: true, wijs: "drie" },
+        zeg: "Eerst a. Je rekent delta y gedeeld door delta x. Van x is 1 naar x is 4 is delta x 3. Van y is 3 naar y is 9 is delta y 6. 6 gedeeld door 3 is 2. Dus a is 2." },
+      { tekst: `${F("3 = 2 · 1 + b")} → b = 1`, teken: { lijn: true, punten: true, start: true, wijs: "start" },
+        zeg: "Dan b. Vul een punt in de formule in, bijvoorbeeld 1 komma 3. Dan staat er: 3 is 2 keer 1 plus b. Dus 3 is 2 plus b, en b is 1. De formule is y is 2 x plus 1." },
+      { tekst: "Daalt de lijn? Dan is a negatief", teken: { lijn: true, daal: true, wijs: "daal" },
+        zeg: "Let op: daalt de lijn van links naar rechts, dan is a negatief. Bij deze rode lijn gaat y per stap 1 omlaag. Dus daar is a min 1." },
+      { tekst: "Nu jij!", teken: { lijn: true, start: true, stap: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf, en reken de richtingscoëfficiënt uit. Succes!" }
+    ]
+  },
+  "1.2": {
+    vak: "wis", hfst: "1", docent: "delta", titel: "Lijnen snijden", oefen: "vergelijking",
+    teken: st => lijnSVG(st),
+    stappen: [
+      { tekst: "Waar snijden de lijnen elkaar?", teken: { lijn: true, lijn2: true },
+        zeg: "Hoi! Dit is paragraaf 1.2: lijnen snijden. Hier zie je twee lijnen: y is 2 x plus 1, en y is min x plus 7. Waar snijden ze elkaar?" },
+      { tekst: "In het snijpunt is y bij allebei gelijk", teken: { lijn: true, lijn2: true, snij: true, wijs: "snij" },
+        zeg: "In het snijpunt hebben beide lijnen dezelfde x en dezelfde y. Dat gebruik je om het snijpunt uit te rekenen." },
+      { tekst: F("2x + 1 = −x + 7"), teken: { lijn: true, lijn2: true, snij: true },
+        zeg: "Daarom maak je de twee formules aan elkaar gelijk: 2 x plus 1 is min x plus 7. Dat is een vergelijking." },
+      { tekst: `Balansmethode: aan beide kanten + x<br>${F("3x + 1 = 7")}`, teken: { lijn: true, lijn2: true, snij: true },
+        zeg: "Los de vergelijking op met de balansmethode: wat je aan de ene kant doet, doe je ook aan de andere kant. Tel aan beide kanten x op. Dan krijg je 3 x plus 1 is 7." },
+      { tekst: `${F("3x = 6")} → ${F("x = 2")}`, teken: { lijn: true, lijn2: true, snij: true },
+        zeg: "Haal aan beide kanten 1 eraf. Dan staat er 3 x is 6. Deel beide kanten door 3. Dus x is 2." },
+      { tekst: `${F("y = 2 · 2 + 1 = 5")}<br>snijpunt (2, 5)`, teken: { lijn: true, lijn2: true, snij: true, wijs: "snij" },
+        zeg: "Nu de y. Vul x is 2 in een van de formules in: y is 2 keer 2 plus 1, en dat is 5. Het snijpunt is 2 komma 5." },
+      { tekst: `Controle: ${F("−2 + 7 = 5")} ✓`, teken: { lijn: true, lijn2: true, snij: true },
+        zeg: "Controleer het met de andere formule: min 2 plus 7 is ook 5. Het klopt!" },
+      { tekst: "Nu jij!", teken: { lijn: true, lijn2: true, snij: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Klik op probeer het zelf, en los de vergelijking op met de balansmethode. Succes!" }
+    ]
+  },
   "2.1": {
     vak: "wis", hfst: "2", docent: "delta", titel: "Parabolen", oefen: "par-invullen",
     teken: st => parabSVG(st),
@@ -1570,6 +1616,37 @@ const UITLEGGEN = {
     ]
   }
 };
+
+// Rechte lijnen voor H1: y = 2x + 1 (blauw), y = −x + 6 (dalend, rood gestippeld), y = −x + 7 (tweede lijn, rood)
+function lijnSVG(st) {
+  const U = 30, X = x => 40 + U * (x + 1), Y = y => 20 + U * (12 - y);
+  let s = `<svg viewBox="0 0 300 470" class="plot uitleg-plot" role="img" aria-label="Rechte lijnen in een assenstelsel"><defs><clipPath id="l-clip"><rect x="${X(-1)}" y="${Y(12)}" width="${8 * U}" height="${14 * U}"/></clipPath></defs>`;
+  for (let i = -1; i <= 7; i++) s += `<line class="g-grid" x1="${X(i)}" y1="${Y(12)}" x2="${X(i)}" y2="${Y(-2)}"/>`;
+  for (let j = -2; j <= 12; j++) s += `<line class="g-grid" x1="${X(-1)}" y1="${Y(j)}" x2="${X(7)}" y2="${Y(j)}"/>`;
+  s += `<line class="g-axis" x1="${X(0)}" y1="${Y(12)}" x2="${X(0)}" y2="${Y(-2)}"/><line class="g-axis" x1="${X(-1)}" y1="${Y(0)}" x2="${X(7)}" y2="${Y(0)}"/>`;
+  for (const i of [2, 4, 6]) s += `<text class="g-lbl" x="${X(i)}" y="${Y(0) + 15}" text-anchor="middle">${i}</text>`;
+  for (const j of [2, 4, 6, 8, 10]) s += `<text class="g-lbl" x="${X(0) - 6}" y="${Y(j) + 4}" text-anchor="end">${j}</text>`;
+  s += `<text class="g-name" x="${X(7) - 2}" y="${Y(0) - 6}" text-anchor="end">x</text><text class="g-name" x="${X(0) + 6}" y="${Y(12) + 14}">y</text>`;
+  const lijn = (a, b, stijl) => `<line class="g-line" clip-path="url(#l-clip)" x1="${X(-2)}" y1="${Y(-2 * a + b)}" x2="${X(8)}" y2="${Y(8 * a + b)}"${stijl ? ` style="${stijl}"` : ""}/>`;
+  const pt = (x, y, tekst, dx = 8, dy = -8, anker = "start") => `<circle class="g-pt" cx="${X(x)}" cy="${Y(y)}" r="5"/>${tekst ? `<text class="g-ptl" x="${X(x) + dx}" y="${Y(y) + dy}" text-anchor="${anker}">${tekst}</text>` : ""}`;
+  if (st.lijn) s += lijn(2, 1) + `<text class="g-tril" x="${X(5.2)}" y="${Y(11.4)}" text-anchor="end">y = 2x + 1</text>`;
+  if (st.daal) s += lijn(-1, 6, "stroke:var(--red);stroke-dasharray:7 4") + `<text class="g-tril" x="${X(6.8)}" y="${Y(0.6)}" text-anchor="end" style="fill:var(--red)">y = −x + 6</text>`;
+  if (st.lijn2) s += lijn(-1, 7, "stroke:var(--red)") + `<text class="g-tril" x="${X(6.8)}" y="${Y(1.6)}" text-anchor="end" style="fill:var(--red)">y = −x + 7</text>`;
+  if (st.start) s += pt(0, 1, "startgetal 1", 9, 16);
+  if (st.stap) s += `<path class="g-tri" d="M${X(0)},${Y(1)} L${X(1)},${Y(1)} L${X(1)},${Y(3)} Z"/><text class="g-tril" x="${X(0.5)}" y="${Y(1) + 16}" text-anchor="middle">1</text><text class="g-tril" x="${X(1) + 6}" y="${Y(2) + 4}">+2</text>`;
+  if (st.punten) s += pt(1, 3, "(1, 3)", -8, -6, "end") + pt(4, 9, "(4, 9)", -8, -6, "end");
+  if (st.drie) s += `<path class="g-tri" d="M${X(1)},${Y(3)} L${X(4)},${Y(3)} L${X(4)},${Y(9)} Z"/><text class="g-tril" x="${X(2.5)}" y="${Y(3) + 16}" text-anchor="middle">Δx = 3</text><text class="g-tril" x="${X(4) + 6}" y="${Y(6) + 4}">Δy = 6</text>`;
+  if (st.snij) s += pt(2, 5, "(2, 5)", 9, 4);
+  for (const w of [].concat(st.wijs || [])) {
+    if (w === "start") s += `<circle class="wijs" cx="${X(0)}" cy="${Y(1)}" r="15"/>`;
+    if (w === "stap") s += `<rect class="wijs" x="${X(-0.3)}" y="${Y(3.4)}" width="${1.6 * U}" height="${2.8 * U}" rx="10"/>`;
+    if (w === "punten") for (const [x, y] of [[1, 3], [4, 9]]) s += `<circle class="wijs" cx="${X(x)}" cy="${Y(y)}" r="15"/>`;
+    if (w === "drie") s += `<rect class="wijs" x="${X(0.7)}" y="${Y(9.4)}" width="${3.9 * U}" height="${6.8 * U}" rx="12"/>`;
+    if (w === "snij") s += `<circle class="wijs" cx="${X(2)}" cy="${Y(5)}" r="16"/>`;
+    if (w === "daal") s += `<circle class="wijs" cx="${X(3)}" cy="${Y(3)}" r="18"/>`;
+  }
+  return s + "</svg>";
+}
 
 // Parabool y = x² − 6x + 5 (top (3, −4)) in een assenstelsel, met de onderdelen die een stap aanzet
 function parabSVG(st) {
