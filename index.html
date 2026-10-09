@@ -1513,6 +1513,90 @@ function spreek(wie, tekst, opt = {}) {
 // Elke uitleg is een reeks stappen: wat de professor zegt (zeg), wat er groot in beeld staat (tekst)
 // en wat er in de tekening staat (teken). Maximaal ongeveer 4 minuten, één idee per uitleg.
 const UITLEGGEN = {
+  "nat:3.1": {
+    vak: "nat", hfst: "3", docent: "volta", titel: "Energiebronnen", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Waar komt energie vandaan?", teken: { scene: "bronnen" },
+        zeg: "Dag! Dit is paragraaf 3.1: energiebronnen. Voor verwarmen, rijden en elektriciteit heb je energie nodig. Die haal je uit een energiebron." },
+      { tekst: "Fossiele brandstoffen raken op", teken: { scene: "bronnen", wijs: "fossiel" },
+        zeg: "Aardolie, aardgas en steenkool zijn fossiele brandstoffen. Ze zijn miljoenen jaren geleden ontstaan uit resten van planten en dieren. Ze raken op. En bij verbranden komt er koolstofdioxide vrij. Dat versterkt het broeikaseffect." },
+      { tekst: "Duurzame bronnen raken niet op", teken: { scene: "bronnen", wijs: "duurzaam" },
+        zeg: "Zon, wind, water en biomassa raken niet op. Dat zijn duurzame energiebronnen. Zon en wind geven bij het opwekken bovendien geen koolstofdioxide." },
+      { tekst: "Energie wordt omgezet, nooit gemaakt", teken: { scene: "rij", rij: [["steenkool", "chemische energie", ""], ["verbranden", "warmte", ""], ["turbine", "bewegingsenergie", ""], ["generator", "elektrische energie", ""]] },
+        zeg: "Energie kan niet verdwijnen en ook niet uit het niets ontstaan. Je kunt energie alleen omzetten, van de ene soort in een andere. Kijk maar naar een kolencentrale." },
+      { tekst: "Chemische energie → warmte", teken: { scene: "rij", rij: [["steenkool", "chemische energie", ""], ["verbranden", "warmte", ""], ["turbine", "bewegingsenergie", ""], ["generator", "elektrische energie", ""]], wijs: [0, 1] },
+        zeg: "Steenkool bevat chemische energie. Bij verbranden wordt die omgezet in warmte. Met die warmte maak je stoom." },
+      { tekst: "Bewegingsenergie → elektrische energie", teken: { scene: "rij", rij: [["steenkool", "chemische energie", ""], ["verbranden", "warmte", ""], ["turbine", "bewegingsenergie", ""], ["generator", "elektrische energie", ""]], wijs: [2, 3] },
+        zeg: "De stoom laat een turbine draaien: dat is bewegingsenergie. De generator zet die bewegingsenergie om in elektrische energie." },
+      { tekst: "Windturbine: korter", teken: { scene: "rij", rij: [["wind", "bewegingsenergie", ""], ["wieken + generator", "omzetten", ""], ["stopcontact", "elektrische energie", ""]], wijs: [0, 2] },
+        zeg: "Bij een windturbine gaat het korter. De wind geeft bewegingsenergie aan de wieken, en de generator maakt er meteen elektrische energie van. Zonder verbranden." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "bronnen" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 3.1 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
+  "nat:3.2": {
+    vak: "nat", hfst: "3", docent: "volta", titel: "Verwarmen", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Warmte stroomt van warm naar koud", teken: { scene: "warmte", stroom: true, T: "20 °C", wijs: "vlam" },
+        zeg: "Dag! Dit is paragraaf 3.2: verwarmen. Warmte is een vorm van energie. Warmte stroomt altijd van een warm voorwerp naar een kouder voorwerp. Hier van de vlam naar het water." },
+      { tekst: "Temperatuur (°C) is niet hetzelfde als warmte (J)", teken: { scene: "warmte", stroom: true, T: "20 °C", wijs: "thermo" },
+        zeg: "Temperatuur en warmte zijn niet hetzelfde. De temperatuur meet je in graden Celsius: die zegt hoe warm iets is. Warmte is de energie die je toevoegt. Die meet je in joule." },
+      { tekst: "Wat bepaalt hoeveel energie nodig is?", teken: { scene: "warmte", stroom: true, T: "20 °C", m: "m = 2 kg", wijs: "water" },
+        zeg: "Hoeveel energie je nodig hebt, hangt af van drie dingen. Hoeveel massa je verwarmt. Welke stof het is. En hoeveel graden het warmer moet worden." },
+      { tekst: `${F("Q = c × m × ΔT")}<br>water: c = 4180 J/(kg·°C)`, teken: { scene: "warmte", stroom: true, T: "20 °C", m: "m = 2 kg" },
+        zeg: "De formule is: Q is c keer m keer delta T. Q is de warmte in joule. m is de massa in kilogram. Delta T is hoeveel graden het warmer wordt. En c is de soortelijke warmte: die verschilt per stof. Voor water is c 4180 joule per kilogram per graad." },
+      { tekst: `${F("Q = 4180 × 2 × 80 = 668 800 J")}`, teken: { scene: "warmte", stroom: true, heet: true, T: "20 → 100 °C", m: "m = 2 kg", Q: "Q ≈ 0,67 MJ" },
+        zeg: "Een voorbeeld. Je verwarmt 2 kilogram water van 20 tot 100 graden. Delta T is dan 80 graden. Q is 4180 keer 2 keer 80, en dat is 668 800 joule. Ongeveer 0,67 miljoen joule." },
+      { tekst: "Verbrandingswarmte: aardgas ≈ 32 MJ per m³", teken: { scene: "warmte", stroom: true, heet: true, T: "100 °C", bron: "aardgas", wijs: "vlam" },
+        zeg: "Die energie komt bijvoorbeeld uit aardgas. De verbrandingswarmte zegt hoeveel energie je krijgt per kubieke meter of per kilogram brandstof. Aardgas geeft ongeveer 32 miljoen joule per kubieke meter." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "warmte", stroom: true, heet: true, T: "100 °C" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 3.2 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
+  "nat:3.3": {
+    vak: "nat", hfst: "3", docent: "volta", titel: "Isoleren", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Warmte lekt weg: drie manieren", teken: { scene: "isohuis", alle: true },
+        zeg: "Dag! Dit is paragraaf 3.3: isoleren. In de winter lekt er warmte uit je huis naar buiten. Isoleren betekent: dat tegengaan. Warmte kan op drie manieren reizen." },
+      { tekst: "Geleiding: door de stof heen", teken: { scene: "isohuis", geleiding: true, wijs: "geleiding" },
+        zeg: "De eerste manier is geleiding. Warmte gaat door een stof heen, van deeltje naar deeltje. Metalen geleiden warmte goed. Lucht, hout en kunststof geleiden slecht: dat zijn isolatoren." },
+      { tekst: "Stroming: lucht of water neemt warmte mee", teken: { scene: "isohuis", stroming: true, wijs: "stroming" },
+        zeg: "De tweede manier is stroming. Warme lucht of warm water beweegt, en neemt de warmte mee. Door kieren en tocht stroomt warme lucht naar buiten." },
+      { tekst: "Straling: zonder stof, zelfs door vacuüm", teken: { scene: "isohuis", straling: true, wijs: "straling" },
+        zeg: "De derde manier is straling. Warmte gaat dan als straling door de ruimte, zelfs door vacuüm. Zo krijg je warmte van de zon, of van een kampvuur." },
+      { tekst: "Zo isoleer je een huis", teken: { scene: "isohuis", iso: true, wijs: "iso" },
+        zeg: "Zo isoleer je een huis. Spouwmuurisolatie en dakisolatie gaan geleiding tegen. Tochtstrips gaan stroming tegen. En dubbel glas: tussen de twee ruiten zit lucht of gas, en dat geleidt slecht." },
+      { tekst: "Folie achter de radiator: straling terug", teken: { scene: "isohuis", iso: true, straling: true },
+        zeg: "Glanzende folie achter de radiator kaatst de warmtestraling terug de kamer in. Zo gaat er minder warmte de muur in." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "isohuis", iso: true }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 3.3 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
+  "nat:3.4": {
+    vak: "nat", hfst: "3", docent: "volta", titel: "Rendement", oefen: "",
+    teken: st => natSVG(st),
+    stappen: [
+      { tekst: "Niet alle energie is nuttig", teken: { scene: "diagram", f: 0.05, in: "100 J elektrisch", nuttig: "5 J licht", verlies: "95 J warmte" },
+        zeg: "Dag! Dit is paragraaf 3.4: rendement. Een apparaat zet energie om, maar niet alles wordt nuttig gebruikt. Een gloeilamp maakt vooral warmte, en maar een klein beetje licht." },
+      { tekst: "Energiestroomdiagram", teken: { scene: "diagram", f: 0.05, in: "100 J elektrisch", nuttig: "5 J licht", verlies: "95 J warmte", wijs: ["in", "verlies"] },
+        zeg: "Dat laat je zien met een energiestroomdiagram. De pijl links is alle energie die erin gaat. Die splitst in nuttige energie en energie die verloren gaat, meestal als warmte. Hoe breder de pijl, hoe meer energie." },
+      { tekst: `${F("rendement = E_nuttig ÷ E_in × 100%")}`, teken: { scene: "diagram", f: 0.05, in: "100 J elektrisch", nuttig: "5 J licht", verlies: "95 J warmte", wijs: "nuttig" },
+        zeg: "Het rendement zegt welk deel van de energie nuttig is. Rendement is de nuttige energie, gedeeld door de energie die erin gaat, keer 100 procent." },
+      { tekst: `Gloeilamp: ${F("5 ÷ 100 × 100% = 5%")}`, teken: { scene: "diagram", f: 0.05, in: "100 J elektrisch", nuttig: "5 J licht", verlies: "95 J warmte", eta: "rendement 5%" },
+        zeg: "Voor de gloeilamp: 5 gedeeld door 100, keer 100 procent, is 5 procent. Heel weinig." },
+      { tekst: `Ledlamp: ${F("40 ÷ 100 × 100% = 40%")}`, teken: { scene: "diagram", f: 0.4, in: "100 J elektrisch", nuttig: "40 J licht", verlies: "60 J warmte", eta: "rendement 40%" },
+        zeg: "Een ledlamp maakt van dezelfde 100 joule wel 40 joule licht. Het rendement is 40 procent. Daarom bespaart een ledlamp zo veel energie." },
+      { tekst: `Met vermogen: ${F("1800 ÷ 2000 × 100% = 90%")}`, teken: { scene: "diagram", f: 0.9, in: "2000 W erin", nuttig: "1800 W water", verlies: "200 W", eta: "rendement 90%" },
+        zeg: "Je kunt het rendement ook uitrekenen met vermogens. Een waterkoker neemt 2000 watt op en geeft 1800 watt aan het water. 1800 gedeeld door 2000, keer 100 procent, is 90 procent." },
+      { tekst: "Rendement is altijd kleiner dan 100%", teken: { scene: "diagram", f: 0.9, in: "2000 W erin", nuttig: "1800 W water", verlies: "200 W", wijs: "verlies" },
+        zeg: "Het rendement is altijd kleiner dan 100 procent. Er gaat altijd wel wat energie verloren, want energie kan niet uit het niets ontstaan. Kom je boven de 100 procent uit? Dan heb je je verrekend." },
+      { tekst: "Nu jij: de opgaven in je boek", teken: { scene: "diagram", f: 0.4, in: "100 J", nuttig: "40 J licht", verlies: "60 J warmte" }, eind: true,
+        zeg: "Nu ben jij aan de beurt. Maak de opgaven van paragraaf 3.4 in je boek. Snap je iets niet? Klik op vraag stellen. Succes!" }
+    ]
+  },
   "nat:1.1": {
     vak: "nat", hfst: "1", docent: "volta", titel: "Elektrische energie vervoeren", oefen: "",
     teken: st => natSVG(st),
@@ -2170,6 +2254,66 @@ function natSVG(st) {
     for (const w of [].concat(st.wijs || [])) {
       if (w === "wiel") s += `<circle class="wijs" cx="170" cy="${st.los ? 170 : 85}" r="36"/>`;
       if (w === "F") s += `<circle class="wijs" cx="195" cy="${st.los ? 50 : 285}" r="22"/>`;
+    }
+  }
+  if (sc === "rij") {
+    const rij = st.rij || [], stap = Math.min(64, 316 / rij.length);
+    rij.forEach(([naam, sub, v], i) => {
+      const y = 8 + i * stap;
+      s += vak(70, y, 170, stap - 16, naam, sub);
+      if (v) s += t(250, y + (stap - 16) / 2 + 5, v, { a: "start", f: 13, k: rood });
+      if (i < rij.length - 1) s += pijl(155, y + stap - 16, 155, y + stap, ink);
+      if ([].concat(st.wijs || []).includes(i)) s += wijsRect(62, y - 6, 186, stap - 4);
+    });
+  }
+  if (sc === "bronnen") {
+    s += t(85, 26, "fossiel", { f: 16 }) + t(85, 44, "raakt op · CO₂", { f: 12, k: rood }) + t(255, 26, "duurzaam", { f: 16 }) + t(255, 44, "raakt niet op", { f: 12, k: "#3C9A3C" });
+    ["aardolie", "aardgas", "steenkool"].forEach((n, i) => { s += vak(25, 60 + i * 62, 120, 46, n); });
+    ["zon", "wind", "water", "biomassa"].forEach((n, i) => { s += vak(195, 60 + i * 62, 120, 46, n); });
+    for (const w of [].concat(st.wijs || [])) {
+      if (w === "fossiel") s += wijsRect(15, 8, 140, 240);
+      if (w === "duurzaam") s += wijsRect(185, 8, 140, 302);
+    }
+  }
+  if (sc === "diagram") {
+    // energiestroomdiagram: breedte van de pijl = hoeveelheid energie
+    const f = st.f || 0.4, h1 = 120 * f, y1 = 60 + h1, h2 = 120 - h1;
+    s += `<rect x="20" y="60" width="130" height="120" style="fill:var(--pencil);fill-opacity:.3"/>` + t(85, 50, st.in || "100 J erin", { f: 13 });
+    s += `<path d="M150,60 H290 V${60 - 8} L322,${60 + h1 / 2} L290,${y1 + 8} V${y1} H150 Z" style="fill:var(--marker);stroke:${ink};stroke-width:1.5"/>` + t(330, 60 + h1 / 2 - 14, st.nuttig || "nuttig", { a: "end", f: 13 });
+    s += `<path d="M150,${y1} Q200,${y1} 200,${y1 + 50} V280 H192 L${200 + h2 / 2},314 L${208 + h2},280 H${200 + h2} V230 Q${200 + h2},180 150,180 Z" style="fill:var(--red);fill-opacity:.35;stroke:${rood};stroke-width:1.5"/>` + t(196, 300, st.verlies || "warmte (verloren)", { a: "end", f: 13, k: rood });
+    if (st.eta) s += t(85, 230, st.eta, { f: 18, k: rood });
+    for (const w of [].concat(st.wijs || [])) {
+      if (w === "in") s += wijsRect(12, 52, 146, 136);
+      if (w === "nuttig") s += wijsRect(150, 44, 182, h1 + 32);
+      if (w === "verlies") s += wijsRect(186, y1 + 10, h2 + 36, 316 - y1 - 10);
+    }
+  }
+  if (sc === "isohuis") {
+    s += `<path d="M60,130 L170,50 L280,130 Z" style="fill:#e8d9c4;stroke:${ink};stroke-width:2.5"/><rect x="80" y="130" width="180" height="160" style="fill:#f6efe4;stroke:${ink};stroke-width:2.5"/>` + lijn(20, 290, 320, 290, ink, 3);
+    s += `<rect x="105" y="165" width="55" height="50" style="fill:#cfe6f5;stroke:${ink};stroke-width:2.5"/><rect x="190" y="215" width="40" height="75" style="fill:#c9a36a;stroke:${ink};stroke-width:2.2"/>` + t(170, 260, "binnen 20 °C", { f: 12, k: grijs, a: "end" });
+    if (st.iso) s += `<rect x="83" y="133" width="9" height="155" style="fill:var(--marker)"/><rect x="248" y="133" width="9" height="155" style="fill:var(--marker)"/><path d="M80,130 L170,64 L260,130" style="fill:none;stroke:var(--marker);stroke-width:8"/>` + lijn(110, 165, 110, 215, ink, 2) + lijn(155, 165, 155, 215, ink, 2) + t(170, 316, "isolatie (geel) · dubbel glas", { f: 13, k: ink });
+    if (st.alle || st.geleiding) s += pijl(240, 175, 320, 175, rood, "geleiding", -38, -10);
+    if (st.alle || st.stroming) s += `<path d="M105,205 q-12,-8 -24,0 t-24,0 t-24,0" style="fill:none;stroke:${rood};stroke-width:3.5"/>` + pijl(40, 205, 22, 205, rood) + t(60, 232, "stroming (tocht)", { f: 13, k: rood });
+    if (st.alle || st.straling) s += `<path d="M205,88 l10,-12 l-8,-6 l12,-14 l-6,-8" style="fill:none;stroke:${rood};stroke-width:3"/>` + pijl(215, 52, 228, 30, rood, "straling", 30, 4);
+    for (const w of [].concat(st.wijs || [])) {
+      if (w === "geleiding") s += wijsRect(236, 150, 96, 40);
+      if (w === "stroming") s += wijsRect(10, 188, 104, 54);
+      if (w === "straling") s += wijsRect(190, 14, 120, 84);
+      if (w === "iso") s += wijsRect(70, 56, 200, 240);
+    }
+  }
+  if (sc === "warmte") {
+    // bekerglas met water op een vlam, met thermometer
+    s += `<path d="M115,110 V250 H225 V110" style="fill:none;stroke:${ink};stroke-width:3"/><rect x="117" y="${st.vol ? 140 : 150}" width="106" height="${st.vol ? 108 : 98}" style="fill:#cfe6f5"/>`;
+    s += `<rect x="195" y="60" width="10" height="170" rx="5" style="fill:var(--paper);stroke:${ink};stroke-width:2"/><circle cx="200" cy="232" r="10" style="fill:${rood}"/><rect x="198" y="${st.heet ? 90 : 190}" width="4" height="${st.heet ? 140 : 40}" style="fill:${rood}"/>` + t(212, 75, st.T || "", { a: "start", f: 14, k: rood });
+    s += lijn(95, 262, 245, 262, ink, 3) + `<path d="M150,300 q-14,-22 6,-34 q-2,14 10,18 q4,-14 14,-22 q12,22 -4,38 Z" style="fill:#F28C28;stroke:#C0561A;stroke-width:1.5"/>` + t(170, 320, st.bron || "", { f: 12, k: grijs });
+    if (st.stroom) s += pijl(130, 290, 130, 262, rood, "warmte", -32, 6);
+    if (st.m) s += t(150, 205, st.m, { f: 14 });
+    if (st.Q) s += t(170, 34, st.Q, { f: 16, k: rood });
+    for (const w of [].concat(st.wijs || [])) {
+      if (w === "thermo") s += wijsRect(185, 52, 30, 196);
+      if (w === "water") s += wijsRect(107, 132, 126, 124);
+      if (w === "vlam") s += `<circle class="wijs" cx="160" cy="284" r="26"/>`;
     }
   }
   return s + "</svg>";
