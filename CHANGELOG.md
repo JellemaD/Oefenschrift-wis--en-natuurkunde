@@ -13,7 +13,7 @@ Backlog: B03
 
 ## 2026.10.10-7 · 2026-10-10 15:57
 
-Voortgang met export (CSV) en meting zonder hulp; antwoordknoppen bij keuzevragen; knop 'Klopt er iets niet?'; 'Verder' per vak met korte sessie van 3 sommen; controlevraag halverwege elke uitleg; focus en grafiekbeschrijving voor schermlezers; tabel netjes naar de professor
+Voortgang met export (CSV) en meting zonder hulp; antwoordknoppen bij keuzevragen; knop 'Klopt er iets niet?'; 'Verder' per vak met korte sessie van 3 sommen; controlevraag halverwege elke uitleg; focus en grafiekbeschrijving voor schermlezers
 
 Backlog: B11,B12,B13,B14,B15,B16,B17,B18
 
