@@ -215,6 +215,7 @@ table.tabel th{background:var(--marker-soft);color:var(--ink)}
 .btn.licht:hover{background:var(--grid)}
 .btn.hoofd{background:var(--ink);color:var(--paper)}
 .btn:hover{filter:brightness(1.08)}
+.afrondregel{width:100%;margin:.25rem 0 0;color:var(--pencil)}
 .feedback{font-family:var(--body);font-size:1.05rem;font-weight:700;line-height:1.4;min-height:1.6rem;margin:1rem 0 0}
 .feedback.goed{color:var(--green)}
 .feedback.goed::before{content:"✓ ";font-size:1.2rem}
@@ -376,7 +377,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
       <div class="hint hidden" id="o-hint"></div>
       <div class="stappen hidden" id="o-stappen"></div>
     </div>
-    <p class="klein">Tip: een komma mag, dus 2,5 of 2.5. Breuken zoals 3/2 mogen ook.</p>
+    <p class="klein">Tip: een komma mag, dus 2,5 of 2.5. Breuken zoals 3/2 mogen ook. Grote getallen: 1000 of 1 000.</p>
   </section>
 
   <!-- SPIEKBRIEF -->
@@ -628,6 +629,39 @@ function parseNum(s) {
 const EXACT = { abs: 0.001, rel: 0.001 };
 const AFRONDEN = { abs: 0.01, rel: 0.02 };
 const dichtbij = (x, v, tol) => Math.abs(x - v) <= Math.max(tol.abs, Math.abs(v) * tol.rel);
+// Nakijken: elk antwoordveld heeft een type (B01).
+//  exact    – moet precies kloppen: gehele getallen en getallen met hooguit 2 decimalen (2,5 of 0,75)
+//  dec      – afgerond op v.dec decimalen: elke juiste afronding is goed (3,73 bij 3,732; 3,74 is fout)
+//  afronden – komt niet precies uit: een juiste afronding met genoeg cijfers is goed (4,35 of 4,3 bij 4,3478)
+const rondAf = (x, d) => Math.round(x * 10 ** d) / 10 ** d;
+function antwoordType(v) {
+  if (v.dec !== undefined) return "dec";
+  if (v.tol === EXACT || Math.abs(v.val - rondAf(v.val, 2)) < 1e-9 * Math.max(1, Math.abs(v.val))) return "exact";
+  return "afronden";
+}
+function decimalenVan(invoer) {
+  const t = String(invoer).trim().replace(/[\s\u202f]/g, "");
+  if (t.includes("/")) return Infinity; // breuk: exacte waarde
+  const m = t.match(/[.,](\d+)$/);
+  return m ? m[1].length : 0;
+}
+function klopt(x, invoer, v) {
+  const eps = 1e-9 * Math.max(1, Math.abs(v.val)), type = antwoordType(v);
+  if (Math.abs(x - v.val) <= eps) return true;
+  if (type === "exact") return false;
+  if (type === "dec") return Math.abs(x - v.val) <= 0.5 * 10 ** -v.dec + eps;
+  const d = decimalenVan(invoer);
+  if (!isFinite(d)) return false;
+  const half = 0.5 * 10 ** -d;
+  return Math.abs(x - v.val) <= half + eps && half <= 0.02 * Math.abs(v.val);
+}
+// De afrondregel die onder de antwoordvakjes staat
+function afrondRegel(velden) {
+  const dec = velden.find(v => antwoordType(v) === "dec");
+  if (dec) return `Rond af op ${dec.dec === 1 ? "één decimaal" : dec.dec + " decimalen"}.`;
+  if (velden.some(v => antwoordType(v) === "afronden")) return "Komt het niet precies uit? Rond af op 2 decimalen.";
+  return "";
+}
 function formule(a, b, x = "x", y = "y") {
   let s = `${y} = `;
   if (a === 1) s += x; else if (a === -1) s += "−" + x; else s += fmt(a) + x;
@@ -636,7 +670,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.10-2";
+const VERSIE = "2026.10.10-3";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
@@ -925,7 +959,7 @@ const ONDERWERPEN = [
     gen() {
       const b = pick([20, 50, 100, 200, 500, 1000]), g = pick([2, 3, 1.5, 0.5, 1.1, 0.8, 1.2]), t = R(2, 5), N = b * g ** t;
       return { vraag: `Gegeven is ${F(`N = ${fmt(b)} · ${fmt(g)}ᵗ`)}. Bereken N als t = ${t}. Rond af op twee decimalen als dat nodig is.`,
-        velden: [{ label: "N =", val: N, tol: { abs: 0.01, rel: 0.002 }, tips: [[b * g * t, "Je hebt keer t gedaan. Het is g tot de macht t: " + fmt(g) + " · " + fmt(g) + " · …"], [(b * g) ** t, "Eerst de macht, dan keer b: reken eerst " + fmt(g) + "^" + t + " uit."]] }],
+        velden: [{ label: "N =", val: N, dec: 2, tol: { abs: 0.01, rel: 0.002 }, tips: [[b * g * t, "Je hebt keer t gedaan. Het is g tot de macht t: " + fmt(g) + " · " + fmt(g) + " · …"], [(b * g) ** t, "Eerst de macht, dan keer b: reken eerst " + fmt(g) + "^" + t + " uit."]] }],
         hint: `Reken eerst ${fmt(g)}^${t} uit, en doe dat daarna keer ${fmt(b)}.`,
         stappen: `${fmt(g)}^${t} = ${fmt(g ** t, 4)}<br>N = ${fmt(b)} · ${fmt(g ** t, 4)} = <b>${fmt(N, 2)}</b>` };
     }
@@ -940,11 +974,11 @@ const ONDERWERPEN = [
       const g = pick([1.05, 1.1, 1.2, 1.5, 0.9, 0.8, 2]);
       if (Math.random() < 0.65) { const n = pick([2, 3, 4, 5, 10]);
         return { vraag: `De groeifactor per jaar is ${fmt(g)}. Bereken de groeifactor per ${n} jaar. Rond af op drie decimalen.`,
-          velden: [{ label: "g =", val: g ** n, tol: { abs: 0.002, rel: 0.001 }, tips: [[g * n, `Niet keer ${n}: het is ${n} keer achter elkaar keer ${fmt(g)}, dus ${fmt(g)}^${n}.`]] }],
+          velden: [{ label: "g =", val: g ** n, dec: 3, tol: { abs: 0.002, rel: 0.001 }, tips: [[g * n, `Niet keer ${n}: het is ${n} keer achter elkaar keer ${fmt(g)}, dus ${fmt(g)}^${n}.`]] }],
           hint: `Per ${n} jaar: ${fmt(g)}^${n}.`, stappen: `g per ${n} jaar = ${fmt(g)}^${n} = <b>${fmt(g ** n, 3)}</b>` }; }
       const [n, eenh, per] = pick([[12, "maand", "jaar"], [7, "dag", "week"], [4, "week", "4 weken"]]);
       return { vraag: `De groeifactor per ${per} is ${fmt(g)}. Bereken de groeifactor per ${eenh}. Rond af op drie decimalen.`,
-        velden: [{ label: "g =", val: g ** (1 / n), tol: { abs: 0.002, rel: 0.001 }, tips: [[g / n, `Niet delen: het is ${fmt(g)} tot de macht 1/${n}.`]] }],
+        velden: [{ label: "g =", val: g ** (1 / n), dec: 3, tol: { abs: 0.002, rel: 0.001 }, tips: [[g / n, `Niet delen: het is ${fmt(g)} tot de macht 1/${n}.`]] }],
         hint: `Rekenmachine: ${fmt(g)} ^ (1 ÷ ${n}).`, stappen: `g per ${eenh} = ${fmt(g)}^(1/${n}) = <b>${fmt(g ** (1 / n), 3)}</b>` };
     }
   },
@@ -1345,7 +1379,7 @@ const ONDERWERPEN = [
       let a, b, c, D; do { a = pick([1, 1, 2, -1]); b = R(-7, 7); c = R(-8, 8); D = b * b - 4 * a * c; } while (D <= 0);
       const w = Math.sqrt(D), r = [(-b - w) / (2 * a), (-b + w) / (2 * a)].sort((p, q) => p - q), af = x => Math.round(x * 100) / 100, tol = { abs: 0.011, rel: 0 };
       return { vraag: `Los op met de abc-formule: ${F(kw(a, b, c).slice(4) + " = 0")}. Rond af op twee decimalen, de kleinste eerst.`,
-        velden: [{ label: "x =", val: af(r[0]), tol, tips: [[af((b - w) / (2 * a)), "Let op: het is −b in de teller. Bij b = " + fmt(b) + " is −b = " + fmt(-b) + "."], [af((b + w) / (2 * a)), "Let op: het is −b in de teller."]] }, { label: "of x =", val: af(r[1]), tol, tips: [[af((b + w) / (2 * a)), "Let op: het is −b in de teller."], [af((b - w) / (2 * a)), "Let op: het is −b in de teller."]] }],
+        velden: [{ label: "x =", val: r[0], dec: 2, tol, tips: [[af((b - w) / (2 * a)), "Let op: het is −b in de teller. Bij b = " + fmt(b) + " is −b = " + fmt(-b) + "."], [af((b + w) / (2 * a)), "Let op: het is −b in de teller."]] }, { label: "of x =", val: r[1], dec: 2, tol, tips: [[af((b + w) / (2 * a)), "Let op: het is −b in de teller."], [af((b - w) / (2 * a)), "Let op: het is −b in de teller."]] }],
         hint: `a = ${fmt(a)}, b = ${fmt(b)}, c = ${fmt(c)}. Eerst D = b² − 4ac.`,
         stappen: `D = ${par(b)}² − 4 · ${par(a)} · ${par(c)} = ${D}<br>x = (${fmt(-b)} ± √${D}) / ${par(2 * a)}<br><b>x ≈ ${fmt(af(r[0]), 2)} of x ≈ ${fmt(af(r[1]), 2)}</b>` };
     }
@@ -1563,7 +1597,7 @@ const ONDERWERPEN = [
       if (v === "kosten") {
         const prijs = pick([0.25, 0.3, 0.35, 0.4]), k = E * prijs;
         return { vraag: `Een apparaat van ${P} W staat ${fmt(t)} uur aan. Eén kWh kost €${fmt(prijs, 2)}. Wat kost dit?`,
-          velden: [{ label: "kosten = €", val: k, tol: { abs: 0.011, rel: 0.02 } }], hint: `Reken eerst de energie uit in kWh (P in kW keer t in uren). Doe dat daarna keer de prijs.`,
+          velden: [{ label: "kosten = €", val: k, dec: 2, tol: { abs: 0.011, rel: 0.02 } }], hint: `Reken eerst de energie uit in kWh (P in kW keer t in uren). Doe dat daarna keer de prijs.`,
           stappen: `P = ${fmt(P / 1000)} kW<br>E = ${fmt(P / 1000)} · ${fmt(t)} = ${fmt(E)} kWh<br>kosten = ${fmt(E)} · €${fmt(prijs, 2)} = <b>€${fmt(k, 2)}</b>` };
       }
       const Pj = pick([5, 10, 40, 60, 100]), ts = pick([10, 20, 30, 60, 120]);
@@ -2162,6 +2196,9 @@ function renderHome() {
   }
 }
 function start(id) {
+  // eerst de lopende som afsluiten, zodat een fout bij het oude onderwerp blijft (B09)
+  if (som && geprobeerd && !afgerond) telMee(false);
+  som = null;
   onderwerp = ONDERWERPEN.find(o => o.id === id);
   const par = paragraafVan(id), k = KOPPELING[id] || {};
   const h = BOEKEN[onderwerp.vak].hoofdstukken.find(h => h.nr === k.hfst);
@@ -2185,11 +2222,12 @@ function start(id) {
 function telMee(goed) {
   if (afgerond) return;
   afgerond = true;
-  const sc = scores[onderwerp.id] || { goed: 0, tot: 0 };
+  const id = (som && som.id) || onderwerp.id; // de som onthoudt zelf bij welk onderwerp hij hoort
+  const sc = scores[id] || { goed: 0, tot: 0 };
   sc.tot++; sessie.totaal++;
   if (goed) { sc.goed++; sessie.goed++; sessie.reeks++; } else sessie.reeks = 0;
   sc.recent = (sc.recent || []).concat(goed ? 1 : 0).slice(-10); // laatste 10 sommen, voor de professor
-  scores[onderwerp.id] = sc; bewaarScores(scores); renderSessie();
+  scores[id] = sc; bewaarScores(scores); renderSessie();
 }
 function renderSessie() {
   $("sessie").textContent = sessie.totaal ? `Vandaag ${sessie.goed} van ${sessie.totaal} goed` : "";
@@ -2197,13 +2235,14 @@ function renderSessie() {
 
 function nieuweSom() {
   if (som && geprobeerd && !afgerond) telMee(false);
-  som = onderwerp.gen();
+  som = onderwerp.gen(); som.id = onderwerp.id;
   afgerond = false; geprobeerd = false; uitwerkingGezien = false;
   $("o-vraag").innerHTML = som.vraag;
   $("o-plot").innerHTML = som.svg || "";
   $("o-plot").classList.toggle("hidden", !som.svg);
   $("o-velden").innerHTML = som.velden.map((v, i) =>
-    `<div class="veld"><label for="f${i}">${v.label}</label><input id="f${i}" inputmode="decimal" autocomplete="off" spellcheck="false">${v.eenheid ? `<span class="eenheid">${v.eenheid}</span>` : ""}</div>`).join("");
+    `<div class="veld"><label for="f${i}">${v.label}</label><input id="f${i}" inputmode="decimal" autocomplete="off" spellcheck="false">${v.eenheid ? `<span class="eenheid">${v.eenheid}</span>` : ""}</div>`).join("")
+    + (afrondRegel(som.velden) ? `<p class="klein afrondregel">${afrondRegel(som.velden)}</p>` : "");
   $("o-feedback").textContent = ""; $("o-feedback").className = "feedback";
   const fp = $("fb-prof"); if (fp) { fp.innerHTML = ""; fp.classList.remove("knik", "frons"); }
   $("o-hint").classList.add("hidden");
@@ -2218,11 +2257,11 @@ function controleer() {
   let alles = true, leeg = false, tip = "";
   som.velden.forEach((v, i) => {
     const inp = $("f" + i), x = parseNum(inp.value);
-    // Afrondmarge (2%) alleen als er echt afgerond moet worden; een geheel antwoord moet (vrijwel) precies kloppen
-    if (v.tol === AFRONDEN && Number.isInteger(v.val)) v = { ...v, tol: { abs: 0.01, rel: 0.001 } };
     inp.classList.remove("ok", "fout");
     if (isNaN(x)) { leeg = true; alles = false; inp.classList.add("fout"); return; }
-    if (dichtbij(x, v.val, v.tol)) { inp.classList.add("ok"); return; }
+    if (klopt(x, inp.value, v)) { inp.classList.add("ok"); return; }
+    // tips herkennen mag ruimer: het gaat om het herkennen van een denkfout, niet om goed rekenen
+    v = { ...v, tol: v.tol || AFRONDEN };
     alles = false; inp.classList.add("fout");
     if (!tip && v.tips) for (const [w, t] of v.tips) if (dichtbij(x, w, v.tol)) { tip = t; break; }
     if (!tip) {
@@ -3839,7 +3878,7 @@ function init() {
   else $("v-stem").closest(".stemrij").classList.add("hidden");
 }
 if (typeof document !== "undefined") init();
-if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij };
+if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij, klopt, antwoordType };
 </script>
 </body>
 </html>
