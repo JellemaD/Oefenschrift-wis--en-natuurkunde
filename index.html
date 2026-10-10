@@ -215,6 +215,7 @@ table.tabel th{background:var(--marker-soft);color:var(--ink)}
 .btn.licht:hover{background:var(--grid)}
 .btn.hoofd{background:var(--ink);color:var(--paper)}
 .btn:hover{filter:brightness(1.08)}
+.gelezen{font-size:.9rem;color:var(--pencil);white-space:nowrap}
 .afrondregel{width:100%;margin:.25rem 0 0;color:var(--pencil)}
 .feedback{font-family:var(--body);font-size:1.05rem;font-weight:700;line-height:1.4;min-height:1.6rem;margin:1rem 0 0}
 .feedback.goed{color:var(--green)}
@@ -377,7 +378,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
       <div class="hint hidden" id="o-hint"></div>
       <div class="stappen hidden" id="o-stappen"></div>
     </div>
-    <p class="klein">Tip: een komma mag, dus 2,5 of 2.5. Breuken zoals 3/2 mogen ook. Grote getallen: 1000 of 1 000.</p>
+    <p class="klein">Tip: een komma of punt mag, dus 2,5 of 2.5. Breuken zoals 3/2 mogen ook. Grote getallen met een spatie: 1 000 (een punt lees ik als komma).</p>
   </section>
 
   <!-- SPIEKBRIEF -->
@@ -615,16 +616,31 @@ function fmt(n, d = 3) {
   return Math.abs(r) >= 10000 ? t.replace(/^(−?)(\d+)/, (_, m, g) => m + g.replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f")) : t;
 }
 const par = n => (n < 0 ? `(${fmt(n)})` : fmt(n));
+// Getalinvoer (B02): komma én punt zijn een decimaalteken (de rekenmachine geeft een punt),
+// duizendtallen schrijf je met een spatie (1 000). Punt én komma samen: het laatste teken is het
+// decimaalteken (1.234,5 of 1,234.5). Een breuk als 3/2 mag ook.
 function parseNum(s) {
-  s = String(s).trim().replace(/[\s\u202f]/g, "").replace(/[−–]/g, "-");
-  if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, ""); // 1.000 of 668.800: duizendtallen
-  s = s.replace(/,/g, ".");
+  s = String(s).trim().replace(/[\s  ]/g, "").replace(/[−–]/g, "-");
   if (!s) return NaN;
-  if (/^-?\d+(\.\d+)?\/-?\d+(\.\d+)?$/.test(s)) {
-    const [p, q] = s.split("/").map(Number);
+  if (/^-?\d+([.,]\d+)?\/-?\d+([.,]\d+)?$/.test(s)) {
+    const [p, q] = s.replace(/,/g, ".").split("/").map(Number);
     return q === 0 ? NaN : p / q;
   }
+  if (s.includes(".") && s.includes(",")) {
+    const komma = s.lastIndexOf(",") > s.lastIndexOf(".");
+    if (!(komma ? /^-?\d{1,3}(\.\d{3})+,\d+$/ : /^-?\d{1,3}(,\d{3})+\.\d+$/).test(s)) return NaN;
+    s = komma ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
+  } else s = s.replace(",", ".");
   return /^-?(\d+\.?\d*|\.\d+)$/.test(s) ? Number(s) : NaN;
+}
+// Twijfelgeval: één punt met precies drie cijfers erachter (1.234). Lees als komma, maar toon hoe het gelezen is.
+const isTwijfel = s => /^-?\d{1,3}\.\d{3}$/.test(String(s).trim().replace(/[\s  ]/g, "").replace(/[−–]/g, "-"));
+// Wat er naast het vakje staat: alleen bij invoer die je anders zou kunnen lezen
+function gelezenAls(invoer) {
+  const t = String(invoer).trim();
+  if (!t || /^[−–-]?\d+(,\d+)?$/.test(t)) return "";
+  const x = parseNum(t);
+  return isNaN(x) ? "geen getal" : "= " + fmt(x, 6);
 }
 const EXACT = { abs: 0.001, rel: 0.001 };
 const AFRONDEN = { abs: 0.01, rel: 0.02 };
@@ -670,7 +686,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.10-3";
+const VERSIE = "2026.10.10-4";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
@@ -2241,7 +2257,7 @@ function nieuweSom() {
   $("o-plot").innerHTML = som.svg || "";
   $("o-plot").classList.toggle("hidden", !som.svg);
   $("o-velden").innerHTML = som.velden.map((v, i) =>
-    `<div class="veld"><label for="f${i}">${v.label}</label><input id="f${i}" inputmode="decimal" autocomplete="off" spellcheck="false">${v.eenheid ? `<span class="eenheid">${v.eenheid}</span>` : ""}</div>`).join("")
+    `<div class="veld"><label for="f${i}">${v.label}</label><input id="f${i}" inputmode="decimal" autocomplete="off" spellcheck="false" aria-describedby="g${i}">${v.eenheid ? `<span class="eenheid">${v.eenheid}</span>` : ""}<span class="gelezen" id="g${i}" aria-live="polite"></span></div>`).join("")
     + (afrondRegel(som.velden) ? `<p class="klein afrondregel">${afrondRegel(som.velden)}</p>` : "");
   $("o-feedback").textContent = ""; $("o-feedback").className = "feedback";
   const fp = $("fb-prof"); if (fp) { fp.innerHTML = ""; fp.classList.remove("knik", "frons"); }
@@ -2263,6 +2279,7 @@ function controleer() {
     // tips herkennen mag ruimer: het gaat om het herkennen van een denkfout, niet om goed rekenen
     v = { ...v, tol: v.tol || AFRONDEN };
     alles = false; inp.classList.add("fout");
+    if (!tip && isTwijfel(inp.value) && klopt(x * 1000, String(x * 1000), v)) tip = "Bedoel je duizend? Een punt lees ik als komma. Schrijf duizendtallen met een spatie of aan elkaar: 668 800 of 668800.";
     if (!tip && v.tips) for (const [w, t] of v.tips) if (dichtbij(x, w, v.tol)) { tip = t; break; }
     if (!tip) {
       if (v.val !== 0 && dichtbij(-x, v.val, v.tol)) tip = "Bijna: kijk nog eens naar het min-teken.";
@@ -3817,6 +3834,8 @@ function init() {
   $("b-uitw").onclick = uitwerking;
   $("b-nieuw").onclick = nieuweSom;
   $("o-velden").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); controleer(); } });
+  // B02: laat zien hoe een twijfelachtige invoer gelezen wordt (1.234 → = 1,234)
+  $("o-velden").addEventListener("input", e => { const g = /^f\d+$/.test(e.target.id || "") && $("g" + e.target.id.slice(1)); if (g) g.textContent = gelezenAls(e.target.value); });
   document.addEventListener("keydown", e => {
     if (e.key === "Enter" && !$("oefen").classList.contains("hidden") && e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON" && e.target.tagName !== "TEXTAREA" && afgerond) nieuweSom();
   });
@@ -3878,7 +3897,7 @@ function init() {
   else $("v-stem").closest(".stemrij").classList.add("hidden");
 }
 if (typeof document !== "undefined") init();
-if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij, klopt, antwoordType };
+if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij, klopt, antwoordType, gelezenAls, isTwijfel };
 </script>
 </body>
 </html>

@@ -15,7 +15,7 @@ ctx.Math.random = zaad(20261010);
 vm.createContext(ctx);
 // Testhaakjes: in hetzelfde script, zodat ook de interne let-variabelen bereikbaar zijn
 vm.runInContext(script + `
-;globalThis.__T = { ONDERWERPEN, UITLEGGEN, KOPPELING, BOEKEN, parseNum, fmt, klopt, antwoordType, uKey, parNr, uitlegDuur, start, telMee,
+;globalThis.__T = { ONDERWERPEN, UITLEGGEN, KOPPELING, BOEKEN, parseNum, fmt, klopt, antwoordType, gelezenAls, isTwijfel, uKey, parNr, uitlegDuur, start, telMee,
   zet: (o, s, g, a) => { onderwerp = o; som = s; geprobeerd = g; afgerond = a; }, scores: () => scores, maakLeeg: () => { scores = {}; } };`, ctx);
 const T = ctx.__T;
 
@@ -42,8 +42,14 @@ const gevallen = [
 for (const [v, invoer, verwacht] of gevallen) check(goed(v, invoer) === verwacht, `randgeval: ${invoer} bij ${v.val} (${T.antwoordType(v)}) moet ${verwacht ? "goed" : "fout"} zijn`);
 
 // 2. Getalinvoer
-const parse = [["2,5", 2.5], ["2.5", 2.5], ["−3", -3], ["-3", -3], ["3/2", 1.5], ["1 000", 1000], ["668 800", 668800], [" 7 ", 7], ["abc", NaN], ["", NaN]];
+const parse = [["2,5", 2.5], ["2.5", 2.5], ["−3", -3], ["-3", -3], ["3/2", 1.5], ["3,5/7", 0.5], ["1 000", 1000], ["668 800", 668800], [" 7 ", 7],
+  ["1.234", 1.234], ["1,234", 1.234], ["1.234,5", 1234.5], ["1,234.5", 1234.5], ["1 234,5", 1234.5], ["−1.234,5", -1234.5],
+  ["12.345.678", NaN], ["1,2,3", NaN], ["1.23,4", NaN], ["abc", NaN], ["", NaN], ["3/0", NaN]];
 for (const [inv, w] of parse) { const x = T.parseNum(inv); check(Number.isNaN(w) ? Number.isNaN(x) : x === w, `parseNum("${inv}") = ${x}, verwacht ${w}`); }
+
+// 2b. Wat naast het vakje staat bij twijfel
+for (const [inv, w] of [["2,5", ""], ["-3", ""], ["1.234", "= 1,234"], ["2.5", "= 2,5"], ["1 000", "= 1000"], ["3/2", "= 1,5"], ["abc", "geen getal"]]) check(T.gelezenAls(inv) === w, `gelezenAls("${inv}") = "${T.gelezenAls(inv)}", verwacht "${w}"`);
+check(T.isTwijfel("668.800") && T.isTwijfel("1.234") && !T.isTwijfel("2.5") && !T.isTwijfel("1,234"), "isTwijfel herkent 668.800/1.234 niet goed");
 
 // 3. Elke oefening: 150 sommen. Goed antwoord goed, fout antwoord fout, tekst zonder rommel
 const rommel = [[/NaN|undefined|Infinity/, "NaN/undefined"], [/\+ −|− −|\+ \+/, "dubbel teken"], [/(^|[^\d,])1x\b/, "1x"], [/\(x\)/, "(x)"], [/f\(/, "f(…)"]];
