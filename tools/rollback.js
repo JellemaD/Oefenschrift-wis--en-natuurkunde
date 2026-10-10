@@ -26,14 +26,14 @@ html = /const VERSIE = "[^"]+"/.test(html) ? html.replace(/const VERSIE = "[^"]+
 fs.writeFileSync(pad, html);
 const datum = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Amsterdam" }).slice(0, 16);
 const clPad = path.join(root, "CHANGELOG.md");
-fs.writeFileSync(clPad, fs.readFileSync(clPad, "utf8").replace("<!-- VERSIES -->\n", `<!-- VERSIES -->\n\n## ${nieuw} · ${datum}\n\nRollback naar ${tag.slice(1)}: site teruggezet naar die versie.\n`));
+fs.writeFileSync(clPad, fs.readFileSync(clPad, "utf8").replace(/<!-- VERSIES -->\r?\n/, `<!-- VERSIES -->\n\n## ${nieuw} · ${datum}\n\nRollback naar ${tag.slice(1)}: site teruggezet naar die versie.\n`));
 if (fs.existsSync(path.join(root, "tests/test.js"))) {
   const t = spawnSync(process.execPath, ["tests/test.js"], { cwd: root, encoding: "utf8" });
   console.log(t.stdout.split("\n").slice(-2).join("\n"));
   if (t.status !== 0) console.log("Let op: de testset van die oude versie is niet groen. GitHub publiceert dan niet; zie Actions.");
 }
 sh("git add -A");
-sh(`git commit -q -m ${JSON.stringify(`Rollback naar ${tag.slice(1)} (versie ${nieuw})\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`)}`);
-sh(`git tag -a v${nieuw} -m ${JSON.stringify(`Rollback naar ${tag.slice(1)}`)}`);
+sh("git commit -q -F -", `Rollback naar ${tag.slice(1)} (versie ${nieuw})\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n`);
+sh(`git tag -a v${nieuw} -F -`, `Rollback naar ${tag.slice(1)}\n`);
 sh("git push -q origin main"); sh(`git push -q origin v${nieuw}`);
 console.log(`Klaar: versie ${nieuw} = ${tag}. Zichtbaar zodra GitHub Actions de site heeft gepubliceerd (± 1 minuut).`);

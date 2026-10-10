@@ -23,12 +23,12 @@ const clPad = path.join(root, "CHANGELOG.md");
 let cl = fs.readFileSync(clPad, "utf8");
 if (!cl.includes(`## ${versie} `)) {
   const blok = `## ${versie} · ${datum}\n\n${omschrijving}${items ? `\n\nBacklog: ${items}` : ""}\n\n`;
-  cl = cl.replace("<!-- VERSIES -->\n", `<!-- VERSIES -->\n\n${blok.trimEnd()}\n`); // nieuwste bovenaan
+  cl = cl.replace(/<!-- VERSIES -->\r?\n/, `<!-- VERSIES -->\n\n${blok.trimEnd()}\n`); // nieuwste bovenaan
   fs.writeFileSync(clPad, cl);
 }
 sh("git add -A");
-if (sh("git status --porcelain")) sh(`git commit -q -m ${JSON.stringify(`${omschrijving} (versie ${versie})${items ? `\n\nBacklog: ${items}` : ""}\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`)}`);
-sh(`git tag -a v${versie} -m ${JSON.stringify(omschrijving)}`);
+if (sh("git status --porcelain")) sh("git commit -q -F -", `${omschrijving} (versie ${versie})${items ? `\n\nBacklog: ${items}` : ""}\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n`);
+sh(`git tag -a v${versie} -F -`, omschrijving + "\n");
 sh("git push -q origin main");
 sh(`git push -q origin v${versie}`);
 console.log(`Gepubliceerd: v${versie} (${sh("git rev-parse --short HEAD")}). GitHub zet de site live zodra de test daar groen is.`);
