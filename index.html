@@ -734,7 +734,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.10-7";
+const VERSIE = "2026.10.10-8";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
@@ -2501,7 +2501,7 @@ function paragraafUitleg(o, par) {
 // ---------- vraag stellen ----------
 function tekstVan(html) {
   const d = document.createElement("div");
-  d.innerHTML = String(html || "").replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<br>/g, "\n").replace(/<\/t[hd]>/g, " | ").replace(/<\/tr>/g, "\n").replace(/<\/li>/g, "\n");
+  d.innerHTML = String(html || "").replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<table/g, "\n<table").replace(/<br>/g, "\n").replace(/<\/t[hd]>/g, " | ").replace(/<\/tr>/g, "\n").replace(/<\/li>/g, "\n");
   return d.textContent.replace(/ \| \n/g, "\n").replace(/[ \t]+/g, " ").replace(/\n\s+/g, "\n").trim();
 }
 function inUitleg() { return uitleg && !$("uitleg").classList.contains("hidden"); }
