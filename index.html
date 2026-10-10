@@ -339,21 +339,14 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <div class="tabpaneel" id="paneel-wis" role="tabpanel" aria-labelledby="tab-wis">
       <p class="klein">Zoals in je boek <i>Moderne Wiskunde</i> (13e editie, havo 3). <button class="linkbtn spieklink" data-spiek="wis">📄 Spiekbrief wiskunde</button></p>
       <div id="lijst-wis"></div>
+      <div class="schrift" style="margin-top:1rem"><button class="topic" data-spiek="wis"><span class="t-main"><span class="t-title">📄 Spiekbrief wiskunde</span><span class="t-sub">Alle formules en regels uit H1 t/m H4 op één pagina</span></span></button></div>
     </div>
     <div class="tabpaneel hidden" id="paneel-nat" role="tabpanel" aria-labelledby="tab-nat">
       <p class="klein">Zoals in je boek <i>Nova</i> (3 havo). <button class="linkbtn spieklink" data-spiek="nat">📄 Spiekbrief natuurkunde</button></p>
       <div id="lijst-nat"></div>
+      <div class="schrift" style="margin-top:1rem"><button class="topic" data-spiek="nat"><span class="t-main"><span class="t-title">📄 Spiekbrief natuurkunde</span><span class="t-sub">Alle formules, eenheden en begrippen uit H1 t/m H3 op één pagina</span></span></button></div>
     </div>
 
-    <h2>Alles op een rij</h2>
-    <div class="schrift">
-      <button class="topic" data-spiek="wis">
-        <span class="t-main"><span class="t-title">Spiekbrief wiskunde</span><span class="t-sub">Alle formules en regels uit H1 t/m H4 op één pagina</span></span>
-      </button>
-      <button class="topic" data-spiek="nat">
-        <span class="t-main"><span class="t-title">Spiekbrief natuurkunde</span><span class="t-sub">Alle formules, eenheden en begrippen uit H1 t/m H3 op één pagina</span></span>
-      </button>
-    </div>
     <p class="klein" style="margin-top:1.5rem"><button class="linkbtn" id="reset">Scores wissen</button></p>
   </section>
 
@@ -643,7 +636,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.09-9";
+const VERSIE = "2026.10.10-1";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
