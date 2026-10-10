@@ -734,7 +734,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.10-8";
+const VERSIE = "2026.10.10-9";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
@@ -2368,6 +2368,7 @@ function logSom(id, goed, zelf) {
     uitkomst: zelf ? "zelf" : goed ? "hulp" : "fout", fout: (som && som.fout) || 0, hint: !!(som && som.hintGezien), uitw: !!uitwerkingGezien, ai: !!(som && som.aiGebruikt),
     sec: som && som.start ? Math.round((Date.now() - som.start) / 1000) : 0, versie: typeof VERSIE !== "undefined" ? VERSIE : "" });
   if (sessieKaart && !meting) { sessieKaart.gedaan++; toonSessieKaart(); }
+  if (typeof stuurVoortgang === "function" && bewarenAan()) stuurVoortgang();
 }
 
 // B08: "zelfstandig goed" = in één keer goed, zonder hint, uitwerking of hulp van de professor.
@@ -2624,8 +2625,9 @@ async function stuurVraag() {
   let fout = "", nodig = "";
   try {
     const r = await fetch(CONFIG.workerUrl, { method: "POST", headers: { "Content-Type": "application/json" }, signal: stop.signal,
-      body: JSON.stringify({ docent, niveau: CONFIG.niveau, steun, bijnaam: CONFIG.bijnaam, code: leerlingCode(), context: context(), docentinfo: docentInfo(), berichten: gesprek }) });
+      body: JSON.stringify({ docent, niveau: CONFIG.niveau, steun, bijnaam: CONFIG.bijnaam, code: leerlingCode(), context: context(), docentinfo: docentInfo(), berichten: gesprek, ...waarOver() }) });
     const data = await r.json().catch(() => ({}));
+    if (typeof data.bewaren === "boolean") zetBewaren(data.bewaren);
     if (!r.ok || !data.antwoord) { fout = data.fout || "De docent is even niet bereikbaar. Probeer het later opnieuw."; nodig = data.nodig || ""; }
     else { wacht.remove(); gesprek.push({ role: "assistant", content: data.antwoord }); const m = voegToe("prof", data.antwoord); if ($("v-voorlezen").checked && m._lees) startLees(m._lees, 0); }
   } catch (e) {
@@ -2645,6 +2647,40 @@ async function meldSom() {
     st.textContent = r.ok ? "Bedankt! Durk kijkt ernaar." : "Versturen lukte niet. Probeer het later nog eens.";
   } catch (e) { st.textContent = "Geen verbinding. Probeer het later nog eens."; }
 }
+// B30/B31: vragen en voortgang bewaren in de database. Staat aan of uit in de worker (BEWAREN), nooit hier;
+// de site volgt wat de worker meldt en laat dat eerlijk zien in de melding boven de chat.
+function waarOver() {
+  const uit = inUitleg(), key = uit ? Object.keys(UITLEGGEN).find(k => UITLEGGEN[k] === uitleg) : "";
+  return { oefening: uit ? "uitleg:" + key : (som && som.id) || "", vak: (onderwerp && onderwerp.vak) || (key && key.startsWith("nat:") ? "nat" : key ? "wis" : ""), versie: VERSIE };
+}
+function bewarenAan() { try { return localStorage.getItem("oefenschrift-bewaren") === "aan"; } catch (e) { return false; } }
+function zetBewaren(aan) {
+  try { localStorage.setItem("oefenschrift-bewaren", aan ? "aan" : "uit"); } catch (e) {}
+  toonAiMelding();
+}
+function toonAiMelding() {
+  const el = $("ai-melding"); if (!el) return;
+  el.innerHTML = bewarenAan()
+    ? `De professor is een <b>AI-hulp</b> en kan fouten maken. Je vragen en je voortgang worden bewaard onder je code, zonder je naam, zodat ${CONFIG.begeleider} kan meekijken en de professor beter kan maken. Liever met een mens praten? Vraag het ${CONFIG.begeleider}.`
+    : `De professor is een <b>AI-hulp</b> en kan fouten maken. ${CONFIG.begeleider} kan je gesprekken een paar dagen teruglezen. Liever met een mens praten? Vraag het ${CONFIG.begeleider}.`;
+}
+// Nog niet verstuurde regels uit het logboek (maximaal 200 per keer)
+function nogTeVersturen(log, tot) { return log.filter(r => r && r.t > tot).slice(0, 200); }
+let voortgangBezig = false;
+async function stuurVoortgang() {
+  if (voortgangBezig || !CONFIG.workerUrl || !leerlingCode()) return; // zonder code wordt er nooit iets bewaard
+  let tot = 0; try { tot = Number(localStorage.getItem("oefenschrift-log-tot")) || 0; } catch (e) {}
+  const regels = nogTeVersturen(leesLog(), tot);
+  voortgangBezig = true;
+  try {
+    const r = await fetch(CONFIG.workerUrl.replace(/\/$/, "") + "/voortgang", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: leerlingCode(), regels }) });
+    const d = await r.json().catch(() => ({}));
+    if (typeof d.bewaren === "boolean") zetBewaren(d.bewaren);
+    if (r.ok && d.bewaren && regels.length) { try { localStorage.setItem("oefenschrift-log-tot", String(Math.max(...regels.map(x => x.t)))); } catch (e) {} }
+  } catch (e) { /* geen verbinding: volgende keer opnieuw */ }
+  voortgangBezig = false;
+}
+
 // B04: leerlingcode (alleen nodig als Durk codes heeft ingesteld)
 function leerlingCode() { try { return localStorage.getItem("oefenschrift-code") || ""; } catch (e) { return ""; } }
 // B05: vraag niet kwijt bij een storing; opnieuw proberen met één tik
@@ -4045,6 +4081,7 @@ async function kopieer() {
 function init() {
   scores = laadScores();
   renderHome();
+  toonAiMelding(); stuurVoortgang();
   document.addEventListener("click", e => {
     const u = e.target.closest("[data-uitleg]"); if (u) { startUitleg(u.dataset.uitleg); return; }
     const kk = e.target.closest("[data-klas]"); if (kk) { const [vak, nr] = kk.dataset.klas.split("|"); kiesKlas(vak, nr); return; }
@@ -4179,7 +4216,7 @@ function init() {
   else $("v-stem").closest(".stemrij").classList.add("hidden");
 }
 if (typeof document !== "undefined") init();
-if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij, klopt, antwoordType, gelezenAls, isTwijfel, paragraafUitleg, keuzeOpties, CONTROLE };
+if (typeof module !== "undefined") module.exports = { nogTeVersturen, ONDERWERPEN, parseNum, fmt, dichtbij, klopt, antwoordType, gelezenAls, isTwijfel, paragraafUitleg, keuzeOpties, CONTROLE };
 </script>
 </body>
 </html>

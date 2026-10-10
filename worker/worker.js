@@ -1,9 +1,12 @@
 // Cloudflare Worker: AI-bijlesdocent voor Esra's oefenschrift
 // Geheim nodig:  ANTHROPIC_API_KEY
 // Optioneel:     LEERLINGCODES (geheim, komma-gescheiden). Ingesteld = zonder geldige code geen AI.
-// Database:      D1-binding DB (tabellen teller, kosten, meldingen) — zonder database geen AI (veilig dicht).
-// Endpoints:     POST /         vraag aan de professor
-//                POST /melding  "Dit klopt niet"-melding over een som (geen AI)
+// Database:      D1-binding DB (tabellen teller, kosten, meldingen, gesprekken, voortgang; zie schema.sql) — zonder database geen AI (veilig dicht).
+// Bewaren:       variabele BEWAREN = "aan" én LEERLINGCODES ingesteld → gesprekken en voortgang worden bewaard onder
+//                een pseudoniem (geen naam, geen code). Anders wordt er niets bewaard. Opruimen: dagelijks (scheduled).
+// Endpoints:     POST /           vraag aan de professor
+//                POST /melding    "Dit klopt niet"-melding over een som (geen AI)
+//                POST /voortgang  logregels van de site (sommen, meting) — alleen opgeslagen als bewaren aan staat
 
 const TOEGESTAAN = ["https://jellemad.github.io"]; // alleen de oefensite mag vragen sturen
 // Modellen. Gekozen op 9-10-2026 na een test met 10 vaste vragen: Sonnet 5.5, 10/10 juist, beste didactiek.
@@ -25,6 +28,9 @@ const MAX_PER_DAG = 40;        // vragen per leerling(code) per dag
 const MAX_TOTAAL_PER_DAG = 120; // vragen voor iedereen samen per dag
 const MAX_CENT_PER_MAAND = 1000; // kostenstop: 1000 dollarcent = $ 10 per maand (overschrijfbaar met variabele MAX_CENT_PER_MAAND)
 const TIMEOUT_MS = 30000;      // na 30 seconden geven we het op
+const BEWAAR_DAGEN = { gesprekken: 90, voortgang: 400, meldingen: 365, teller: 60 }; // overschrijfbaar: BEWAAR_DAGEN_GESPREKKEN enz.
+const MAX_REGELS = 200;        // voortgangsregels per verzoek
+const MAX_VOORTGANG_PER_DAG = 300; // verzoeken naar /voortgang per leerling per dag
 
 const DOCENTEN = {
   delta: "Professor Delta, een vriendelijke en geduldige bijlesdocent wiskunde",
@@ -57,6 +63,16 @@ const maandNu = () => new Date().toISOString().slice(0, 7);
 // Atomaire teller in D1: verhoogt en geeft de nieuwe stand terug in één opdracht (geen dubbel tellen bij gelijktijdige vragen)
 const tel = (db, sleutel) => db.prepare("INSERT INTO teller (sleutel, n) VALUES (?1, 1) ON CONFLICT(sleutel) DO UPDATE SET n = n + 1 RETURNING n").bind(sleutel).first("n");
 const isObj = x => x !== null && typeof x === "object" && !Array.isArray(x);
+const tekst = (x, n) => (typeof x === "string" ? x.slice(0, n) : "");
+const getal = x => (Number.isFinite(Number(x)) ? Math.round(Number(x)) : 0);
+// B30: bewaren alleen als Durk het aanzet én er leerlingcodes zijn (anders zijn leerlingen niet uit elkaar te houden)
+const bewarenAan = (env, codes) => env.BEWAREN === "aan" && codes.length > 0;
+// Pseudoniem: korte hash van de code. In de database staat nooit de code of een naam; Durk weet welke code bij wie hoort.
+async function pseudoniem(code) {
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("oefenschrift:" + code)));
+  return "l" + [...h.slice(0, 6)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+const dagenTerug = (env, soort) => new Date(Date.now() - parseInt(env["BEWAAR_DAGEN_" + soort.toUpperCase()] || BEWAAR_DAGEN[soort], 10) * 864e5).toISOString();
 
 export default {
   async fetch(request, env) {
@@ -88,9 +104,12 @@ export default {
       const code = typeof body.code === "string" ? body.code.trim().slice(0, 40) : "";
       if (codes.length && !codes.includes(code)) return antw({ fout: "Vul de code in die je van Durk hebt gekregen.", nodig: "code" }, 401);
       const wie = codes.length ? "c" + (codes.indexOf(code) + 1) : "open";
+      const bewaren = bewarenAan(env, codes);
+      const leerling = bewaren ? await pseudoniem(code) : "";
 
       const pad = new URL(request.url).pathname;
       if (pad === "/melding") return await melding(body, env, antw, wie);
+      if (pad === "/voortgang") return await voortgang(body, env, antw, bewaren, leerling);
 
       const berichten = (Array.isArray(body.berichten) ? body.berichten : [])
         .filter(m => isObj(m) && (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim())
@@ -146,7 +165,7 @@ export default {
         return antw({ fout: "De docent is even niet bereikbaar. Probeer het later opnieuw." }, 502);
       }
       const data = await r.json();
-      const tekst = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n").trim();
+      const antwoord = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n").trim();
 
       // Kosten bijhouden voor de kostenstop (in duizendsten van een dollarcent)
       const u = data.usage || {}, prijs = m.prijs || { in: 2, uit: 10 };
@@ -155,15 +174,48 @@ export default {
 
       // B06: logregel zodat Durk kan meelezen (Cloudflare > Worker > Logs, enkele dagen bewaard).
       // Alleen vraag en antwoord; geen opgave of docentinfo.
-      console.log(JSON.stringify({ wie, model: kies, stop: data.stop_reason, niveau, steun, vraag: berichten[berichten.length - 1].content, antwoord: tekst, tokens: u, millicent }));
+      console.log(JSON.stringify({ wie, model: kies, stop: data.stop_reason, niveau, steun, vraag: berichten[berichten.length - 1].content, antwoord, tokens: u, millicent }));
 
-      return antw({ antwoord: tekst || "Ik weet het even niet. Probeer je vraag anders te stellen.", ...(MODELTEST && body.modeltest ? { model: kies, tokens: u } : {}) });
+      // B30: gesprek bewaren om van te leren (alleen als bewaren aan staat). Wel de opgave, niet de docentinfo.
+      if (bewaren) {
+        try {
+          await env.DB.prepare("INSERT INTO gesprekken (tijd, leerling, vak, oefening, docent, steun, opgave, vraag, antwoord, model, tokens_in, tokens_uit, millicent, versie) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)")
+            .bind(new Date().toISOString(), leerling, tekst(body.vak, 10), tekst(body.oefening, 60), body.docent === "volta" ? "volta" : "delta", steun, context,
+              berichten[berichten.length - 1].content, antwoord, kies, u.input_tokens || 0, u.output_tokens || 0, millicent, tekst(body.versie, 30)).run();
+        } catch (e) { console.log("Gesprek niet bewaard", e && e.message); } // bewaren mag het antwoord nooit blokkeren
+      }
+
+      return antw({ antwoord: antwoord || "Ik weet het even niet. Probeer je vraag anders te stellen.", bewaren, ...(MODELTEST && body.modeltest ? { model: kies, tokens: u } : {}) });
     } catch (e) {
       console.log("Onverwachte fout", e && e.message);
       return antw({ fout: "Er ging iets mis bij de docent. Probeer het nog een keer." }, 500);
     }
+  },
+
+  // Dagelijks opruimen (cron in wrangler.toml): niets langer bewaren dan afgesproken
+  async scheduled(event, env) {
+    if (!env.DB) return;
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM gesprekken WHERE tijd < ?1").bind(dagenTerug(env, "gesprekken")),
+      env.DB.prepare("DELETE FROM voortgang WHERE tijd < ?1").bind(dagenTerug(env, "voortgang")),
+      env.DB.prepare("DELETE FROM meldingen WHERE tijd < ?1").bind(dagenTerug(env, "meldingen")),
+      env.DB.prepare("DELETE FROM teller WHERE sleutel LIKE '%:____-__-__%' AND substr(sleutel, instr(sleutel, ':') + 1, 10) < ?1").bind(dagenTerug(env, "teller").slice(0, 10))
+    ]);
   }
 };
+
+// B31: voortgang (logregels van de site) bewaren, zodat Durk over apparaten heen ziet wat de leerling zelf kan
+async function voortgang(body, env, antw, bewaren, leerling) {
+  if (!bewaren) return antw({ ok: true, bewaren: false });
+  const regels = (Array.isArray(body.regels) ? body.regels : []).filter(x => isObj(x) && Number.isFinite(Number(x.t))).slice(0, MAX_REGELS);
+  if (!regels.length) return antw({ ok: true, bewaren: true, opgeslagen: 0 });
+  if ((await tel(env.DB, `voortgang:${dagNu()}:${leerling}`)) > MAX_VOORTGANG_PER_DAG) return antw({ fout: "Te veel verzoeken vandaag.", bewaren: true }, 429);
+  const sql = "INSERT OR IGNORE INTO voortgang (leerling, t, tijd, soort, vak, par, oefening, doel, uitkomst, fout, hint, uitwerking, ai, sec, versie) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)";
+  await env.DB.batch(regels.map(x => env.DB.prepare(sql).bind(leerling, getal(x.t), new Date(getal(x.t)).toISOString(),
+    ["som", "meting"].includes(x.soort) ? x.soort : "som", tekst(x.vak, 10), tekst(x.par, 10), tekst(x.id, 60), tekst(x.doel, 80),
+    ["zelf", "hulp", "fout"].includes(x.uitkomst) ? x.uitkomst : "fout", getal(x.fout), x.hint ? 1 : 0, x.uitw ? 1 : 0, x.ai ? 1 : 0, getal(x.sec), tekst(x.versie, 30))));
+  return antw({ ok: true, bewaren: true, opgeslagen: regels.length });
+}
 
 // B14: "Dit klopt niet" — opslaan in de database zodat Durk de som kan nabootsen
 async function melding(body, env, antw, wie) {

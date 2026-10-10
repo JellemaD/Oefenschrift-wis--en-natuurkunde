@@ -5,6 +5,12 @@ Terug naar een versie: `node tools/rollback.js <versie> --ja` (zie README.md).
 
 <!-- VERSIES -->
 
+## 2026.10.10-9 · 2026-10-10 17:50
+
+Database voor vragen en voortgang (staat uit tot de afspraak met leerling en ouder): site stuurt voortgang mee zodra bewaren aan staat, melding boven de chat zegt eerlijk wat er bewaard wordt; worker met tabellen gesprekken en voortgang onder pseudoniem, automatisch opruimen, zoekopdrachten in worker/DATABASE.md
+
+Backlog: B30,B31
+
 ## 2026.10.10-8 · 2026-10-10 16:03
 
 Tabel in de som gaat met een nieuwe regel naar de professor (vraagtekst plakt niet meer aan de tabel)

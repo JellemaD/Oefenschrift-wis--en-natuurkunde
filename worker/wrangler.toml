@@ -7,7 +7,7 @@ main = "worker.js"
 compatibility_date = "2026-10-01"
 workers_dev = true
 
-# Teller (per dag, per leerling), kostenstop per maand en "Dit klopt niet"-meldingen
+# Teller, kosten, meldingen, gesprekken en voortgang (tabellen: schema.sql)
 [[d1_databases]]
 binding = "DB"
 database_name = "oefenschrift"
@@ -15,6 +15,13 @@ database_id = "ae64faf7-9b81-478c-ac90-f7ace0ef7fe1"
 
 [vars]
 MAX_CENT_PER_MAAND = "1000"   # kostenstop: $ 10 per maand
+BEWAREN = "uit"               # "aan" = gesprekken en voortgang bewaren (pas na afspraak met leerling en ouder; vereist LEERLINGCODES)
+BEWAAR_DAGEN_GESPREKKEN = "90"
+BEWAAR_DAGEN_VOORTGANG = "400"
+
+# Dagelijks om 03:00 UTC oude gegevens opruimen (zie scheduled in worker.js)
+[triggers]
+crons = ["0 3 * * *"]
 
 [observability]
 enabled = true   # logs zichtbaar in Cloudflare > Worker > Logs (enkele dagen bewaard)

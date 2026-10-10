@@ -16,7 +16,7 @@ vm.createContext(ctx);
 // Testhaakjes: in hetzelfde script, zodat ook de interne let-variabelen bereikbaar zijn
 vm.runInContext(script + `
 ;globalThis.__T = { ONDERWERPEN, UITLEGGEN, KOPPELING, BOEKEN, parseNum, fmt, klopt, antwoordType, gelezenAls, isTwijfel, uKey, parNr, uitlegDuur, start, telMee,
-  zet: (o, s, g, a, u = false) => { onderwerp = o; som = s; geprobeerd = g; afgerond = a; uitwerkingGezien = u; }, paragraafUitleg, paragraafVan, keuzeOpties, CONTROLE, scores: () => scores, maakLeeg: () => { scores = {}; } };`, ctx);
+  zet: (o, s, g, a, u = false) => { onderwerp = o; som = s; geprobeerd = g; afgerond = a; uitwerkingGezien = u; }, nogTeVersturen, paragraafUitleg, paragraafVan, keuzeOpties, CONTROLE, scores: () => scores, maakLeeg: () => { scores = {}; } };`, ctx);
 const T = ctx.__T;
 
 const fouten = []; let aantal = 0;
@@ -149,6 +149,12 @@ for (const id of ["rc-grafiek", "diagram", "hoek-fz"]) {
 // 11. B17: elke uitleg heeft een controlevraag met een geldig antwoord
 for (const k of Object.keys(T.UITLEGGEN)) { const c = T.CONTROLE[k]; check(!!c && Array.isArray(c[1]) && c[2] >= 0 && c[2] < c[1].length && c[3], `B17: controlevraag ontbreekt of ongeldig bij ${k}`); }
 
+// B31: alleen nieuwe logregels gaan naar de database, maximaal 200 per keer
+{ const lg = Array.from({ length: 300 }, (_, i) => ({ t: 1000 + i }));
+  const a = T.nogTeVersturen(lg, 0), b = T.nogTeVersturen(lg, 1250), c = T.nogTeVersturen(lg, 2000);
+  check(a.length === 200 && a[0].t === 1000 && b.length === 49 && b[0].t === 1251 && c.length === 0, "nogTeVersturen kiest de verkeerde regels"); }
+
 console.log(`${aantal} controles, ${T.ONDERWERPEN.length} oefeningen, ${Object.keys(T.UITLEGGEN).length} uitleggen.`);
 if (fouten.length) { console.log(`\n${fouten.length} FOUT(EN):`); for (const f of fouten.slice(0, 60)) console.log(" - " + f); process.exit(1); }
+
 console.log("ALLES GROEN");

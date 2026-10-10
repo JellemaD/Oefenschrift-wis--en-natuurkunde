@@ -5,8 +5,10 @@ let fouten = 0, n = 0;
 const check = (ok, m) => { n++; if (!ok) { fouten++; console.log(" - FOUT: " + m); } };
 
 function nepDB() {
-  const teller = new Map(), kosten = new Map(), meldingen = [];
-  return { teller, kosten, meldingen, prepare(sql) { return { bind(...a) { return {
+  const teller = new Map(), kosten = new Map(), meldingen = [], gesprekken = [], voortgang = new Map(), weg = [];
+  return { teller, kosten, meldingen, gesprekken, voortgang, weg,
+    async batch(lijst) { return Promise.all(lijst.map(x => x.run())); },
+    prepare(sql) { return { bind(...a) { return {
     async first(kol) {
       if (sql.startsWith("INSERT INTO teller")) { const v = (teller.get(a[0]) || 0) + 1; teller.set(a[0], v); return v; }
       if (sql.startsWith("SELECT millicent")) return kosten.get(a[0])?.millicent ?? null;
@@ -14,6 +16,9 @@ function nepDB() {
     async run() {
       if (sql.startsWith("INSERT INTO kosten")) { const k = kosten.get(a[0]) || { millicent: 0, vragen: 0 }; k.millicent += a[1]; k.vragen++; kosten.set(a[0], k); }
       if (sql.startsWith("INSERT INTO meldingen")) meldingen.push(a);
+      if (sql.startsWith("INSERT INTO gesprekken")) gesprekken.push(a);
+      if (sql.startsWith("INSERT OR IGNORE INTO voortgang") && !voortgang.has(a[0] + "|" + a[1])) voortgang.set(a[0] + "|" + a[1], a);
+      if (sql.startsWith("DELETE")) weg.push([sql.split(" ")[2], a[0]]);
     } }; } }; } };
 }
 let laatsteSysteem = "", aiGedrag = "ok";
@@ -60,4 +65,25 @@ aiGedrag = "kapot"; { const r = await vraag(goedeVraag, env); check(r.status ===
 aiGedrag = "ok";
 // B14: melding
 { const r = await vraag({ versie: "2026.10.10-6", oefening: "abc", gegevens: { invoer: "3,74" } }, env, "/melding"); check(r.status === 200 && env.DB.meldingen.length === 1, "melding moet opgeslagen worden"); }
+// B30/B31: bewaren staat standaard uit
+{ const e5 = { DB: nepDB(), ANTHROPIC_API_KEY: "x" };
+  const d = await (await vraag(goedeVraag, e5)).json(); check(d.bewaren === false && e5.DB.gesprekken.length === 0, "bewaren uit: geen gesprek opslaan");
+  const v = await (await vraag({ regels: [{ t: 1, uitkomst: "zelf" }] }, e5, "/voortgang")).json(); check(v.bewaren === false && e5.DB.voortgang.size === 0, "bewaren uit: geen voortgang opslaan");
+  const e6 = { ...e5, BEWAREN: "aan" }; // aan, maar zonder leerlingcodes: nog steeds niets
+  check((await (await vraag(goedeVraag, e6)).json()).bewaren === false && e5.DB.gesprekken.length === 0, "bewaren zonder codes moet uit blijven"); }
+{ const e7 = { DB: nepDB(), ANTHROPIC_API_KEY: "x", BEWAREN: "aan", LEERLINGCODES: "esra-123" };
+  const d = await (await vraag({ ...goedeVraag, code: "esra-123", oefening: "rc-punten", vak: "wis", versie: "2026.10.10-9" }, e7)).json();
+  const g = e7.DB.gesprekken[0] || [];
+  check(d.bewaren === true && e7.DB.gesprekken.length === 1, "bewaren aan: gesprek opslaan");
+  check(/^l[0-9a-f]{12}$/.test(g[1]) && !JSON.stringify(g).includes("esra-123"), "pseudoniem: geen code in de database");
+  check(g[3] === "rc-punten" && g[6].includes("P(1, 3)") && !JSON.stringify(g).includes("a = 2"), "opgave wel, docentinfo niet bewaren");
+  const regels = Array.from({ length: 250 }, (_, i) => ({ t: 1700000000000 + i, soort: "som", vak: "wis", par: "1.1", id: "rc-punten", uitkomst: i % 2 ? "zelf" : "hulp", fout: 0 }));
+  const v = await (await vraag({ code: "esra-123", regels }, e7, "/voortgang")).json();
+  check(v.bewaren && v.opgeslagen === 200 && e7.DB.voortgang.size === 200, `voortgang: max 200 per keer (${e7.DB.voortgang.size})`);
+  await vraag({ code: "esra-123", regels: regels.slice(0, 5) }, e7, "/voortgang");
+  check(e7.DB.voortgang.size === 200, "voortgang: dubbel versturen geeft geen dubbele regels");
+  check([...e7.DB.voortgang.values()][0][0] === g[1], "voortgang en gesprek onder hetzelfde pseudoniem");
+  check((await vraag({ code: "fout", regels }, e7, "/voortgang")).status === 401, "voortgang zonder geldige code moet 401");
+  await worker.scheduled({}, e7);
+  check(e7.DB.weg.length === 4 && e7.DB.weg.every(([, grens]) => typeof grens === "string" && grens < new Date().toISOString()), "opruimen: vier tabellen met een grens in het verleden"); }
 log(`${n} controles worker`); if (fouten) { log(`${fouten} FOUT(EN)`); process.exit(1); } log("WORKER GROEN");
