@@ -48,7 +48,7 @@ const parse = [["2,5", 2.5], ["2.5", 2.5], ["−3", -3], ["-3", -3], ["3/2", 1.5
 for (const [inv, w] of parse) { const x = T.parseNum(inv); check(Number.isNaN(w) ? Number.isNaN(x) : x === w, `parseNum("${inv}") = ${x}, verwacht ${w}`); }
 
 // 2b. Wat naast het vakje staat bij twijfel
-for (const [inv, w] of [["2,5", ""], ["-3", ""], ["1.234", "= 1,234"], ["2.5", "= 2,5"], ["1 000", "= 1000"], ["3/2", "= 1,5"], ["abc", "geen getal"]]) check(T.gelezenAls(inv) === w, `gelezenAls("${inv}") = "${T.gelezenAls(inv)}", verwacht "${w}"`);
+for (const [inv, w] of [["2,5", ""], ["-3", ""], ["1.234", "= 1,234"], ["2.5", "= 2,5"], ["1 000", ""], ["1 776 500", ""], ["1.776.500", "schrijf 1 776 500"], ["3/2", "= 1,5"], ["abc", "geen getal"]]) check(T.gelezenAls(inv) === w, `gelezenAls("${inv}") = "${T.gelezenAls(inv)}", verwacht "${w}"`);
 check(T.isTwijfel("668.800") && T.isTwijfel("1.234") && !T.isTwijfel("2.5") && !T.isTwijfel("1,234"), "isTwijfel herkent 668.800/1.234 niet goed");
 
 // 3. Elke oefening: 150 sommen. Goed antwoord goed, fout antwoord fout, tekst zonder rommel
