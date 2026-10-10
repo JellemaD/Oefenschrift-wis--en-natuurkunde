@@ -494,8 +494,8 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
         <dt>max. per groep</dt><dd>16 A → <span class="formule">P = 230 · 16 = 3680 W</span></dd>
         <dt>zekering</dt><dd>schakelt uit bij te grote stroom: kortsluiting of overbelasting</dd>
         <dt>aardlekschakelaar</dt><dd>schakelt uit als er stroom weglekt (heen ≠ terug)</dd>
-        <dt>randaarde</dt><dd>lekstroom van een metalen behuizing via de aardedraad</dd>
-        <dt>draden</dt><dd>fase = bruin, nul = blauw, aarde = geel-groen</dd>
+        <dt>randaarde</dt><dd>lekstroom van een metalen behuizing via de aarddraad</dd>
+        <dt>draden</dt><dd>fase = bruin (230 V), nul = blauw, aarddraad = geel-groen, schakeldraad = zwart</dd>
         <dt>dubbel geïsoleerd</dt><dd>plastic behuizing, twee vierkantjes: geen randaarde nodig</dd>
       </dl>
       <h3>H2 Krachten</h3>
@@ -636,7 +636,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.10-1";
+const VERSIE = "2026.10.10-2";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
@@ -1513,19 +1513,20 @@ const ONDERWERPEN = [
     sub: "Zekering, aardlekschakelaar, randaarde",
     uitleg: `<ul><li><b>Zekering</b>: schakelt uit bij een te grote stroom (kortsluiting of overbelasting).</li>
       <li><b>Aardlekschakelaar</b>: schakelt uit als er stroom weglekt, bijvoorbeeld door iemand heen.</li>
-      <li><b>Randaarde</b>: voert lekstroom van een metalen behuizing af via de aardedraad.</li>
-      <li>Draden: fase = bruin, nul = blauw, aarde = geel-groen.</li></ul>`,
+      <li><b>Randaarde</b>: voert lekstroom van een metalen behuizing af via de aarddraad.</li>
+      <li>Draden: fase = bruin (230 V), nul = blauw, aarddraad = geel-groen, schakeldraad = zwart.</li></ul>`,
     gen() {
       const V = [
         ["De fasedraad en de nuldraad raken elkaar direct (kortsluiting). Wat schakelt de groep uit?", "1 = zekering, 2 = aardlekschakelaar, 3 = randaarde", 1, "Bij kortsluiting wordt de stroom heel groot. De zekering schakelt uit bij een te grote stroom."],
         ["Er staan te veel apparaten aan op één groep (overbelasting). Wat schakelt uit?", "1 = zekering, 2 = aardlekschakelaar, 3 = randaarde", 1, "Bij overbelasting is de stroom te groot. De zekering schakelt uit."],
         ["Iemand raakt een kapotte draad aan, en er lekt stroom door hem heen naar de aarde. Wat schakelt binnen een fractie van een seconde uit?", "1 = zekering, 2 = aardlekschakelaar, 3 = randaarde", 2, "De aardlekschakelaar merkt dat de stroom heen en terug niet gelijk is, en schakelt uit."],
-        ["De fasedraad raakt de metalen behuizing van een wasmachine. Wat zorgt ervoor dat de stroom niet door jou gaat?", "1 = zekering, 2 = aardlekschakelaar, 3 = randaarde", 3, "Via de randaarde loopt de lekstroom weg door de aardedraad, niet door jou."],
+        ["De fasedraad raakt de metalen behuizing van een wasmachine. Wat zorgt ervoor dat de stroom niet door jou gaat?", "1 = zekering, 2 = aardlekschakelaar, 3 = randaarde", 3, "Via de randaarde loopt de lekstroom weg door de aarddraad, niet door jou."],
         ["Welke kleur heeft de fasedraad?", "1 = bruin, 2 = blauw, 3 = geel-groen", 1, "De fasedraad is bruin."],
         ["Welke kleur heeft de nuldraad?", "1 = bruin, 2 = blauw, 3 = geel-groen", 2, "De nuldraad is blauw."],
-        ["Welke kleur heeft de aardedraad?", "1 = bruin, 2 = blauw, 3 = geel-groen", 3, "De aardedraad is geel-groen."],
+        ["Welke kleur heeft de aarddraad?", "1 = bruin, 2 = blauw, 3 = geel-groen", 3, "De aarddraad is geel-groen."],
+        ["Welke draad naar een lamp staat alleen onder spanning als de schakelaar aan staat?", "1 = fasedraad, 2 = nuldraad, 3 = schakeldraad", 3, "Dat is de zwarte schakeldraad. Staat de schakelaar uit, dan staat er geen spanning op."],
         ["Een föhn heeft een plastic behuizing en het symbool met twee vierkantjes. Heeft hij randaarde nodig?", "1 = ja, 2 = nee, hij is dubbel geïsoleerd", 2, "Een dubbel geïsoleerd apparaat heeft geen randaarde nodig."],
-        ["Welke draad staat onder spanning en is daarom het gevaarlijkst?", "1 = fasedraad, 2 = nuldraad, 3 = aardedraad", 1, "De fasedraad staat onder spanning."]
+        ["Welke draad staat onder spanning en is daarom het gevaarlijkst?", "1 = fasedraad, 2 = nuldraad, 3 = aarddraad", 1, "De fasedraad staat onder spanning."]
       ];
       const lijst = this.alleen === "draden" ? V.slice(4) : this.alleen === "beveiliging" ? V.slice(0, 4) : V;
       const [vr, opties, a, uit] = pick(lijst), n = (opties.match(/\d =/g) || []).length, reden = uit.split(". ").length > 1 ? uit.split(". ")[0] + "." : "Kijk nog eens in de uitleg bij deze paragraaf.";
@@ -2838,13 +2839,13 @@ const UITLEGGEN = {
       { tekst: "Gevaarlijk: stroom door je lichaam", teken: { scene: "veilig", lek: true, persoon: true },
         zeg: "Dag! Dit is paragraaf 1.4: elektriciteit en veiligheid. Elektriciteit is gevaarlijk als er stroom door je lichaam gaat. Al een kleine stroom kan je hart verstoren." },
       { tekst: "Drie draden: fase, nul en aarde", teken: { scene: "veilig", wijs: "draden" },
-        zeg: "In een stopcontact met randaarde zitten drie draden. De fasedraad is bruin. De nuldraad is blauw. En de aardedraad is geel-groen." },
+        zeg: "In een stopcontact met randaarde zitten drie draden. De fasedraad is bruin, daar staat 230 volt op. De nuldraad is blauw. En de aarddraad is geel-groen. Naar een lamp loopt ook nog een zwarte schakeldraad: die staat alleen onder spanning als de schakelaar aan staat." },
       { tekst: "Kortsluiting → zekering schakelt uit", teken: { scene: "veilig", kort: true, wijs: "kort" },
         zeg: "Bij kortsluiting raken de fasedraad en de nuldraad elkaar direct. De stroom wordt dan heel groot en de draden worden heet. De zekering in de meterkast schakelt dan de groep uit." },
       { tekst: "Overbelasting → zekering schakelt uit", teken: { scene: "huis", zekering: true, wijs: "zekering" },
         zeg: "Bij overbelasting staan er te veel apparaten tegelijk aan op één groep. De stroom wordt te groot. Ook dan schakelt de zekering uit." },
       { tekst: "Randaarde: lekstroom via de aarde", teken: { scene: "veilig", lek: true, persoon: true, aarde: true, wijs: "behuizing" },
-        zeg: "Raakt de fasedraad de metalen behuizing, dan komt daar spanning op. Met randaarde loopt de stroom via de aardedraad weg, en niet door jou." },
+        zeg: "Raakt de fasedraad de metalen behuizing, dan komt daar spanning op. Met randaarde loopt de stroom via de aarddraad weg, en niet door jou." },
       { tekst: "Aardlekschakelaar", teken: { scene: "veilig", lek: true, aardlek: true, wijs: "aardlek" },
         zeg: "De aardlekschakelaar vergelijkt de stroom die heen gaat met de stroom die terugkomt. Is er een verschil, dan lekt er stroom weg, misschien door iemand heen. Dan schakelt hij binnen een fractie van een seconde uit." },
       { tekst: "Dubbel geïsoleerd: geen randaarde nodig", teken: { scene: "veilig" },
@@ -3364,7 +3365,7 @@ function natSVG(st) {
     s += `<rect x="190" y="60" width="130" height="150" rx="8" style="fill:#d9dee6;stroke:${ink};stroke-width:3"/>` + t(278, 182, "metalen", { f: 12, k: grijs }) + t(278, 198, "behuizing", { f: 12, k: grijs });
     s += lijn(20, 130, 230, 130, "#8B5A2B", 4) + t(20, 122, "fase (bruin)", { a: "start", f: 12, k: "#8B5A2B" });
     s += lijn(20, 160, 230, 160, "#2E6FD8", 4) + t(20, 152, "nul (blauw)", { a: "start", f: 12, k: "#2E6FD8" });
-    s += lijn(20, 190, 190, 190, "#3C9A3C", 4, "10 5") + t(20, 182, "aarde (geel-groen)", { a: "start", f: 12, k: "#3C9A3C" });
+    s += lijn(20, 190, 190, 190, "#3C9A3C", 4, "10 5") + t(20, 182, "aarddraad (geel-groen)", { a: "start", f: 12, k: "#3C9A3C" });
     s += lijn(230, 130, 230, 160, ink, 3) + `<rect x="222" y="138" width="16" height="14" style="fill:var(--marker);stroke:${ink}"/>`;
     if (st.lek) s += `<path d="M230,130 l14,-12 l-10,-8 l16,-14 l-6,-12" style="fill:none;stroke:${rood};stroke-width:3"/>` + t(255, 50, "fasedraad raakt behuizing!", { f: 12, k: rood });
     if (st.persoon) s += `<circle cx="300" cy="238" r="9" style="fill:none;stroke:${ink};stroke-width:2.5"/>` + lijn(300, 247, 300, 285) + lijn(300, 285, 288, 315) + lijn(300, 285, 312, 315) + lijn(300, 258, 286, 212) + (st.aarde ? "" : pijl(300, 270, 300, 312, rood, "stroom door jou!", -60, 14));
