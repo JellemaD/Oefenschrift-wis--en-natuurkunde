@@ -1,7 +1,7 @@
 // Nieuwe versie publiceren.
 // Gebruik: node tools/release.js "Korte omschrijving" [B03,B05]
 // 1. leest VERSIE uit index.html   2. draait de testset (stopt bij rood)
-// 3. zet de versie in CHANGELOG.md   4. commit + tag v<VERSIE>   5. push naar GitHub
+// 3. werkt INVENTARIS.md bij en zet de versie in CHANGELOG.md   4. commit + tag v<VERSIE>   5. push naar GitHub
 // GitHub publiceert de site daarna alleen als de testset daar ook groen is (.github/workflows/pages.yml).
 "use strict";
 const { execSync, spawnSync } = require("child_process"), fs = require("fs"), path = require("path");
@@ -17,6 +17,8 @@ if (sh(`git tag -l v${versie}`)) { console.error(`Tag v${versie} bestaat al. Hoo
 const test = spawnSync(process.execPath, ["tests/test.js"], { cwd: root, encoding: "utf8" });
 process.stdout.write(test.stdout.split("\n").slice(-3).join("\n") + "\n");
 if (test.status !== 0) { console.error("Testset is ROOD — niet gepubliceerd.\n" + test.stdout); process.exit(1); }
+
+spawnSync(process.execPath, ["tools/inventaris.js"], { cwd: root, stdio: "inherit" }); // INVENTARIS.md altijd actueel
 
 const datum = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Amsterdam" }).slice(0, 16);
 const clPad = path.join(root, "CHANGELOG.md");
