@@ -6,7 +6,7 @@
 // gewone nieuwe versie. Een rollback is zo zelf ook weer terug te draaien.
 "use strict";
 const { execSync, spawnSync } = require("child_process"), fs = require("fs"), path = require("path");
-const root = path.join(__dirname, ".."), sh = c => execSync(c, { cwd: root, encoding: "utf8" }).trim();
+const root = path.join(__dirname, ".."), sh = (c, input) => execSync(c, { cwd: root, encoding: "utf8", input }).trim();
 const [doel, ja] = process.argv.slice(2);
 if (!doel) { console.error("Gebruik: node tools/rollback.js <versie> [--ja]\nVersies: " + sh("git tag -l v* --sort=-creatordate").split("\n").slice(0, 10).join(", ")); process.exit(1); }
 const tag = doel.startsWith("v") ? doel : "v" + doel;

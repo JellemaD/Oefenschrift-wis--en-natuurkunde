@@ -5,7 +5,7 @@
 // GitHub publiceert de site daarna alleen als de testset daar ook groen is (.github/workflows/pages.yml).
 "use strict";
 const { execSync, spawnSync } = require("child_process"), fs = require("fs"), path = require("path");
-const root = path.join(__dirname, ".."), sh = c => execSync(c, { cwd: root, encoding: "utf8" }).trim();
+const root = path.join(__dirname, ".."), sh = (c, input) => execSync(c, { cwd: root, encoding: "utf8", input }).trim();
 const [omschrijving, items = ""] = process.argv.slice(2);
 if (!omschrijving) { console.error('Gebruik: node tools/release.js "Korte omschrijving" [B03,B05]'); process.exit(1); }
 
