@@ -216,6 +216,10 @@ table.tabel th{background:var(--marker-soft);color:var(--ink)}
 .btn.hoofd{background:var(--ink);color:var(--paper)}
 .btn:hover{filter:brightness(1.08)}
 .gelezen{font-size:.9rem;color:var(--pencil);white-space:nowrap}
+.par-uitleg{padding-left:1.3rem}.par-uitleg li{margin:.45rem 0}
+.ai-melding{margin:.35rem 0 .5rem;padding:.4rem .6rem;background:var(--marker-soft, #fff6cc);border-radius:6px;line-height:1.35}
+.codeveld{margin-top:.4rem}.codeveld input{width:8rem;padding:.3rem .4rem}
+.msg.fout .btn{margin-top:.35rem;min-height:36px}
 .afrondregel{width:100%;margin:.25rem 0 0;color:var(--pencil)}
 .feedback{font-family:var(--body);font-size:1.05rem;font-weight:700;line-height:1.4;min-height:1.6rem;margin:1rem 0 0}
 .feedback.goed{color:var(--green)}
@@ -559,6 +563,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <button type="button" class="sluitknop" id="v-sluit" aria-label="Sluiten" title="Sluiten">✕</button>
     <button type="button" class="hervat hidden" id="v-hervat" aria-label="Verder met de uitleg" title="Verder met de uitleg">Verder ▶</button>
   </div>
+  <p class="ai-melding klein" id="ai-melding">De professor is een <b>AI-hulp</b> en kan fouten maken. Durk kan je gesprekken een paar dagen teruglezen. Liever met een mens praten? Vraag het Durk.</p>
   <div class="wissel" role="group" aria-label="Kies je docent">
     <button type="button" data-docent="delta" aria-pressed="true">Wiskunde</button>
     <button type="button" data-docent="volta" aria-pressed="false">Natuurkunde</button>
@@ -689,7 +694,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.10-5";
+const VERSIE = "2026.10.10-6";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
@@ -817,6 +822,7 @@ const ONDERWERPEN = [
         vraag: `Hieronder staat een rechte lijn. De punten P en Q liggen precies op roosterpunten. Stel de formule ${F("y = ax + b")} op: bepaal a en b.`,
         svg: vlakSVG({ a, b, P, Q }),
         svgUitw: vlakSVG({ a, b, P, Q, tri: true }),
+        grafiek: `Rechte lijn in een assenstelsel (x en y van −8 tot 8, hokjes van 1). Gemarkeerde roosterpunten op de lijn: P(${fmt(P[0])}, ${fmt(P[1])}) en Q(${fmt(Q[0])}, ${fmt(Q[1])}). De lijn snijdt de y-as bij y = ${fmt(b)}.`,
         velden: [{ label: "a =", val: a, tol: EXACT, omgekeerd: true }, { label: "b =", val: b, tol: EXACT }],
         hint: `Voor b (het startgetal): waar snijdt de lijn de verticale y-as? Voor a (de richtingscoëfficiënt): begin bij het linker punt. Tel hoeveel hokjes je naar rechts gaat (Δx) en hoeveel omhoog of omlaag (Δy) tot het andere punt. Omlaag telt als min.`,
         stappen: `Van het linker punt (${fmt(L[0])}, ${fmt(L[1])}) naar het rechter punt (${fmt(Rr[0])}, ${fmt(Rr[1])}):<br>Δx = ${fmt(Rr[0] - L[0])} naar rechts, Δy = ${fmt(Rr[1] - L[1])} ${Rr[1] - L[1] >= 0 ? "omhoog" : "(omlaag)"}<br>a = ${fmt(Rr[1] - L[1])} / ${fmt(Rr[0] - L[0])} = <b>${fmt(a)}</b><br>De lijn snijdt de y-as bij y = ${fmt(b)}, dus <b>b = ${fmt(b)}</b><br>Formule: <b>${formule(a, b)}</b><br>In de grafiek zie je nu de stap naar rechts en omhoog.`
@@ -1197,7 +1203,9 @@ const ONDERWERPEN = [
       const a = R(35, 80), POS = ["ro", "lo", "lb", "rb"], scherp = p => p === "ro" || p === "lb";
       const g = [pick(["A", "B"]), pick(POS)]; let v; do { v = [pick(["A", "B"]), pick(POS)]; } while (v[0] === g[0] && v[1] === g[1]);
       const waarde = p => scherp(p) ? a : 180 - a, antw = waarde(v[1]);
+      const plek = { ro: "rechtsonder", lo: "linksonder", lb: "linksboven", rb: "rechtsboven" };
       return { vraag: `Lijn l en m zijn evenwijdig. De gele hoek bij ${g[0]} is ${waarde(g[1])}°. Hoe groot is de rode hoek bij ${v[0]}?${meetSVG({ scene: "hoeken", schaal: false, h: [[g[0], g[1], waarde(g[1]) + "°"], [v[0], v[1], "?", "rood"]] })}`,
+        grafiek: `Twee horizontale evenwijdige lijnen l (boven, snijpunt A) en m (onder, snijpunt B), gesneden door een schuine lijn die van linksboven naar rechtsonder loopt. Gele hoek ${waarde(g[1])}° bij ${g[0]}, ${plek[g[1]]} van het snijpunt. Gevraagde rode hoek bij ${v[0]}, ${plek[v[1]]} van het snijpunt. (Tekening niet op schaal.)`,
         velden: [{ label: "hoek =", val: antw, tol: EXACT, eenheid: "°", tips: [[180 - antw, "Kijk of de rode hoek scherp of stomp is. Een hoek en zijn nevenhoek zijn samen 180°."]] }],
         hint: `Zoek een F-hoek, Z-hoek, overstaande hoek of nevenhoek die de twee hoeken verbindt. Er zijn maar twee groottes: ${waarde(g[1])}° en ${180 - waarde(g[1])}°.`,
         stappen: `De rode hoek is ${scherp(v[1]) ? "scherp" : "stomp"}, net als ${scherp(v[1]) === scherp(g[1]) ? "de gele hoek: even groot" : "de nevenhoek van de gele hoek"}.<br>Rode hoek = <b>${antw}°</b>` };
@@ -2048,6 +2056,7 @@ const ONDERWERPEN = [
         const v = pick([2, 2.5, 4, 5, 8]), { ystep, ymax } = schaal(10 * v, [2, 5, 10, 20]), tp = kiesPunt(v, ystep), pt = [tp, v * tp];
         const o = { xmax: 10, ymax, ystep, xlab: "t (s)", ylab: "s (m)", slope: v, pt };
         return { vraag: `Hieronder zie je het (s,t)-diagram van een fietser. Bepaal de snelheid v in m/s.`, svg: kwadrantSVG(o), svgUitw: kwadrantSVG({ ...o, tri: true }),
+          grafiek: `(s,t)-diagram: rechte lijn door de oorsprong. Horizontaal t in s (0 tot 10), verticaal s in m (0 tot ${ymax}, hulplijnen om de ${ystep} m). Rood punt op de lijn: t = ${tp} s, s = ${fmt(pt[1])} m.`,
           velden: [{ label: "v =", val: v, tol: AFRONDEN, eenheid: "m/s" }],
           hint: `Lees bij het rode punt af hoeveel meter (s) er is afgelegd en na hoeveel seconden (t). Deel dan: v = s / t. Dit is hetzelfde als de richtingscoëfficiënt.`,
           stappen: `Bij het rode punt: t = ${tp} s en s = ${fmt(pt[1])} m<br>v = s / t = ${fmt(pt[1])} / ${tp} = <b>${fmt(v)} m/s</b><br>Dat is de helling van de lijn: elke seconde komt er ${fmt(v)} m bij.` };
@@ -2055,6 +2064,7 @@ const ONDERWERPEN = [
       const C = pick([0.5, 1, 2, 2.5, 4]), { ystep, ymax } = schaal(10 * C, [0.5, 1, 2, 5, 10]), up = kiesPunt(C, ystep), pt = [up, C * up];
       const o = { xmax: 10, ymax, ystep, xlab: "u (cm)", ylab: "F (N)", slope: C, pt };
       return { vraag: `Hieronder zie je het (F,u)-diagram van een veer. Bepaal de veerconstante C in N/cm.`, svg: kwadrantSVG(o), svgUitw: kwadrantSVG({ ...o, tri: true }),
+        grafiek: `(F,u)-diagram: rechte lijn door de oorsprong. Horizontaal u in cm (0 tot 10), verticaal F in N (0 tot ${fmt(ymax)}, hulplijnen om de ${fmt(ystep)} N). Rood punt op de lijn: u = ${up} cm, F = ${fmt(pt[1])} N.`,
         velden: [{ label: "C =", val: C, tol: AFRONDEN, eenheid: "N/cm", omgekeerd: true }],
         hint: `Lees bij het rode punt de kracht F en de uitrekking u af. Deel dan: C = F / u.`,
         stappen: `Bij het rode punt: u = ${up} cm en F = ${fmt(pt[1])} N<br>C = F / u = ${fmt(pt[1])} / ${up} = <b>${fmt(C)} N/cm</b><br>Dat is de helling van de lijn: per cm uitrekking ${fmt(C)} N meer kracht.` };
@@ -2116,7 +2126,9 @@ let scores = {};
 
 // ---------- toestand ----------
 let onderwerp = null, som = null, afgerond = false, geprobeerd = false, uitwerkingGezien = false;
-let sessie = { goed: 0, totaal: 0, reeks: 0 };
+// Vandaag: blijft bewaard over sessies heen op dezelfde dag (B08). goed = zelfstandig goed, opgelost = ook met hulp.
+const vandaag = () => new Date().toLocaleDateString("sv-SE");
+let sessie = (() => { try { const x = JSON.parse(localStorage.getItem("oefenschrift-vandaag")); if (x && x.datum === vandaag()) return x; } catch (e) {} return { datum: vandaag(), goed: 0, opgelost: 0, totaal: 0, reeks: 0 }; })();
 const $ = id => document.getElementById(id);
 
 function toon(sectie) {
@@ -2130,7 +2142,7 @@ function toon(sectie) {
 const NUMMER = {};
 function topicKnop(o) {
   const sc = scores[o.id];
-  const txt = sc && sc.tot ? `${sc.goed} van ${sc.tot} goed` : "nog niet geoefend";
+  const txt = sc && sc.tot ? `${sc.goed} van ${sc.tot} zelf goed` : "nog niet geoefend";
   const cls = sc && sc.tot >= 5 && sc.goed / sc.tot >= 0.8 ? "t-score goed" : "t-score";
   const nr = NUMMER[o.id] ? `<span class="t-nr">${NUMMER[o.id]}</span>` : "";
   return `<button class="topic" data-id="${o.id}"><span class="t-main"><span class="t-title">${nr}${o.titel}</span><span class="t-sub">${o.sub}</span></span><span class="${cls}">${txt}</span></button>`;
@@ -2156,7 +2168,7 @@ function paragraafBlokken(vak, h, oef) {
   const rijen = blokken.map(b => {
     if (!b.nr) return b.o.map(topicKnop).join("");
     const goed = b.o.reduce((n, t) => n + ((scores[t.id] || {}).goed || 0), 0), tot = b.o.reduce((n, t) => n + ((scores[t.id] || {}).tot || 0), 0);
-    const score = tot ? `${goed} van ${tot} goed` : "nog niet geoefend";
+    const score = tot ? `${goed} van ${tot} zelf goed` : "nog niet geoefend";
     const wat = [b.u ? "🎬 uitleg" : "", b.o.length ? `${b.o.length} oefening${b.o.length > 1 ? "en" : ""}` : ""].filter(Boolean).join(" · ");
     return `<button class="topic par-rij" data-open="${vak}|${b.nr}" data-par="${vak}-${b.nr}"><span class="t-main"><span class="t-title"><span class="t-nr">${b.nr}</span>${b.titel}</span><span class="t-sub">${wat}</span></span><span class="${tot >= 5 && goed / tot >= 0.8 ? "t-score goed" : "t-score"}">${score}</span></button>`;
   }).join("");
@@ -2231,25 +2243,35 @@ function start(id) {
   $("o-uitlegkop").textContent = par ? `Uitleg bij ${par.nr}` : "Uitleg";
   const eigen = Object.entries(UITLEGGEN).find(([kk, u]) => (u.oefen === id && u.vak === onderwerp.vak) || (par && kk === uKey(onderwerp.vak, par.nr) && u.vak === onderwerp.vak));
   $("o-uitlegknop").innerHTML = eigen ? `<button class="uitlegbalk" data-uitleg="${eigen[0]}"><span class="ub-icoon" aria-hidden="true">▶</span><span><b>Uitleg van ${DOCENT[eigen[1].docent].naam}</b><span class="klein">Paragraaf ${parNr(eigen[0])} in ongeveer ${uitlegDuur(eigen[1])} minuten</span></span></button>` : "";
-  $("o-uitlegtekst").innerHTML = onderwerp.uitleg + (par && par.v.length ? `<p class="videolink klein">Liever een filmpje? <a href="${yt(par.v[0][0])}" target="_blank" rel="noopener">Uitleg bij paragraaf ${par.nr}</a> <span class="duur">(${par.v[0][2]})</span></p>` : "");
+  $("o-uitlegtekst").innerHTML = paragraafUitleg(onderwerp, par) + (par && par.v.length ? `<p class="videolink klein">Liever een filmpje? <a href="${yt(par.v[0][0])}" target="_blank" rel="noopener">Uitleg bij paragraaf ${par.nr}</a> <span class="duur">(${par.v[0][2]})</span></p>` : "");
   $("o-uitleg").open = false; // geschreven uitleg dicht: de uitlegbalk is het startpunt, de som staat hoger
   try { localStorage.setItem("oefenschrift-laatst", JSON.stringify({ id, vak: onderwerp.vak, hfst: k.hfst })); } catch (e) {}
   toon("oefen");
   nieuweSom();
 }
 
+// B08: "zelfstandig goed" = in één keer goed, zonder hint, uitwerking of hulp van de professor.
+// "opgelost" = uiteindelijk goed, ook met hulp. Alleen zelfstandig goed telt mee voor het steunniveau.
+function zelfstandig(goed) { return !!goed && !(som && (som.fout || som.hintGezien || som.aiGebruikt)) && !uitwerkingGezien; }
 function telMee(goed) {
   if (afgerond) return;
   afgerond = true;
+  if (sessie.datum !== vandaag()) sessie = { datum: vandaag(), goed: 0, opgelost: 0, totaal: 0, reeks: 0 };
   const id = (som && som.id) || onderwerp.id; // de som onthoudt zelf bij welk onderwerp hij hoort
-  const sc = scores[id] || { goed: 0, tot: 0 };
+  const sc = scores[id] || { goed: 0, tot: 0 }, zelf = zelfstandig(goed);
   sc.tot++; sessie.totaal++;
-  if (goed) { sc.goed++; sessie.goed++; sessie.reeks++; } else sessie.reeks = 0;
-  sc.recent = (sc.recent || []).concat(goed ? 1 : 0).slice(-10); // laatste 10 sommen, voor de professor
-  scores[id] = sc; bewaarScores(scores); renderSessie();
+  if (zelf) { sc.goed++; sessie.goed++; sessie.reeks++; } else sessie.reeks = 0;
+  if (goed) { sc.opgelost = (sc.opgelost || 0) + 1; sessie.opgelost = (sessie.opgelost || 0) + 1; }
+  if (goed && !zelf) sc.metHulp = (sc.metHulp || 0) + 1;
+  sc.recent = (sc.recent || []).concat(zelf ? 1 : 0).slice(-10); // laatste 10 sommen, voor de professor
+  scores[id] = sc; bewaarScores(scores);
+  try { localStorage.setItem("oefenschrift-vandaag", JSON.stringify(sessie)); } catch (e) {}
+  if (typeof logSom === "function") logSom(id, goed, zelf);
+  renderSessie();
 }
 function renderSessie() {
-  $("sessie").textContent = sessie.totaal ? `Vandaag ${sessie.goed} van ${sessie.totaal} goed` : "";
+  const met = (sessie.opgelost || 0) - sessie.goed;
+  $("sessie").textContent = sessie.totaal ? `Vandaag ${sessie.goed} zelf goed${met > 0 ? ` · ${met} met hulp` : ""} · ${sessie.totaal} ${sessie.totaal === 1 ? "som" : "sommen"}` : "";
 }
 
 function nieuweSom() {
@@ -2298,10 +2320,11 @@ function controleer() {
   geprobeerd = true;
   if (alles) {
     fb.className = "feedback goed"; reageer("goed");
-    const r = sessie.reeks + (afgerond ? 0 : 1);
-    fb.textContent = pick(LOF) + (!uitwerkingGezien && !afgerond && r >= 3 ? ` Al ${r} op rij!` : "") + " Kies Nieuwe som voor de volgende.";
-    telMee(!uitwerkingGezien);
+    const zelf = zelfstandig(true), r = sessie.reeks + (afgerond || !zelf ? 0 : 1);
+    fb.textContent = pick(LOF) + (afgerond ? "" : zelf ? (r >= 3 ? ` Al ${r} op rij zelf goed!` : "") : " Opgelost met hulp: knap doorgezet. Probeer de volgende helemaal zelf.") + " Kies Nieuwe som voor de volgende.";
+    telMee(true);
   } else {
+    som.fout = (som.fout || 0) + 1;
     fb.className = "feedback fout"; reageer("fout"); $("b-uitw").classList.remove("hidden");
     fb.textContent = tip || "Nog niet goed. Kijk naar de rode vakjes, of vraag een hint.";
   }
@@ -2317,7 +2340,7 @@ function reageer(soort) {
   svg.dataset.mond = soort === "goed" ? "2" : "1";
   clearTimeout(box._t); box._t = setTimeout(() => { svg.dataset.mond = "0"; }, 1400);
 }
-function hint() { $("o-hint").innerHTML = "<b>Hint:</b> " + som.hint; $("o-hint").classList.remove("hidden"); $("b-uitw").classList.remove("hidden"); }
+function hint() { som.hintGezien = true; $("o-hint").innerHTML = "<b>Hint:</b> " + som.hint; $("o-hint").classList.remove("hidden"); $("b-uitw").classList.remove("hidden"); }
 function uitwerking() {
   uitwerkingGezien = true;
   $("o-stappen").innerHTML = som.stappen;
@@ -2326,8 +2349,25 @@ function uitwerking() {
   if (!afgerond) { geprobeerd = true; telMee(false); }
 }
 
+// B28: de geschreven uitleg bevat altijd alle stappen van de uitleg van de professor,
+// gevolgd door wat specifiek is voor deze oefening. Zo lopen tekst en filmpje nooit uit elkaar,
+// ook niet bij nieuwe paragrafen.
+function schoonGezegd(zeg) {
+  return zeg.split(/(?<=[.!?])\s+/).filter(z => !/^(Hoi|Dag)!|^Dit is paragraaf|^Ik ben Professor|^Nu ben jij aan de beurt|^Klik op probeer het zelf|^Succes!/.test(z)).join(" ");
+}
+function paragraafUitleg(o, par) {
+  const u = par && UITLEGGEN[uKey(o.vak, par.nr)];
+  if (!u) return o.uitleg;
+  const stappen = u.stappen.filter(st => !st.eind).map(st => `<li><b>${st.tekst}</b>${schoonGezegd(st.zeg) ? `<br>${schoonGezegd(st.zeg)}` : ""}</li>`).join("");
+  return `<p class="klein">Dit is wat ${DOCENT[u.docent].naam} in de uitleg vertelt, stap voor stap:</p><ol class="par-uitleg">${stappen}</ol><h4>Bij deze oefening: ${o.titel}</h4>${o.uitleg}`;
+}
+
 // ---------- vraag stellen ----------
-function tekstVan(html) { const d = document.createElement("div"); d.innerHTML = html.replace(/<br>/g, "\n"); return d.textContent.trim(); }
+function tekstVan(html) {
+  const d = document.createElement("div");
+  d.innerHTML = String(html || "").replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<br>/g, "\n").replace(/<\/t[hd]>/g, " | ").replace(/<\/tr>/g, "\n").replace(/<\/li>/g, "\n");
+  return d.textContent.replace(/ \| \n/g, "\n").replace(/[ \t]+/g, " ").replace(/\n\s+/g, "\n").trim();
+}
 function inUitleg() { return uitleg && !$("uitleg").classList.contains("hidden"); }
 function context() {
   if (inUitleg()) {
@@ -2336,7 +2376,15 @@ function context() {
   }
   if (!onderwerp || $("oefen").classList.contains("hidden")) return "";
   const antw = som.velden.map((v, i) => `${v.label} ${$("f" + i).value || "(leeg)"} ${v.eenheid || ""}`.trim()).join("; ");
-  return `Onderwerp: ${onderwerp.titel}\nOpgave: ${tekstVan(som.vraag)}${som.svg ? " (met grafiek)" : ""}\nMijn antwoord: ${antw}`;
+  return `Onderwerp: ${onderwerp.titel}\nOpgave: ${tekstVan(som.vraag)}${som.grafiek ? `\nGrafiek: ${som.grafiek}` : som.svg ? "\n(Er staat een grafiek bij.)" : ""}\nMijn antwoord: ${antw}`;
+}
+// B03: alleen voor de professor — juist antwoord, hint en uitwerking (de leerling ziet dit niet)
+function docentInfo() {
+  if (inUitleg() || !onderwerp || !som || $("oefen").classList.contains("hidden")) return "";
+  const regel = v => { const t = antwoordType(v); return t === "dec" ? `afgerond op ${v.dec} decimalen` : t === "afronden" ? "afronden mag" : "exact"; };
+  const ant = som.velden.map(v => `${v.label} ${fmt(v.val, 4)}${v.eenheid ? " " + v.eenheid : ""} (${regel(v)})`).join("; ");
+  const status = afgerond ? "afgerond" : geprobeerd ? `nog niet goed (${som.fout || 0} keer fout)` : "nog niet nagekeken";
+  return `Juiste antwoord: ${ant}\nHint in de site: ${tekstVan(som.hint)}\nUitwerking: ${tekstVan(som.stappen)}\nStatus: ${status}; hint ${som.hintGezien ? "bekeken" : "niet bekeken"}; uitwerking ${uitwerkingGezien ? "bekeken" : "niet bekeken"}.`;
 }
 function bericht() {
   const ctx = context(), vraag = $("vraagtekst").value.trim();
@@ -2435,17 +2483,37 @@ async function stuurVraag() {
   bezig = true; $("v-stuur").disabled = true;
   const wacht = voegToe("prof", ""); wacht.innerHTML = `<span class="typt">${DOCENT[docent].naam} denkt na…</span>`;
   const steun = steunNiveau();
+  if (som && !inUitleg() && !$("oefen").classList.contains("hidden")) som.aiGebruikt = true; // B08: telt als hulp
+  const stop = new AbortController(), klok = setTimeout(() => stop.abort(), 45000);
+  let fout = "", nodig = "";
   try {
-    const r = await fetch(CONFIG.workerUrl, { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ docent, niveau: CONFIG.niveau, steun, bijnaam: CONFIG.bijnaam, context: context(), berichten: gesprek }) });
+    const r = await fetch(CONFIG.workerUrl, { method: "POST", headers: { "Content-Type": "application/json" }, signal: stop.signal,
+      body: JSON.stringify({ docent, niveau: CONFIG.niveau, steun, bijnaam: CONFIG.bijnaam, code: leerlingCode(), context: context(), docentinfo: docentInfo(), berichten: gesprek }) });
     const data = await r.json().catch(() => ({}));
-    wacht.remove();
-    if (!r.ok || !data.antwoord) { voegToe("fout", data.fout || "De docent is even niet bereikbaar. Probeer het later opnieuw."); gesprek.pop(); }
-    else { gesprek.push({ role: "assistant", content: data.antwoord }); const m = voegToe("prof", data.antwoord); if ($("v-voorlezen").checked && m._lees) startLees(m._lees, 0); }
+    if (!r.ok || !data.antwoord) { fout = data.fout || "De docent is even niet bereikbaar. Probeer het later opnieuw."; nodig = data.nodig || ""; }
+    else { wacht.remove(); gesprek.push({ role: "assistant", content: data.antwoord }); const m = voegToe("prof", data.antwoord); if ($("v-voorlezen").checked && m._lees) startLees(m._lees, 0); }
   } catch (e) {
-    wacht.remove(); voegToe("fout", "Geen verbinding met de docent. Controleer je internet en probeer het opnieuw."); gesprek.pop();
+    fout = e && e.name === "AbortError" ? "De docent doet er te lang over." : "Geen verbinding met de docent. Controleer je internet.";
   }
+  clearTimeout(klok);
+  if (fout) { wacht.remove(); gesprek.pop(); mislukt(vraag, fout, nodig); }
   bezig = false; $("v-stuur").disabled = false; $("vraagtekst").focus();
+}
+// B04: leerlingcode (alleen nodig als Durk codes heeft ingesteld)
+function leerlingCode() { try { return localStorage.getItem("oefenschrift-code") || ""; } catch (e) { return ""; } }
+// B05: vraag niet kwijt bij een storing; opnieuw proberen met één tik
+function mislukt(vraag, fout, nodig) {
+  const laatsteIk = [...$("chatlog").querySelectorAll(".msg.ik")].pop(); if (laatsteIk) laatsteIk.remove();
+  const div = voegToe("fout", fout);
+  if (nodig === "code") {
+    div.insertAdjacentHTML("beforeend", `<div class="codeveld"><label>Code van ${CONFIG.begeleider}: <input type="text" autocomplete="off" spellcheck="false"></label> <button type="button" class="btn licht">Opslaan</button></div>`);
+    const inp = div.querySelector("input");
+    div.querySelector("button").onclick = () => { try { localStorage.setItem("oefenschrift-code", inp.value.trim()); } catch (e) {} div.remove(); $("vraagtekst").value = vraag; stuurVraag(); };
+  } else {
+    div.insertAdjacentHTML("beforeend", ` <button type="button" class="btn licht opnieuw">Opnieuw proberen</button>`);
+    div.querySelector(".opnieuw").onclick = () => { div.remove(); $("vraagtekst").value = vraag; stuurVraag(); };
+  }
+  $("vraagtekst").value = vraag;
 }
 
 // ---------- stem (alleen stemmen die op het apparaat zitten) ----------
@@ -3900,7 +3968,7 @@ function init() {
   else $("v-stem").closest(".stemrij").classList.add("hidden");
 }
 if (typeof document !== "undefined") init();
-if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij, klopt, antwoordType, gelezenAls, isTwijfel };
+if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij, klopt, antwoordType, gelezenAls, isTwijfel, paragraafUitleg };
 </script>
 </body>
 </html>

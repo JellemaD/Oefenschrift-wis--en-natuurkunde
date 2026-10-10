@@ -1,0 +1,20 @@
+# Cloudflare Worker: AI-bijlesdocent voor Esra's oefenschrift
+# Deployen: npx wrangler deploy   (vanuit deze map; eerst $env:CLOUDFLARE_API_TOKEN = '')
+# Sleutel:  npx wrangler secret put ANTHROPIC_API_KEY
+# Codes:    npx wrangler secret put LEERLINGCODES   (komma-gescheiden; leeg/afwezig = geen code nodig)
+name = "oefenschrift-docent"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# Teller (per dag, per leerling), kostenstop per maand en "Dit klopt niet"-meldingen
+[[d1_databases]]
+binding = "DB"
+database_name = "oefenschrift"
+database_id = "ae64faf7-9b81-478c-ac90-f7ace0ef7fe1"
+
+[vars]
+MAX_CENT_PER_MAAND = "1000"   # kostenstop: $ 10 per maand
+
+[observability]
+enabled = true   # logs zichtbaar in Cloudflare > Worker > Logs (enkele dagen bewaard)

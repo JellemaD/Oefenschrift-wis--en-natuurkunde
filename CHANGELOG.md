@@ -5,6 +5,12 @@ Terug naar een versie: `node tools/rollback.js <versie> --ja` (zie README.md).
 
 <!-- VERSIES -->
 
+## 2026.10.10-6 · 2026-10-10 15:52
+
+Professor krijgt de volledige som (grafiek, tabel, juist antwoord, uitwerking) met instructie om niet te verklappen; leerlingcode-veld, tijdslimiet en opnieuw proberen; melding dat de professor een AI is; score onderscheidt zelfstandig goed en opgelost met hulp; geschreven uitleg bevat alle stappen van het filmpje. Worker: D1-teller (atomair), kostenstop, robuuste invoer, meldingen; worker staat nu ook in GitHub.
+
+Backlog: B03,B04,B05,B06,B08,B28
+
 ## 2026.10.10-5 · 2026-10-10 15:26
 
 Getalinvoer verfijnd: 1.776.500 krijgt de uitleg "schrijf met spaties"; geen overbodige melding bij spaties.

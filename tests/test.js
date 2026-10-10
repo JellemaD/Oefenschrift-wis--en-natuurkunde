@@ -16,7 +16,7 @@ vm.createContext(ctx);
 // Testhaakjes: in hetzelfde script, zodat ook de interne let-variabelen bereikbaar zijn
 vm.runInContext(script + `
 ;globalThis.__T = { ONDERWERPEN, UITLEGGEN, KOPPELING, BOEKEN, parseNum, fmt, klopt, antwoordType, gelezenAls, isTwijfel, uKey, parNr, uitlegDuur, start, telMee,
-  zet: (o, s, g, a) => { onderwerp = o; som = s; geprobeerd = g; afgerond = a; }, scores: () => scores, maakLeeg: () => { scores = {}; } };`, ctx);
+  zet: (o, s, g, a, u = false) => { onderwerp = o; som = s; geprobeerd = g; afgerond = a; uitwerkingGezien = u; }, paragraafUitleg, paragraafVan, scores: () => scores, maakLeeg: () => { scores = {}; } };`, ctx);
 const T = ctx.__T;
 
 const fouten = []; let aantal = 0;
@@ -97,6 +97,35 @@ for (const o of T.ONDERWERPEN) {
   const sc = T.scores();
   check(sc[A.id] && sc[A.id].tot === 1 && sc[A.id].goed === 0, `B09: fout niet bij oude oefening ${A.id} geteld (${JSON.stringify(sc[A.id])})`);
   check(!sc[B.id], `B09: fout ten onrechte bij nieuwe oefening ${B.id} geteld`);
+}
+
+// 7. B08: zelfstandig goed ≠ opgelost met hulp
+{
+  const A = T.ONDERWERPEN.find(o => o.id === "rc-punten");
+  T.maakLeeg();
+  T.zet(A, { ...A.gen(), id: A.id, fout: 1 }, true, false); T.telMee(true);           // fout → goed: met hulp
+  T.zet(A, { ...A.gen(), id: A.id, hintGezien: true }, true, false); T.telMee(true);  // hint → goed: met hulp
+  T.zet(A, { ...A.gen(), id: A.id, aiGebruikt: true }, true, false); T.telMee(true);  // professor gevraagd: met hulp
+  T.zet(A, { ...A.gen(), id: A.id }, true, false, true); T.telMee(true);              // uitwerking bekeken: met hulp
+  T.zet(A, { ...A.gen(), id: A.id }, true, false); T.telMee(true);                    // direct goed: zelfstandig
+  const sc = T.scores()[A.id];
+  check(sc.tot === 5 && sc.goed === 1 && sc.opgelost === 5 && sc.metHulp === 4, `B08: telling klopt niet: ${JSON.stringify(sc)}`);
+  check(JSON.stringify(sc.recent) === "[0,0,0,0,1]", `B08: steunniveau telt hulp mee: ${JSON.stringify(sc.recent)}`);
+}
+
+// 8. B28: geschreven uitleg bevat elke stap van de uitleg van de professor
+for (const [k, u] of Object.entries(T.UITLEGGEN)) {
+  const o = T.ONDERWERPEN.find(o => o.vak === u.vak && T.KOPPELING[o.id] && T.KOPPELING[o.id].hfst === u.hfst && T.KOPPELING[o.id].par === T.parNr(k));
+  if (!o) { check(false, `B28: geen oefening bij uitleg ${k}`); continue; }
+  const tekst = T.paragraafUitleg(o, T.paragraafVan(o.id));
+  for (const st of u.stappen.filter(st => !st.eind)) check(tekst.includes(st.tekst), `B28: uitleg ${k} mist stap "${strip(st.tekst).slice(0, 40)}"`);
+  check(tekst.includes(o.uitleg), `B28: uitleg ${k} mist de tips van de oefening`);
+}
+
+// 9. B03: bij grafiekvragen gaat een beschrijving met getallen mee
+for (const id of ["rc-grafiek", "diagram", "hoek-fz"]) {
+  const o = T.ONDERWERPEN.find(o => o.id === id);
+  for (let i = 0; i < 30; i++) { const q = o.gen(); check(typeof q.grafiek === "string" && /\d/.test(q.grafiek), `B03: ${id} zonder grafiekbeschrijving`); }
 }
 
 console.log(`${aantal} controles, ${T.ONDERWERPEN.length} oefeningen, ${Object.keys(T.UITLEGGEN).length} uitleggen.`);
