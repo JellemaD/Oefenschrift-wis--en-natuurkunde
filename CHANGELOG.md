@@ -5,6 +5,12 @@ Terug naar een versie: `node tools/rollback.js <versie> --ja` (zie README.md).
 
 <!-- VERSIES -->
 
+## 2026.10.10-7 · 2026-10-10 15:57
+
+Voortgang met export (CSV) en meting zonder hulp; antwoordknoppen bij keuzevragen; knop 'Klopt er iets niet?'; 'Verder' per vak met korte sessie van 3 sommen; controlevraag halverwege elke uitleg; focus en grafiekbeschrijving voor schermlezers; tabel netjes naar de professor
+
+Backlog: B11,B12,B13,B14,B15,B16,B17,B18
+
 ## 2026.10.10-6 · 2026-10-10 15:52
 
 Professor krijgt de volledige som (grafiek, tabel, juist antwoord, uitwerking) met instructie om niet te verklappen; leerlingcode-veld, tijdslimiet en opnieuw proberen; melding dat de professor een AI is; score onderscheidt zelfstandig goed en opgelost met hulp; geschreven uitleg bevat alle stappen van het filmpje. Worker: D1-teller (atomair), kostenstop, robuuste invoer, meldingen; worker staat nu ook in GitHub.

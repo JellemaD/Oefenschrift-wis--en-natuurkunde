@@ -216,6 +216,16 @@ table.tabel th{background:var(--marker-soft);color:var(--ink)}
 .btn.hoofd{background:var(--ink);color:var(--paper)}
 .btn:hover{filter:brightness(1.08)}
 .gelezen{font-size:.9rem;color:var(--pencil);white-space:nowrap}
+.keuzeknoppen{display:flex;flex-wrap:wrap;gap:.4rem;margin:.3rem 0}
+.keuzeknoppen button{border:2px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:10px;padding:.5rem .9rem;font:inherit;font-weight:700;cursor:pointer;min-height:44px}
+.keuzeknoppen button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.meldregel{margin-top:.6rem}
+.sessiekaart{margin-top:.8rem;padding:.7rem .9rem;border:2px dashed var(--ink);border-radius:10px}
+.controle{border:2px solid var(--marker);border-radius:10px;padding:.7rem .9rem;background:var(--paper)}
+.controle-fb{min-height:1.4rem;font-weight:700}
+table.vg{border-collapse:collapse;width:100%;font-size:.95rem;margin:.3rem 0 1rem}
+table.vg th,table.vg td{border-bottom:1px solid var(--grid-strong);padding:.3rem .4rem;text-align:left}
+.meting-bar{font-weight:700;margin:.3rem 0}
 .par-uitleg{padding-left:1.3rem}.par-uitleg li{margin:.45rem 0}
 .ai-melding{margin:.35rem 0 .5rem;padding:.4rem .6rem;background:var(--marker-soft, #fff6cc);border-radius:6px;line-height:1.35}
 .codeveld{margin-top:.4rem}.codeveld input{width:8rem;padding:.3rem .4rem}
@@ -353,7 +363,19 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
       <div class="schrift" style="margin-top:1rem"><button class="topic" data-spiek="nat"><span class="t-main"><span class="t-title">📄 Spiekbrief natuurkunde</span><span class="t-sub">Alle formules, eenheden en begrippen uit H1 t/m H3 op één pagina</span></span></button></div>
     </div>
 
-    <p class="klein" style="margin-top:1.5rem"><button class="linkbtn" id="reset">Scores wissen</button></p>
+    <p class="klein" style="margin-top:1.5rem"><button class="linkbtn" id="naar-voortgang">📈 Voortgang</button> · <button class="linkbtn" id="reset">Scores wissen</button></p>
+  </section>
+
+  <!-- VOORTGANG (B11) EN METING (B12) -->
+  <section id="voortgang" class="hidden">
+    <button class="linkbtn" data-home>← Onderwerpen</button>
+    <h2 tabindex="-1" style="font-size:1.6rem">Voortgang</h2>
+    <p class="klein">Alles wat je oefent, wordt op dit apparaat bijgehouden. "Zelf goed" = in één keer goed, zonder hint, uitwerking of professor.</p>
+    <div id="vg-inhoud"></div>
+    <h3>Meting</h3>
+    <p class="klein">Een korte toets zonder hints: 8 sommen over de belangrijkste onderdelen. Doe hem nu, over 2 weken en over 4 weken; dan zie je wat je zelf kunt.</p>
+    <div class="knoppen"><button class="btn" data-meting="wis">Meting wiskunde</button><button class="btn" data-meting="nat">Meting natuurkunde</button></div>
+    <p class="klein" style="margin-top:1.25rem"><button class="linkbtn" id="vg-csv">⬇ Download voortgang (CSV, voor Durk)</button></p>
   </section>
 
   <!-- OEFENSCHERM -->
@@ -379,6 +401,8 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
         <button class="btn licht" id="b-nieuw">Nieuwe som →</button>
       </div>
       <div class="fb-rij"><div class="fb-prof" id="fb-prof" aria-hidden="true"></div><p class="feedback" id="o-feedback" aria-live="polite"></p></div>
+      <div id="o-sessiekaart"></div>
+      <p class="klein meldregel"><button class="linkbtn" id="b-meld">Klopt er iets niet aan deze som?</button> <span id="meld-status" aria-live="polite"></span></p>
       <div class="hint hidden" id="o-hint"></div>
       <div class="stappen hidden" id="o-stappen"></div>
     </div>
@@ -679,6 +703,22 @@ function klopt(x, invoer, v) {
   const half = 0.5 * 10 ** -d;
   return Math.abs(x - v.val) <= half + eps && half <= 0.02 * Math.abs(v.val);
 }
+// B13: keuzevragen krijgen knoppen in plaats van "typ 1, 2 of 3"
+function keuzeOpties(v, vraag, aantalVelden) {
+  if (v.opties) return v.opties;
+  const uitLabel = [...String(v.label).matchAll(/([a-zà-ÿ][\wà-ÿ -]*?) = (\d)/gi)].map(m => [+m[2], m[1].trim()]);
+  if (uitLabel.length >= 2) return uitLabel;
+  if (v.label === "parabool") return [[1, "parabool 1"], [2, "parabool 2"]];
+  if (aantalVelden !== 1) return null;
+  const t = String(vraag), k = t.indexOf("Vul in:");
+  if (k < 0) return null;
+  let deel = t.slice(k + 7); const eind = deel.search(/<br|<div|<svg|<table|<p/); if (eind >= 0) deel = deel.slice(0, eind);
+  const stukken = deel.split(/<b>(\d)<\/b>\s*=\s*/);
+  const o = [];
+  for (let n = 1; n + 1 < stukken.length; n += 2) o.push([+stukken[n], stukken[n + 1].replace(/<[^>]+>/g, "").replace(/[,.\s]+$/, "").trim()]);
+  return o.length >= 2 ? o : null;
+}
+
 // De afrondregel die onder de antwoordvakjes staat
 function afrondRegel(velden) {
   const dec = velden.find(v => antwoordType(v) === "dec");
@@ -694,7 +734,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.10-6";
+const VERSIE = "2026.10.10-7";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
@@ -2133,7 +2173,10 @@ const $ = id => document.getElementById(id);
 
 function toon(sectie) {
   if (sectie !== "uitleg" && typeof uSpeelt !== "undefined" && uSpeelt) { uSpeelt = false; uId++; stopSpraak(); }
-  for (const id of ["home", "oefen", "spiekbrief", "uitleg"]) $(id).classList.toggle("hidden", id !== sectie);
+  for (const id of ["home", "oefen", "spiekbrief", "uitleg", "voortgang"]) $(id).classList.toggle("hidden", id !== sectie);
+  if (sectie !== "oefen" && meting) { meting = null; $("o-uitleg").classList.remove("hidden"); } // meting afgebroken
+  // B18: focus naar de kop van het nieuwe scherm (toetsenbord en schermlezer)
+  setTimeout(() => { const kop = $(sectie) && $(sectie).querySelector("h2"); if (kop) { kop.setAttribute("tabindex", "-1"); kop.focus({ preventScroll: true }); } }, 0);
   $("vraagknop").classList.toggle("hidden", sectie === "uitleg");
   window.scrollTo(0, 0);
 }
@@ -2216,15 +2259,56 @@ function renderHome() {
     };
     $("lijst-" + vak).innerHTML = groepen.map(h => hfst(h, true)).join("");
   }
-  // 1. kaart "Verder waar je was"
-  let laatst = null; try { laatst = JSON.parse(localStorage.getItem("oefenschrift-laatst")); } catch (e) {}
-  const lo = laatst && ONDERWERPEN.find(o => o.id === laatst.id), lp = lo && paragraafVan(lo.id);
+  renderVerder();
+}
+// B15: "Verder waar je was" per vak (het actieve tabblad). B16: start meteen een korte sessie van 3 sommen.
+function actiefVak() { return $("tab-nat") && $("tab-nat").getAttribute("aria-selected") === "true" ? "nat" : "wis"; }
+function renderVerder() {
+  const vak = actiefVak();
+  let laatst = null; try { laatst = JSON.parse(localStorage.getItem("oefenschrift-laatst-" + vak)) || JSON.parse(localStorage.getItem("oefenschrift-laatst")); } catch (e) {}
+  const lo = laatst && laatst.vak === vak && ONDERWERPEN.find(o => o.id === laatst.id), lp = lo && paragraafVan(lo.id);
   $("verder").classList.toggle("hidden", !lo);
   if (lo) {
     $("verder-titel").textContent = lp ? `${lp.nr} ${lp.titel}` : lo.titel;
-    $("verder-sub").textContent = `${lo.vak === "wis" ? "Wiskunde" : "Natuurkunde"} · ${NUMMER[lo.id] || ""} ${lo.titel}`;
-    $("verder").onclick = () => start(lo.id);
+    $("verder-sub").textContent = `${vak === "wis" ? "Wiskunde" : "Natuurkunde"} · 3 sommen · ± 10 minuten`;
+    $("verder").onclick = () => { sessieKaart = { gedaan: 0, doel: 3 }; start(lo.id); toonSessieKaart(); };
   }
+}
+let sessieKaart = null;
+// B12: meting — 8 sommen zonder hulp over vaste leerdoelen; uitslag in Voortgang
+const METING = {
+  wis: [{ doel: "Negatieve x invullen", id: "par-invullen", n: 3, filter: q => /x = −/.test(q.vraag) }, { doel: "Top berekenen", id: "par-top", n: 3 }, { doel: "rc uit twee punten", id: "rc-punten", n: 2 }],
+  nat: [{ doel: "mA, A en kV omrekenen", id: "omrekenen-el", n: 3 }, { doel: "Vermogen P = U · I", id: "vermogen", n: 3 }, { doel: "Energie en kosten", id: "energie-kosten", n: 2 }]
+};
+let meting = null;
+function startMeting(vak) {
+  const doelen = METING[vak].flatMap(d => Array.from({ length: d.n }, () => d));
+  meting = { vak, doelen, i: 0, naam: `${vak}-${vandaag()}`, uitslag: [] };
+  sessieKaart = null; startMetingSom();
+}
+function startMetingSom() {
+  const d = meting.doelen[meting.i];
+  start(d.id);
+  $("o-titel").textContent = `Meting ${meting.vak === "wis" ? "wiskunde" : "natuurkunde"} · som ${meting.i + 1} van ${meting.doelen.length}`;
+  $("o-keuze").innerHTML = ""; $("o-uitlegknop").innerHTML = ""; $("o-uitleg").classList.add("hidden");
+}
+function metingAntwoord(goed) {
+  meting.uitslag.push({ doel: meting.doelen[meting.i].doel, goed });
+  telMee(goed);
+  meting.i++;
+  if (meting.i < meting.doelen.length) { startMetingSom(); return; }
+  const m = meting; meting = null; $("o-uitleg").classList.remove("hidden");
+  renderVoortgang(); toon("voortgang");
+  const goedN = m.uitslag.filter(u => u.goed).length;
+  $("vg-inhoud").insertAdjacentHTML("afterbegin", `<p class="meting-bar">Meting klaar: ${goedN} van ${m.uitslag.length} zelf goed. Knap gedaan! De uitslag staat hieronder.</p>`);
+}
+function toonSessieKaart() {
+  const k = $("o-sessiekaart"); if (!k) return;
+  if (!sessieKaart) { k.innerHTML = ""; return; }
+  if (sessieKaart.gedaan < sessieKaart.doel) { k.innerHTML = `<p class="klein">Korte sessie: ${sessieKaart.gedaan} van ${sessieKaart.doel} sommen.</p>`; return; }
+  k.innerHTML = `<div class="sessiekaart"><b>${sessieKaart.doel} sommen gedaan, top!</b> Nog een rondje, of klaar voor vandaag?<div class="knoppen"><button type="button" class="btn" id="sk-nog">Nog 3</button><button type="button" class="btn licht" id="sk-klaar">Klaar voor vandaag</button></div></div>`;
+  $("sk-nog").onclick = () => { sessieKaart = { gedaan: 0, doel: 3 }; toonSessieKaart(); nieuweSom(); };
+  $("sk-klaar").onclick = () => { sessieKaart = null; toonSessieKaart(); renderHome(); toon("home"); };
 }
 function start(id) {
   // eerst de lopende som afsluiten, zodat een fout bij het oude onderwerp blijft (B09)
@@ -2245,9 +2329,45 @@ function start(id) {
   $("o-uitlegknop").innerHTML = eigen ? `<button class="uitlegbalk" data-uitleg="${eigen[0]}"><span class="ub-icoon" aria-hidden="true">▶</span><span><b>Uitleg van ${DOCENT[eigen[1].docent].naam}</b><span class="klein">Paragraaf ${parNr(eigen[0])} in ongeveer ${uitlegDuur(eigen[1])} minuten</span></span></button>` : "";
   $("o-uitlegtekst").innerHTML = paragraafUitleg(onderwerp, par) + (par && par.v.length ? `<p class="videolink klein">Liever een filmpje? <a href="${yt(par.v[0][0])}" target="_blank" rel="noopener">Uitleg bij paragraaf ${par.nr}</a> <span class="duur">(${par.v[0][2]})</span></p>` : "");
   $("o-uitleg").open = false; // geschreven uitleg dicht: de uitlegbalk is het startpunt, de som staat hoger
-  try { localStorage.setItem("oefenschrift-laatst", JSON.stringify({ id, vak: onderwerp.vak, hfst: k.hfst })); } catch (e) {}
+  try { const l = JSON.stringify({ id, vak: onderwerp.vak, hfst: k.hfst }); localStorage.setItem("oefenschrift-laatst", l); localStorage.setItem("oefenschrift-laatst-" + onderwerp.vak, l); } catch (e) {}
   toon("oefen");
   nieuweSom();
+}
+
+function weekVan(d) { const x = new Date(d + "T12:00:00"); const dag = (x.getDay() + 6) % 7; x.setDate(x.getDate() - dag); return x.toLocaleDateString("sv-SE"); }
+function renderVoortgang() {
+  const log = leesLog().filter(r => r.soort !== "controle");
+  if (!log.length) { $("vg-inhoud").innerHTML = "<p>Nog niets geoefend op dit apparaat.</p>"; return; }
+  const weken = {};
+  for (const r of log) { const w = weekVan(r.d); (weken[w] = weken[w] || []).push(r); }
+  const rij = (w, rs) => { const dagen = new Set(rs.map(r => r.d)).size, zelf = rs.filter(r => r.uitkomst === "zelf").length, hulp = rs.filter(r => r.uitkomst === "hulp").length, min = Math.round(rs.reduce((n, r) => n + Math.min(r.sec || 0, 600), 0) / 60);
+    return `<tr><td>${w}</td><td>${dagen}</td><td>${rs.length}</td><td>${zelf} (${Math.round(100 * zelf / rs.length)}%)</td><td>${hulp}</td><td>${min}</td></tr>`; };
+  let h = `<h3>Per week</h3><table class="vg"><tr><th>Week van</th><th>Dagen</th><th>Sommen</th><th>Zelf goed</th><th>Met hulp</th><th>Minuten</th></tr>${Object.keys(weken).sort().reverse().map(w => rij(w, weken[w])).join("")}</table>`;
+  const per = {};
+  for (const r of log.filter(r => r.soort === "som" && Date.now() - r.t < 28 * 864e5)) { const k = `${r.vak === "wis" ? "Wis" : "Nat"} ${r.par}`; (per[k] = per[k] || []).push(r); }
+  if (Object.keys(per).length) h += `<h3>Per paragraaf (laatste 4 weken)</h3><table class="vg"><tr><th>Paragraaf</th><th>Sommen</th><th>Zelf goed</th></tr>${Object.keys(per).sort().map(k => `<tr><td>${k}</td><td>${per[k].length}</td><td>${Math.round(100 * per[k].filter(r => r.uitkomst === "zelf").length / per[k].length)}%</td></tr>`).join("")}</table>`;
+  const metingen = {};
+  for (const r of log.filter(r => r.soort === "meting")) { const k = `${r.d} ${r.vak === "wis" ? "wiskunde" : "natuurkunde"}`; metingen[k] = metingen[k] || {}; const d = metingen[k][r.doel] = metingen[k][r.doel] || [0, 0]; d[1]++; if (r.uitkomst === "zelf") d[0]++; }
+  if (Object.keys(metingen).length) h += `<h3>Metingen</h3><table class="vg"><tr><th>Datum</th><th>Leerdoel</th><th>Zelf goed</th></tr>${Object.keys(metingen).sort().reverse().flatMap(k => Object.entries(metingen[k]).map(([doel, [g, t]]) => `<tr><td>${k}</td><td>${doel}</td><td>${g} van ${t}</td></tr>`)).join("")}</table>`;
+  $("vg-inhoud").innerHTML = h;
+}
+function downloadVoortgang() {
+  const kol = ["datum", "tijd", "soort", "vak", "paragraaf", "oefening", "leerdoel", "uitkomst", "fout", "hint", "uitwerking", "professor", "seconden", "versie"];
+  const regels = leesLog().map(r => [r.d, new Date(r.t).toLocaleTimeString("nl-NL"), r.soort, r.vak, r.par, r.id, r.doel, r.uitkomst, r.fout, r.hint ? 1 : 0, r.uitw ? 1 : 0, r.ai ? 1 : 0, r.sec, r.versie].map(x => `"${String(x ?? "").replace(/"/g, '""')}"`).join(";"));
+  const blob = new Blob(["\ufeff" + [kol.join(";"), ...regels].join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `oefenschrift-voortgang-${vandaag()}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+// B11: logboek van alle sommen op dit apparaat (voor Voortgang en export)
+const LOGSLEUTEL = "oefenschrift-log";
+function leesLog() { try { return JSON.parse(localStorage.getItem(LOGSLEUTEL)) || []; } catch (e) { return []; } }
+function schrijfLog(regel) { try { const l = leesLog(); l.push(regel); localStorage.setItem(LOGSLEUTEL, JSON.stringify(l.slice(-5000))); } catch (e) {} }
+function logSom(id, goed, zelf) {
+  const o = ONDERWERPEN.find(o => o.id === id), k = KOPPELING[id] || {};
+  schrijfLog({ t: Date.now(), d: vandaag(), soort: meting ? "meting" : "som", id, vak: o ? o.vak : "", par: k.par || "", doel: meting ? meting.doelen[meting.i]?.doel || "" : "",
+    uitkomst: zelf ? "zelf" : goed ? "hulp" : "fout", fout: (som && som.fout) || 0, hint: !!(som && som.hintGezien), uitw: !!uitwerkingGezien, ai: !!(som && som.aiGebruikt),
+    sec: som && som.start ? Math.round((Date.now() - som.start) / 1000) : 0, versie: typeof VERSIE !== "undefined" ? VERSIE : "" });
+  if (sessieKaart && !meting) { sessieKaart.gedaan++; toonSessieKaart(); }
 }
 
 // B08: "zelfstandig goed" = in één keer goed, zonder hint, uitwerking of hulp van de professor.
@@ -2276,15 +2396,24 @@ function renderSessie() {
 
 function nieuweSom() {
   if (som && geprobeerd && !afgerond) telMee(false);
-  som = onderwerp.gen(); som.id = onderwerp.id;
+  som = onderwerp.gen(); som.id = onderwerp.id; som.start = Date.now();
+  if (meting) { const doel = meting.doelen[meting.i]; for (let i = 0; i < 40 && doel.filter && !doel.filter(som); i++) { som = onderwerp.gen(); som.id = onderwerp.id; som.start = Date.now(); } }
   afgerond = false; geprobeerd = false; uitwerkingGezien = false;
   $("o-vraag").innerHTML = som.vraag;
   $("o-plot").innerHTML = som.svg || "";
   $("o-plot").classList.toggle("hidden", !som.svg);
-  $("o-velden").innerHTML = som.velden.map((v, i) =>
-    `<div class="veld"><label for="f${i}">${v.label}</label><input id="f${i}" inputmode="decimal" autocomplete="off" spellcheck="false" aria-describedby="g${i}">${v.eenheid ? `<span class="eenheid">${v.eenheid}</span>` : ""}<span class="gelezen" id="g${i}" aria-live="polite"></span></div>`).join("")
+  $("o-velden").innerHTML = som.velden.map((v, i) => {
+    const opties = keuzeOpties(v, som.vraag, som.velden.length);
+    if (opties) return `<div class="veld veld-keuze"><span class="vlabel">${/\d$/.test(v.label.replace(/:$/, "")) || /=\s*$/.test(v.label) ? "" : v.label}</span><input id="f${i}" type="hidden"><div class="keuzeknoppen" role="group" aria-label="Kies je antwoord">${opties.map(([n, t]) => `<button type="button" data-veld="${i}" data-waarde="${n}" aria-pressed="false">${t}</button>`).join("")}</div><span class="gelezen" id="g${i}"></span></div>`;
+    return `<div class="veld"><label for="f${i}">${v.label}</label><input id="f${i}" inputmode="decimal" autocomplete="off" spellcheck="false" aria-describedby="g${i}">${v.eenheid ? `<span class="eenheid">${v.eenheid}</span>` : ""}<span class="gelezen" id="g${i}" aria-live="polite"></span></div>`; }).join("")
     + (afrondRegel(som.velden) ? `<p class="klein afrondregel">${afrondRegel(som.velden)}</p>` : "");
   $("o-feedback").textContent = ""; $("o-feedback").className = "feedback";
+  if ($("meld-status")) $("meld-status").textContent = "";
+  // B18: de grafiek krijgt een beschrijving voor schermlezers
+  $("o-plot").setAttribute("role", "img"); $("o-plot").setAttribute("aria-label", som.grafiek || "Grafiek bij de som");
+  // B12: tijdens een meting geen hint, uitwerking of professor
+  for (const id of ["b-hint", "b-uitw", "b-nieuw", "b-meld"]) if ($(id)) $(id).classList.toggle("hidden", !!meting || (id === "b-uitw"));
+  $("vraagknop").classList.toggle("hidden", !!meting);
   const fp = $("fb-prof"); if (fp) { fp.innerHTML = ""; fp.classList.remove("knik", "frons"); }
   $("o-hint").classList.add("hidden");
   $("o-stappen").classList.add("hidden");
@@ -2294,6 +2423,13 @@ function nieuweSom() {
 
 const LOF = ["Goed zo!", "Helemaal goed.", "Klopt!", "Precies goed.", "Yes, goed!", "Netjes!"];
 function controleer() {
+  // B12: tijdens een meting telt alleen de eerste poging, zonder feedback per som
+  if (meting && som) {
+    let leeg = false;
+    const goed = som.velden.every((v, i) => { const inp = $("f" + i), x = parseNum(inp.value); if (isNaN(x)) leeg = true; return !isNaN(x) && klopt(x, inp.value, v); });
+    if (leeg) { $("o-feedback").className = "feedback fout"; $("o-feedback").textContent = "Vul eerst elk vakje in."; return; }
+    geprobeerd = true; metingAntwoord(goed); return;
+  }
   if (afgerond && !uitwerkingGezien && $("o-feedback").classList.contains("goed")) { nieuweSom(); return; }
   let alles = true, leeg = false, tip = "";
   som.velden.forEach((v, i) => {
@@ -2498,6 +2634,16 @@ async function stuurVraag() {
   clearTimeout(klok);
   if (fout) { wacht.remove(); gesprek.pop(); mislukt(vraag, fout, nodig); }
   bezig = false; $("v-stuur").disabled = false; $("vraagtekst").focus();
+}
+// B14: melding over een som naar Durk (geen gesprek, alleen de som en wat er is ingevuld)
+async function meldSom() {
+  if (!som) return;
+  const st = $("meld-status"); st.textContent = "Versturen…";
+  const gegevens = { oefening: som.id, vraag: tekstVan(som.vraag), grafiek: som.grafiek || "", velden: som.velden.map((v, i) => ({ label: v.label, juist: v.val, type: antwoordType(v), invoer: ($("f" + i) || {}).value || "" })), feedback: $("o-feedback").textContent };
+  try {
+    const r = await fetch(CONFIG.workerUrl.replace(/\/$/, "") + "/melding", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: leerlingCode(), versie: VERSIE, oefening: som.id, gegevens }) });
+    st.textContent = r.ok ? "Bedankt! Durk kijkt ernaar." : "Versturen lukte niet. Probeer het later nog eens.";
+  } catch (e) { st.textContent = "Geen verbinding. Probeer het later nog eens."; }
 }
 // B04: leerlingcode (alleen nodig als Durk codes heeft ingesteld)
 function leerlingCode() { try { return localStorage.getItem("oefenschrift-code") || ""; } catch (e) { return ""; } }
@@ -3780,6 +3926,7 @@ function uitlegDuur(u) { return Math.max(1, Math.round(u.stappen.reduce((n, s) =
 let uHerkomst = "home";
 function startUitleg(key) {
   uitleg = UITLEGGEN[key]; if (!uitleg) return;
+  uitleg._controle = undefined; // B17: controlevraag bij elke keer afspelen
   uHerkomst = !$("oefen").classList.contains("hidden") ? "oefen" : "home";
   $("u-naar").textContent = `← ${parNr(key)} ${uitleg.titel}`;
   $("u-titel").textContent = `${parNr(key)} ${uitleg.titel}`;
@@ -3788,7 +3935,59 @@ function startUitleg(key) {
   toon("uitleg");
   uSpeelt = true; toonStap(0);
 }
+// B17: halverwege elke uitleg een korte controlevraag: eerst zelf nadenken, dan verder
+const CONTROLE = {
+  "1.1": ["Een lijn gaat per stap naar rechts 3 omlaag. Wat is a?", ["3", "−3", "1/3"], 1, "Omlaag telt als min: a = −3."],
+  "1.2": ["Wat geldt in het snijpunt van twee lijnen?", ["Alleen x is gelijk", "x én y zijn bij beide lijnen gelijk", "y is altijd 0"], 1, "In het snijpunt liggen de lijnen op hetzelfde punt: zelfde x én zelfde y."],
+  "1.3": ["Waarom zet je haakjes om 2n + 1 als je het invult?", ["Dat is alleen netter", "Omdat het getal ervoor met álles erin vermenigvuldigd moet worden", "Dat hoeft niet"], 1, "3(2n + 1) = 6n + 3: de 3 gaat keer de 2n én keer de 1."],
+  "1.4": ["Een tabel: 10, 30, 90, 270. Wat is de groeifactor?", ["20", "3", "30"], 1, "Steeds keer 3: 30 / 10 = 3."],
+  "1.5": ["De groeifactor per jaar is 2. Wat is de groeifactor per 3 jaar?", ["6", "8", "5"], 1, "2 · 2 · 2 = 2³ = 8, niet 3 · 2."],
+  "2.1": ["Is y = −2x² + 3x een dal- of een bergparabool?", ["Dalparabool", "Bergparabool"], 1, "a = −2 is negatief, dus een bergparabool."],
+  "2.2": ["Een parabool gaat door (1, 4) en (7, 4). Wat is x-top?", ["3", "4", "6"], 1, "Midden tussen 1 en 7: (1 + 7) / 2 = 4."],
+  "2.3": ["Bij y = x² − 6x + 5: wat is y bij x = 2?", ["−3", "3", "−11"], 0, "4 − 12 + 5 = −3."],
+  "2.4": ["Welke parabool is het smalst?", ["y = 0,5x²", "y = 3x²", "y = x²"], 1, "Hoe groter a (zonder min-teken), hoe smaller: 3 is het grootst."],
+  "2.5": ["Wat is de top van y = (x − 2)² + 5?", ["(−2, 5)", "(2, 5)", "(5, 2)"], 1, "(x − 2) is 0 bij x = 2; het getal erachter is de y-top: (2, 5)."],
+  "3.1": ["Een hoek is 70°. Hoe groot is zijn nevenhoek?", ["70°", "110°", "20°"], 1, "Nevenhoeken zijn samen 180°: 180 − 70 = 110°."],
+  "3.2": ["Spiegel P(4, 1) in de y-as.", ["(−4, 1)", "(4, −1)", "(−4, −1)"], 0, "In de y-as wordt x tegengesteld, y blijft: (−4, 1)."],
+  "3.3": ["Kan een driehoek met zijden 2, 3 en 7 cm?", ["Ja", "Nee"], 1, "2 + 3 = 5 is korter dan 7: de bogen raken elkaar niet."],
+  "3.4": ["Een zijde van 5 cm wordt 15 cm. Wat is de vergrotingsfactor?", ["10", "3", "1/3"], 1, "15 / 5 = 3."],
+  "3.5": ["4 / 6 = 10 / x. Wat is x?", ["12", "15", "8"], 1, "Kruislings: 4x = 60, dus x = 15."],
+  "4.1": ["Welke twee getallen horen bij x² + 7x + 10?", ["2 en 5", "1 en 10", "3 en 4"], 0, "2 · 5 = 10 en 2 + 5 = 7."],
+  "4.2": ["De discriminant is negatief. Hoeveel oplossingen zijn er?", ["0", "1", "2"], 0, "D < 0: geen oplossingen; de parabool raakt de x-as niet."],
+  "4.3": ["Wat is het handigst bij x² − 5x = 0?", ["Wortel trekken", "x buiten haakjes halen", "De abc-formule"], 1, "Geen los getal: x(x − 5) = 0, dus x = 0 of x = 5."],
+  "4.4": ["x² + 2x = 8. Wat is je eerste stap?", ["Delen door x", "Aan beide kanten 8 aftrekken", "De wortel nemen"], 1, "Eerst op nul herleiden: x² + 2x − 8 = 0."],
+  "nat:1.1": ["Hoe sluit je een stroommeter aan?", ["In serie, in de kring", "Parallel, over het apparaat"], 0, "Alle stroom moet door de stroommeter heen: in serie."],
+  "nat:1.2": ["U = 12 V en I = 2 A. Hoe groot is P?", ["6 W", "14 W", "24 W"], 2, "P = U · I = 12 · 2 = 24 W."],
+  "nat:1.3": ["Waarom zijn apparaten in huis parallel geschakeld?", ["Dan krijgt elk apparaat 230 V", "Dan is de stroom kleiner", "Dat is goedkoper"], 0, "Parallel: elk apparaat de volle spanning, en los aan en uit te zetten."],
+  "nat:1.4": ["Wat doet een aardlekschakelaar?", ["Uitschakelen bij een te grote stroom", "Uitschakelen als er stroom weglekt", "De spanning verlagen"], 1, "Hij vergelijkt de stroom heen en terug; is er verschil, dan schakelt hij uit."],
+  "nat:2.1": ["Hoe groot is de zwaartekracht op een tas van 2 kg?", ["2 N", "9,81 N", "19,62 N"], 2, "Fz = m · g = 2 · 9,81 = 19,62 N."],
+  "nat:2.2": ["40 N naar rechts en 25 N naar links. Wat is F_res?", ["65 N", "15 N naar rechts", "15 N naar links"], 1, "Tegengesteld: aftrekken, 40 − 25 = 15 N, naar de grootste kracht."],
+  "nat:2.3": ["Links 200 N op 3 m. Hoeveel N moet er rechts op 2 m voor evenwicht?", ["300 N", "133 N", "600 N"], 0, "200 · 3 = 600 Nm, en 600 / 2 = 300 N."],
+  "nat:2.4": ["Een losse katrol en een last van 500 N. Hoeveel kracht heb je nodig?", ["500 N", "250 N", "1000 N"], 1, "De last hangt aan 2 touwdelen: 500 / 2 = 250 N."],
+  "nat:3.1": ["Is wind een fossiele of een duurzame energiebron?", ["Fossiel", "Duurzaam"], 1, "Wind raakt niet op: duurzaam."],
+  "nat:3.2": ["Waar stroomt warmte naartoe?", ["Van koud naar warm", "Van warm naar koud"], 1, "Warmte stroomt altijd van warm naar koud."],
+  "nat:3.3": ["Tochtstrips gaan vooral tegen:", ["Geleiding", "Stroming", "Straling"], 1, "Ze dichten kieren, zodat warme lucht niet wegstroomt."],
+  "nat:3.4": ["100 J gaat erin, 25 J is nuttig. Wat is het rendement?", ["25%", "75%", "4%"], 0, "25 / 100 · 100% = 25%."]
+};
+function uitlegSleutel() { return Object.keys(UITLEGGEN).find(k => UITLEGGEN[k] === uitleg); }
+function toonControle(c, volgende) {
+  const speelde = uSpeelt; uSpeelt = false; uId++; stopSpraak(); clearInterval(uKlok);
+  const [vraag, opties, goed, uitl] = c;
+  $("u-tekst").innerHTML = `<div class="controle"><p><b>Even checken:</b> ${vraag}</p><div class="keuzeknoppen" role="group" aria-label="Kies je antwoord">${opties.map((o, i) => `<button type="button" data-ck="${i}">${o}</button>`).join("")}</div><p class="controle-fb" aria-live="polite"></p></div>`;
+  $("u-ondertitel").textContent = "";
+  if (speelde) spreek(uitleg.docent, "Even checken. " + vraag, { box: $("u-av"), status: $("u-status") });
+  $("u-tekst").querySelectorAll("[data-ck]").forEach(b => b.onclick = () => {
+    const ok = +b.dataset.ck === goed;
+    $("u-tekst").querySelectorAll("[data-ck]").forEach(x => { x.disabled = true; x.setAttribute("aria-pressed", x === b); });
+    $("u-tekst").querySelector(".controle-fb").innerHTML = `${ok ? "✓ Goed!" : "✗ Niet helemaal."} ${uitl}<br><button type="button" class="btn hoofd" id="ck-verder" style="margin-top:.5rem">Verder met de uitleg →</button>`;
+    schrijfLog({ t: Date.now(), d: vandaag(), soort: "controle", id: uitlegSleutel(), uitkomst: ok ? "zelf" : "fout" });
+    $("ck-verder").onclick = () => { uitleg._controle = "klaar"; uSpeelt = speelde; toonStap(volgende); };
+  });
+}
+
 function toonStap(i) {
+  const ck = CONTROLE[uitlegSleutel()], midden = Math.floor(uitleg.stappen.length / 2);
+  if (ck && i === midden + 1 && i > uStap && uitleg._controle !== "klaar") { toonControle(ck, i); return; }
   uStap = Math.max(0, Math.min(i, uitleg.stappen.length - 1));
   const st = uitleg.stappen[uStap], mijn = ++uId;
   $("u-beeld").innerHTML = uitleg.teken(st.teken);
@@ -3896,11 +4095,23 @@ function init() {
       $("paneel-" + v).classList.toggle("hidden", v !== vak);
     }
     try { localStorage.setItem("oefenschrift-tab", vak); } catch (e) {}
+    renderVerder();
   };
   document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => kiesTab(b.dataset.tab));
   try { if (localStorage.getItem("oefenschrift-tab") === "nat") kiesTab("nat"); } catch (e) {}
   $("reset").onclick = () => { if (confirm("Alle scores wissen?")) { scores = {}; bewaarScores(scores); renderHome(); } };
   $("b-check").onclick = controleer;
+  $("b-meld").onclick = meldSom;
+  $("naar-voortgang").onclick = () => { renderVoortgang(); toon("voortgang"); };
+  $("vg-csv").onclick = downloadVoortgang;
+  document.querySelectorAll("[data-meting]").forEach(b => b.onclick = () => startMeting(b.dataset.meting));
+  // B13: antwoordknop kiezen = invullen en nakijken
+  $("o-velden").addEventListener("click", e => {
+    const b = e.target.closest("[data-waarde]"); if (!b) return;
+    $("f" + b.dataset.veld).value = b.dataset.waarde;
+    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    if (som.velden.every((v, i) => $("f" + i).value !== "")) controleer();
+  });
   $("b-hint").onclick = hint;
   $("b-uitw").onclick = uitwerking;
   $("b-nieuw").onclick = nieuweSom;
@@ -3968,7 +4179,7 @@ function init() {
   else $("v-stem").closest(".stemrij").classList.add("hidden");
 }
 if (typeof document !== "undefined") init();
-if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij, klopt, antwoordType, gelezenAls, isTwijfel, paragraafUitleg };
+if (typeof module !== "undefined") module.exports = { ONDERWERPEN, parseNum, fmt, dichtbij, klopt, antwoordType, gelezenAls, isTwijfel, paragraafUitleg, keuzeOpties, CONTROLE };
 </script>
 </body>
 </html>

@@ -16,7 +16,7 @@ vm.createContext(ctx);
 // Testhaakjes: in hetzelfde script, zodat ook de interne let-variabelen bereikbaar zijn
 vm.runInContext(script + `
 ;globalThis.__T = { ONDERWERPEN, UITLEGGEN, KOPPELING, BOEKEN, parseNum, fmt, klopt, antwoordType, gelezenAls, isTwijfel, uKey, parNr, uitlegDuur, start, telMee,
-  zet: (o, s, g, a, u = false) => { onderwerp = o; som = s; geprobeerd = g; afgerond = a; uitwerkingGezien = u; }, paragraafUitleg, paragraafVan, scores: () => scores, maakLeeg: () => { scores = {}; } };`, ctx);
+  zet: (o, s, g, a, u = false) => { onderwerp = o; som = s; geprobeerd = g; afgerond = a; uitwerkingGezien = u; }, paragraafUitleg, paragraafVan, keuzeOpties, CONTROLE, scores: () => scores, maakLeeg: () => { scores = {}; } };`, ctx);
 const T = ctx.__T;
 
 const fouten = []; let aantal = 0;
@@ -127,6 +127,27 @@ for (const id of ["rc-grafiek", "diagram", "hoek-fz"]) {
   const o = T.ONDERWERPEN.find(o => o.id === id);
   for (let i = 0; i < 30; i++) { const q = o.gen(); check(typeof q.grafiek === "string" && /\d/.test(q.grafiek), `B03: ${id} zonder grafiekbeschrijving`); }
 }
+
+// 10. B13: elke keuzevraag krijgt knoppen, en het goede antwoord zit erbij
+{
+  let keuze = 0;
+  for (const o of T.ONDERWERPEN) for (let i = 0; i < 60; i++) {
+    const q = o.gen();
+    q.velden.forEach(v => {
+      const opt = T.keuzeOpties(v, q.vraag, q.velden.length);
+      const isKeuze = /Vul in:/.test(q.vraag) || /= 1, /.test(v.label) || v.label === "parabool";
+      if (isKeuze && Number.isInteger(v.val) && v.val >= 0 && v.val <= 9) {
+        if (!opt) { check(false, `B13: ${o.id} keuzevraag zonder knoppen: ${strip(q.vraag).slice(-80)} | ${v.label}`); return; }
+        keuze++;
+        check(opt.some(([n]) => n === v.val), `B13: ${o.id} goede antwoord ${v.val} niet bij de knoppen`);
+        check(opt.every(([, t]) => t && t.length < 80), `B13: ${o.id} knoptekst vreemd: ${JSON.stringify(opt)}`);
+      }
+    });
+  }
+  check(keuze > 500, `B13: te weinig keuzevragen gevonden (${keuze})`);
+}
+// 11. B17: elke uitleg heeft een controlevraag met een geldig antwoord
+for (const k of Object.keys(T.UITLEGGEN)) { const c = T.CONTROLE[k]; check(!!c && Array.isArray(c[1]) && c[2] >= 0 && c[2] < c[1].length && c[3], `B17: controlevraag ontbreekt of ongeldig bij ${k}`); }
 
 console.log(`${aantal} controles, ${T.ONDERWERPEN.length} oefeningen, ${Object.keys(T.UITLEGGEN).length} uitleggen.`);
 if (fouten.length) { console.log(`\n${fouten.length} FOUT(EN):`); for (const f of fouten.slice(0, 60)) console.log(" - " + f); process.exit(1); }
