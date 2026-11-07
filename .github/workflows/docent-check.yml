@@ -1,0 +1,37 @@
+# Dagelijkse test van de AI-docent (Delta) op de oefensite.
+# Bron van .github/workflows/docent-check.yml in JellemaD/Oefenschrift-wis--en-natuurkunde.
+# Stelt elke ochtend één korte vraag aan de worker. Mislukt dat, dan faalt de run
+# en stuurt GitHub automatisch een mail naar Durk. Kosten: ongeveer $ 0,001 per dag.
+name: Docent-check
+
+on:
+  schedule:
+    - cron: "0 5 * * *"   # 05:00 UTC = 06:00/07:00 Nederlandse tijd
+  workflow_dispatch:       # handmatig starten via Actions → Run workflow
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Vraag aan de docent
+        run: |
+          for poging in 1 2 3; do
+            code=$(curl -s -o antwoord.json -w "%{http_code}" --max-time 60 \
+              -X POST https://oefenschrift-docent.djellema.workers.dev/ \
+              -H "Origin: https://jellemad.github.io" \
+              -H "Content-Type: application/json" \
+              -d '{"berichten":[{"role":"user","content":"Wat is 3 x 4?"}],"docent":"delta","versie":"docent-check"}')
+            echo "Poging $poging: HTTP $code"
+            cat antwoord.json; echo
+            if [ "$code" = "200" ] && jq -e '.antwoord | length > 0' antwoord.json > /dev/null; then
+              echo "De docent werkt."
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::De AI-docent geeft geen antwoord. Kijk in Cloudflare > Worker oefenschrift-docent > Logs. Bij 'invalid x-api-key': nieuwe sleutel zetten met (Get-Clipboard).Trim() | npx -y wrangler@4 secret put ANTHROPIC_API_KEY"
+          exit 1
