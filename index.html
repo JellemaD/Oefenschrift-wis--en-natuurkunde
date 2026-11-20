@@ -349,7 +349,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <h1>Esra's oefenschrift</h1>
     <p class="intro">Kies een paragraaf. Vast? Vraag het de professor.</p>
     <button class="verder hidden" id="verder"><span class="vd-tekst"><span class="vd-label">Verder waar je was</span><b id="verder-titel"></b><span class="vd-sub" id="verder-sub"></span></span><span class="vd-pijl" aria-hidden="true">→</span></button>
-    <a class="verder filmknop" href="som3-volta.html"><span class="vd-tekst"><span class="vd-label">Filmpje van je werkblad</span><b>Som 3: vergelijkingen oplossen</b><span class="vd-sub">Professor Volta legt 3a t/m 3d uit op het bord</span></span><span class="vd-pijl" aria-hidden="true">▶</span></a>
+    <a class="verder filmknop" href="som3-delta.html"><span class="vd-tekst"><span class="vd-label">Filmpje van je werkblad</span><b>Som 3: vergelijkingen oplossen</b><span class="vd-sub">Professor Delta legt 3a t/m 3d uit op het bord</span></span><span class="vd-pijl" aria-hidden="true">▶</span></a>
 
     <div class="tabs" role="tablist" aria-label="Kies een vak">
       <button type="button" role="tab" id="tab-wis" data-tab="wis" aria-selected="true">Wiskunde</button>
@@ -737,7 +737,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.11.20-1";
+const VERSIE = "2026.11.20-2";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
