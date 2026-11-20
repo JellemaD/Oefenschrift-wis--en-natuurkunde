@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Som 3 met Professor Volta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBFCFE; --grid:#E3EBF5; --grid-strong:#C9D6E6;
+  --ink:#1D3A6E; --text:#1F2733; --pencil:#5B6577;
+  --marker:#FFE45C; --marker-soft:#FFF4B0;
+  --red:#C9302C; --green:#237A4B; --card:#FFFFFF;
+  --hand:"Kalam","Comic Sans MS",cursive;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#131924; --grid:#1C2432; --grid-strong:#2B3547;
+  --ink:#A9C6FF; --text:#E6EAF2; --pencil:#9AA4B5;
+  --marker:#E2C53A; --marker-soft:#3A3417; --red:#FF7A74; --green:#6FD39C; --card:#1A2130;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--text);font-family:var(--body);font-size:1.0625rem;line-height:1.5}
+main{max-width:640px;margin:0 auto;padding:1rem 16px 3rem}
+h1{font-family:var(--hand);color:var(--ink);font-size:1.8rem;margin:.3rem 0 .6rem;line-height:1.2}
+.kop{display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem}
+#av{width:100px;height:100px;flex:none}
+#av svg{width:100%;height:100%;display:block}
+.klein{font-size:.9rem;color:var(--pencil)}
+.scherm{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:1rem}
+.deel{font-family:var(--hand);color:var(--pencil);font-size:1.05rem;text-align:center;min-height:1.4rem}
+.tekst{font-family:var(--hand);font-size:1.5rem;color:var(--ink);text-align:center;min-height:4.4rem;line-height:1.35}
+.tekst .f{background:var(--marker-soft);padding:0 .35rem;border-radius:3px;white-space:nowrap}
+.tekst .goed{color:var(--green);font-weight:700}
+#beeld svg{display:block;width:100%;max-width:400px;margin:0 auto}
+#beeld table{margin:.4rem auto;border-collapse:collapse;font-size:1.05rem}
+#beeld td,#beeld th{border:1px solid var(--grid-strong);padding:.25rem .7rem;text-align:center}
+#beeld th{background:var(--marker-soft);color:var(--ink)}
+#beeld tr.hit td{background:var(--marker);color:#1F2733;font-weight:700}
+.ondertitel{text-align:center;margin:.7rem 0 0;font-size:.95rem;color:var(--pencil)}
+.as{stroke:var(--pencil);stroke-width:1.5}
+.rooster{stroke:var(--grid);stroke-width:1}
+.graaf{fill:none;stroke:var(--ink);stroke-width:3}
+.lijn2{fill:none;stroke:var(--red);stroke-width:2.5;stroke-dasharray:7 5}
+.pt{fill:var(--red);stroke:var(--card);stroke-width:2}
+.ptlabel{font:700 15px var(--body);fill:var(--red)}
+.aslabel{font:12px var(--body);fill:var(--pencil)}
+.wijs{fill:none;stroke:var(--marker);stroke-width:9;stroke-opacity:.8}
+@media (prefers-reduced-motion: no-preference){ .wijs{animation:wijs 1s ease-in-out infinite alternate} }
+@keyframes wijs{from{stroke-opacity:.3}to{stroke-opacity:.95}}
+.balk{display:flex;align-items:center;gap:.4rem;margin:1rem auto .4rem;background:var(--card);border:2px solid var(--grid-strong);border-radius:999px;padding:.3rem .5rem}
+.knop{width:2.75rem;height:2.75rem;border-radius:50%;border:0;background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center;flex:none}
+.knop:hover{background:var(--marker-soft)}
+.knop.speel{background:var(--ink);color:var(--paper);width:3rem;height:3rem}
+.knop svg{width:22px;height:22px}
+.knop:disabled{opacity:.35;cursor:default;background:transparent}
+.knop:focus-visible,.start:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
+.voortgang{flex:1;height:6px;background:var(--grid-strong);border-radius:3px;overflow:hidden}
+#vg{height:100%;width:0;background:var(--ink);transition:width .4s}
+#teller{min-width:3.5rem;text-align:right;font-variant-numeric:tabular-nums}
+.start{display:block;margin:1rem auto;background:var(--marker);color:#1F2733;border:2px solid #1F2733;border-radius:999px;padding:.7rem 1.5rem;font-family:var(--hand);font-size:1.3rem;font-weight:700;cursor:pointer;box-shadow:3px 3px 0 #1F2733}
+.start[hidden]{display:none}
+/* krijtbord */
+.bord{background:#24493A;border:10px solid #8A5A35;border-radius:8px;box-shadow:inset 0 0 30px rgba(0,0,0,.35);padding:.7rem 1rem .9rem;min-height:9.5rem;margin:.3rem 0 .8rem;position:relative}
+.bord-kop{font-family:var(--hand);color:#F6E27A;font-size:1.15rem;border-bottom:2px solid rgba(255,255,255,.25);margin-bottom:.35rem;padding-bottom:.1rem}
+.bord .r{display:block;font-family:var(--hand);font-size:1.5rem;line-height:1.45;color:#F4F4EE;white-space:pre-wrap;text-shadow:0 0 1px rgba(255,255,255,.5)}
+.bord .r.oud{opacity:.8}
+.bord .r.in{padding-left:2.2em}
+.bord .r.ant{color:#24493A;background:#F6E27A;display:inline-block;padding:0 .5rem;border-radius:4px;margin:.15rem 0;text-shadow:none;font-weight:700}
+.bord .r.nieuw{clip-path:inset(0 100% 0 0);animation:schrijf var(--duur,1.4s) steps(24,end) var(--wacht,0s) forwards}
+@keyframes schrijf{to{clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion: reduce){.bord .r.nieuw{animation:none;clip-path:none}}
+.bord .krijt{position:absolute;right:12px;bottom:-8px;width:34px;height:9px;background:#F4F4EE;border-radius:2px}
+.bord .wisser{position:absolute;right:56px;bottom:-11px;width:44px;height:13px;background:#3B3B3B;border-top:5px solid #C9A46A;border-radius:3px}
+@media (max-width:540px){.bord .r{font-size:1.2rem}.bord{border-width:7px;padding:.5rem .7rem .7rem}}
+.m{display:none}
+#av svg[data-mond="0"] .m0,#av svg[data-mond="1"] .m1,#av svg[data-mond="2"] .m2,#av svg[data-mond="3"] .m3{display:inline}
+.av-bg{fill:#FFF4B0}.av-trui-nat{fill:#237A4B}.av-bliksem{fill:#FFE45C;stroke:#1F2733;stroke-width:1}
+.av-huid2{fill:#C98E63;stroke:#1F2733;stroke-width:1.5}.av-haar-grijs{fill:#DDE1E7;stroke:#9AA4B5;stroke-width:1}
+.av-band{stroke:#5B3A1E;stroke-width:3}.av-lens{fill:#BFE3F2;stroke:#1F2733;stroke-width:2}
+.av-lijn-grijs{fill:none;stroke:#8C96A6;stroke-width:2.4;stroke-linecap:round}
+.av-snor{fill:#DDE1E7;stroke:#8C96A6;stroke-width:1}.av-ogen{fill:#1F2733}.av-wang{fill:#E8857A;opacity:.35}
+.m0{fill:none;stroke:#1F2733;stroke-width:2.4;stroke-linecap:round}.m1,.m2,.m3{fill:#7A2E2E;stroke:#1F2733;stroke-width:1.5}
+@media (max-width:540px){#av{width:76px;height:76px}.tekst{font-size:1.25rem}h1{font-size:1.5rem}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Som 3: vergelijkingen algebraïsch oplossen</h1>
+  <div class="kop">
+    <div id="av"><svg viewBox="0 0 120 120" data-mond="0" role="img" aria-label="Professor Volta"><circle cx="60" cy="60" r="58" class="av-bg"/><path d="M26 120 Q28 97 60 95 Q92 97 94 120Z" class="av-trui-nat"/><path d="M63 100 L55 111 L60 111 L56 119 L67 107 L62 107 L65 100Z" class="av-bliksem"/><ellipse cx="33" cy="64" rx="5" ry="7" class="av-huid2"/><ellipse cx="87" cy="64" rx="5" ry="7" class="av-huid2"/><ellipse cx="60" cy="62" rx="27" ry="31" class="av-huid2"/><g class="av-haar-grijs"><circle cx="33" cy="49" r="9"/><circle cx="29" cy="61" r="6.5"/><circle cx="87" cy="49" r="9"/><circle cx="91" cy="61" r="6.5"/><circle cx="43" cy="35" r="9"/><circle cx="77" cy="35" r="9"/><circle cx="60" cy="30" r="9.5"/></g><path d="M33 45 H87" class="av-band"/><circle cx="50" cy="45" r="7" class="av-lens"/><circle cx="70" cy="45" r="7" class="av-lens"/><path d="M42 56 q7 -3 13 0" class="av-lijn-grijs"/><path d="M65 56 q7 -3 13 0" class="av-lijn-grijs"/><g class="av-ogen"><circle cx="49" cy="64" r="2.9"/><circle cx="71" cy="64" r="2.9"/></g><circle cx="42" cy="75" r="4" class="av-wang"/><circle cx="78" cy="75" r="4" class="av-wang"/><path class="m m0" d="M51 84 Q60 90 69 84"/><ellipse class="m m1" cx="60" cy="86" rx="5.5" ry="3.5"/><path class="m m2" d="M50 83 Q60 97 70 83 Q60 86 50 83Z"/><ellipse class="m m3" cx="60" cy="87" rx="3.5" ry="5"/><path d="M46 80 Q53 74 60 78.5 Q67 74 74 80 Q67 82.5 60 80.5 Q53 82.5 46 80Z" class="av-snor"/></svg></div>
+    <div><b>Professor Volta</b><div class="klein">voor Esra · som 3a t/m 3d</div></div>
+  </div>
+
+  <div class="scherm">
+    <div class="bord" id="bord" aria-live="polite"></div>
+    <div id="beeld"></div>
+    <p class="ondertitel" id="ondertitel"></p>
+  </div>
+
+  <button class="start" id="start">▶ Start het filmpje</button>
+
+  <div class="balk">
+    <button class="knop" id="terug" aria-label="Vorige stap" title="Vorige stap"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+    <button class="knop speel" id="pauze" aria-label="Afspelen" title="Afspelen"></button>
+    <button class="knop" id="verder" aria-label="Volgende stap" title="Volgende stap"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+    <div class="voortgang"><div id="vg"></div></div>
+    <span class="klein" id="teller"></span>
+  </div>
+  <p class="klein" id="status" aria-live="polite"></p>
+</main>
+
+<script>
+const F = s => `<span class="f">${s}</span>`;
+const G = s => `<span class="goed">${s}</span>`;
+
+/* Kleine grafiektekenaar: functie f, venster, punten [x,y,label], wijs = punten met gele cirkel, lijn = horizontale lijn y=k */
+function plot({ f, x0, x1, y0, y1, pts = [], wijs = [], k = null, stapX = 1, stapY = null }) {
+  const W = 400, H = 260, pad = 26;
+  const sx = x => pad + (x - x0) / (x1 - x0) * (W - 2 * pad);
+  const sy = y => H - pad - (y - y0) / (y1 - y0) * (H - 2 * pad);
+  stapY = stapY || Math.max(1, Math.round((y1 - y0) / 8));
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="grafiek">`;
+  for (let x = Math.ceil(x0); x <= x1; x += stapX) s += `<line class="rooster" x1="${sx(x)}" y1="${pad}" x2="${sx(x)}" y2="${H - pad}"/>`;
+  for (let y = Math.ceil(y0 / stapY) * stapY; y <= y1; y += stapY) s += `<line class="rooster" x1="${pad}" y1="${sy(y)}" x2="${W - pad}" y2="${sy(y)}"/>`;
+  s += `<line class="as" x1="${pad}" y1="${sy(0)}" x2="${W - pad}" y2="${sy(0)}"/><line class="as" x1="${sx(0)}" y1="${pad}" x2="${sx(0)}" y2="${H - pad}"/>`;
+  s += `<text class="aslabel" x="${W - pad + 4}" y="${sy(0) + 4}">x</text><text class="aslabel" x="${sx(0) + 5}" y="${pad - 8}">y</text>`;
+  if (k !== null) s += `<line class="lijn2" x1="${pad}" y1="${sy(k)}" x2="${W - pad}" y2="${sy(k)}"/><text class="ptlabel" x="${sx(0) + 8}" y="${sy(k) - 6}">y = ${k}</text>`;
+  if (f) {
+    let d = "", aan = false;
+    for (let i = 0; i <= 240; i++) {
+      const x = x0 + (x1 - x0) * i / 240, y = f(x);
+      if (y < y0 - 2 || y > y1 + 2) { aan = false; continue; }
+      d += (aan ? "L" : "M") + sx(x).toFixed(1) + " " + sy(y).toFixed(1); aan = true;
+    }
+    s += `<path class="graaf" d="${d}"/>`;
+  }
+  wijs.forEach(([x, y]) => s += `<circle class="wijs" cx="${sx(x)}" cy="${sy(y)}" r="15"/>`);
+  pts.forEach(([x, y, l]) => {
+    s += `<circle class="pt" cx="${sx(x)}" cy="${sy(y)}" r="6"/>`;
+    if (l) s += `<text class="ptlabel" x="${sx(x)}" y="${sy(y) + (y >= k && k !== null ? -14 : 22)}" text-anchor="middle">${l}</text>`;
+  });
+  return s + `</svg>`;
+}
+
+const fa = x => x * x, fb = x => x * (2 * x + 6), fc = x => (x - 3) * (x + 4.5), fd = x => x * x - 6 * x + 8;
+const A = { f: fa, x0: -7, x1: 7, y0: -4, y1: 34, stapY: 5, k: 25 };
+const B = { f: fb, x0: -5, x1: 2, y0: -6, y1: 12, stapY: 2 };
+const C = { f: fc, x0: -6, x1: 5, y0: -18, y1: 10, stapY: 4 };
+const D = { f: fd, x0: -1, x1: 7, y0: -2, y1: 10, stapY: 2 };
+const tabel = (rijen, hit) => `<table><tr><th>getal 1</th><th>getal 2</th><th>keer</th><th>plus</th></tr>${rijen.map((r, i) => `<tr class="${i === hit ? "hit" : ""}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("")}</table>`;
+const paren = [["1", "8", "8", "9"], ["2", "4", "8", "6"], ["−1", "−8", "8", "−9"], ["−2", "−4", "8", "−6"]];
+
+const STAPPEN = [
+  { deel: "Som 3", tekst: `Los op: ${F("algebraïsch")} = met rekenen,<br>niet met de GR`,
+    zeg: "Dag Esra! Ik ben Professor Volta. Normaal help ik je met natuurkunde, maar vandaag doen we samen wiskunde: som 3. Er staat: los de vergelijkingen algebraïsch op. Algebraïsch betekent: met rekenen, op papier. Dus niet aflezen op de rekenmachine." },
+  { deel: "Som 3", tekst: `Twee trucs:<br>① ${F("x² = getal")} → wortel, twee antwoorden<br>② ${F("A · B = 0")} → A = 0 of B = 0`,
+    zeg: "Voor deze som heb je maar twee trucs nodig. Truc één: staat er x kwadraat is een getal, neem dan de wortel. En let op: dat geeft twee antwoorden. Truc twee: is een product nul, dan moet één van de twee stukken nul zijn. Een keersom is alleen nul als één van de getallen nul is." },
+
+  { deel: "3a", tekst: F("x² = 25"), beeld: () => plot(A),
+    zeg: "We beginnen met a. x kwadraat is 25. Welk getal keer zichzelf is 25? In de grafiek zoek je waar de parabool y is x kwadraat de lijn y is 25 snijdt." },
+  { deel: "3a", tekst: `${F("x = √25 = 5")}`, beeld: () => plot({ ...A, pts: [[5, 25, "5"]], wijs: [[5, 25]] }),
+    zeg: "Neem de wortel: de wortel uit 25 is 5. Want 5 keer 5 is 25. Maar we zijn nog niet klaar." },
+  { deel: "3a", tekst: `${F("(−5)² = −5 · −5 = 25")}<br>${G("x = 5 of x = −5")}`, beeld: () => plot({ ...A, pts: [[5, 25, "5"], [-5, 25, "−5"]], wijs: [[-5, 25], [5, 25]] }),
+    zeg: "Min 5 keer min 5 is ook 25. Min keer min is plus. Je ziet het in de grafiek: de lijn snijdt de parabool twee keer. Het antwoord is dus: x is 5, of x is min 5. Dat tweede antwoord vergeten veel leerlingen. Jij niet!" },
+
+  { deel: "3b", tekst: F("x(2x + 6) = 0"), beeld: () => plot(B),
+    zeg: "Nu b. x keer haakje 2x plus 6, is nul. Kijk: er staat een keersom, en die is nul. Dan gebruiken we truc twee. Werk de haakjes dus níet weg, dat maakt het alleen moeilijker." },
+  { deel: "3b", tekst: `${F("x = 0")} of ${F("2x + 6 = 0")}`, beeld: () => plot(B),
+    zeg: "Het eerste stuk is x. Het tweede stuk is 2x plus 6. Eén van de twee moet nul zijn. Dus: x is nul, of 2x plus 6 is nul." },
+  { deel: "3b", tekst: `${F("2x + 6 = 0")} → ${F("2x = −6")} → ${F("x = −3")}`, beeld: () => plot(B),
+    zeg: "Het tweede stukje los je op zoals een gewone vergelijking. 2x plus 6 is nul. Haal aan beide kanten 6 eraf: 2x is min 6. Deel door 2: x is min 3." },
+  { deel: "3b", tekst: G("x = 0 of x = −3"), beeld: () => plot({ ...B, pts: [[0, 0, "0"], [-3, 0, "−3"]], wijs: [[0, 0], [-3, 0]] }),
+    zeg: "Het antwoord is: x is nul, of x is min 3. In de grafiek zie je het: daar raakt de parabool de x-as, daar is y nul. Controle: vul min 3 in. 2 keer min 3 plus 6 is nul. Klopt!" },
+
+  { deel: "3c", tekst: F("(x − 3)(x + 4½) = 0"), beeld: () => plot(C),
+    zeg: "Dan c. Haakje x min 3, keer haakje x plus vier en een half, is nul. Weer een keersom die nul is. Dus weer truc twee." },
+  { deel: "3c", tekst: `${F("x − 3 = 0")} → ${F("x = 3")}`, beeld: () => plot({ ...C, pts: [[3, 0, "3"]], wijs: [[3, 0]] }),
+    zeg: "Eerste stuk: x min 3 is nul. Welk getal min 3 is nul? Dat is 3. Dus x is 3." },
+  { deel: "3c", tekst: `${F("x + 4½ = 0")} → ${F("x = −4½")}`, beeld: () => plot({ ...C, pts: [[3, 0, "3"], [-4.5, 0, "−4½"]], wijs: [[-4.5, 0]] }),
+    zeg: "Tweede stuk: x plus vier en een half is nul. Dan moet x min vier en een half zijn. Let op: het teken draait om! In het haakje staat plus, in het antwoord staat min." },
+  { deel: "3c", tekst: G("x = 3 of x = −4½"), beeld: () => plot({ ...C, pts: [[3, 0, "3"], [-4.5, 0, "−4½"]] }),
+    zeg: "Het antwoord is: x is 3, of x is min vier en een half. Handig om te onthouden: bij haakje x min 3 hoort x is plus 3, en bij haakje x plus vier en een half hoort x is min vier en een half." },
+
+  { deel: "3d", tekst: F("x² − 6x + 8 = 0"), beeld: () => plot(D),
+    zeg: "En de laatste, d. x kwadraat min 6x plus 8, is nul. Hier staat géén keersom, maar een plussom. Truc twee werkt dus nog niet. Eerst moeten we er een keersom van maken. Dat heet ontbinden in factoren." },
+  { deel: "3d", tekst: `Zoek twee getallen:<br>keer = ${F("8")} en plus = ${F("−6")}`, beeld: () => tabel(paren, -1),
+    zeg: "Zoek twee getallen die keer elkaar 8 zijn, en opgeteld min 6. Het getal 8 is het losse getal achteraan. Min 6 is het getal voor de x. Maak een lijstje van alle tweetallen die keer elkaar 8 zijn." },
+  { deel: "3d", tekst: `${F("−2 · −4 = 8")} en ${F("−2 + −4 = −6")}`, beeld: () => tabel(paren, 3),
+    zeg: "1 en 8 geeft opgeteld 9. 2 en 4 geeft 6, bijna, maar we willen min 6. Dan proberen we de negatieve getallen: min 2 keer min 4 is 8. En min 2 plus min 4 is min 6. Gevonden!" },
+  { deel: "3d", tekst: F("(x − 2)(x − 4) = 0"), beeld: () => plot(D),
+    zeg: "Nu schrijf je: haakje x min 2, keer haakje x min 4, is nul. Nu is het wél een keersom. En dan weet je wat je moet doen: truc twee." },
+  { deel: "3d", tekst: `${F("x − 2 = 0")} of ${F("x − 4 = 0")}<br>${G("x = 2 of x = 4")}`, beeld: () => plot({ ...D, pts: [[2, 0, "2"], [4, 0, "4"]], wijs: [[2, 0], [4, 0]] }),
+    zeg: "x min 2 is nul, dus x is 2. Of x min 4 is nul, dus x is 4. Het antwoord: x is 2, of x is 4." },
+  { deel: "3d", tekst: `Controle: ${F("4² − 6·4 + 8 = 16 − 24 + 8 = 0")} ✓`, beeld: () => plot({ ...D, pts: [[2, 0, "2"], [4, 0, "4"]] }),
+    zeg: "Controleer altijd even door in te vullen. Vul 4 in: 4 kwadraat is 16. Min 6 keer 4 is min 24. Plus 8. 16 min 24 plus 8 is nul. Het klopt!" },
+
+  { deel: "Samenvatting", tekst: `a ${G("x = 5 of −5")} · b ${G("x = 0 of −3")}<br>c ${G("x = 3 of −4½")} · d ${G("x = 2 of 4")}`,
+    zeg: "Kort samengevat. Bij a: x kwadraat is een getal, dus wortel, en vergeet het min-antwoord niet. Bij b en c: een keersom is nul, dus elk stuk apart nul maken. Bij d: eerst ontbinden in een keersom, en dan hetzelfde trucje. En elke vergelijking had twee antwoorden." },
+  { deel: "Klaar", tekst: "Nu jij! Maak 3a t/m 3d zelf,<br>zonder te kijken.", eind: true,
+    zeg: "Goed gedaan, Esra! Pak nu je blad en maak som 3 zelf, zonder te spieken. Lukt het niet? Spoel dan terug naar dat stukje. Succes!" }
+];
+
+/* Wat Volta per stap op het bord schrijft. Regels blijven staan binnen dezelfde som; "!" = antwoord. */
+const BORD = [
+  ["Algebraïsch = rekenen, niet met de GR"],
+  ["① x² = getal  →  wortel: 2 antwoorden", "② A · B = 0  →  A = 0  of  B = 0"],
+  ["x² = 25"],
+  ["x = √25 = 5"],
+  ["of  x = −5     want (−5)² = 25", "!x = 5  of  x = −5"],
+  ["x(2x + 6) = 0"],
+  ["x = 0     of     2x + 6 = 0"],
+  [">2x + 6 = 0   →   2x = −6", ">x = −6 : 2 = −3"],
+  ["!x = 0  of  x = −3"],
+  ["(x − 3)(x + 4½) = 0"],
+  ["x − 3 = 0   →   x = 3"],
+  ["x + 4½ = 0   →   x = −4½"],
+  ["!x = 3  of  x = −4½"],
+  ["x² − 6x + 8 = 0"],
+  ["zoek:  keer = 8,  plus = −6"],
+  ["−2 · −4 = 8     −2 + −4 = −6  ✓"],
+  ["(x − 2)(x − 4) = 0"],
+  ["x − 2 = 0   of   x − 4 = 0", "!x = 2  of  x = 4"],
+  ["controle: 4² − 6·4 + 8 = 16 − 24 + 8 = 0 ✓"],
+  ["!a   x = 5  of  x = −5", "!b   x = 0  of  x = −3", "!c   x = 3  of  x = −4½", "!d   x = 2  of  x = 4"],
+  ["Nu jij!  Maak 3a t/m 3d zelf."]
+];
+function bordHTML(n) {
+  const deel = STAPPEN[n].deel;
+  let start = n; while (start > 0 && STAPPEN[start - 1].deel === deel) start--;
+  let h = `<div class="bord-kop">${deel === "Som 3" ? "Som 3 · twee trucs" : deel}</div>`, wacht = 0.3;
+  for (let j = start; j <= n; j++) for (const regel of BORD[j]) {
+    const ant = regel.startsWith("!"), in_ = regel.startsWith(">"), t = (ant || in_) ? regel.slice(1) : regel;
+    const kl = `${ant ? " ant" : ""}${in_ ? " in" : ""}`;
+    if (j < n) { h += `<span class="r oud${kl}">${t}</span>${ant ? "<br>" : ""}`; continue; }
+    const duur = Math.min(2.6, 0.5 + t.trim().length * 0.06);
+    h += `<span class="r nieuw${kl}" style="--duur:${duur}s;--wacht:${wacht}s">${t}</span>${ant ? "<br>" : ""}`;
+    wacht += duur + 0.5;
+  }
+  return h + `<span class="wisser"></span><span class="krijt"></span>`;
+}
+
+/* ---------- speler ---------- */
+const $ = id => document.getElementById(id);
+const avatar = $("av").querySelector("svg");
+let i = 0, speelt = false, timer = null, mondTimer = null, stem = null;
+
+function kiesStem() {
+  const st = speechSynthesis.getVoices().filter(v => /^nl/i.test(v.lang));
+  stem = st.find(v => /^nl[-_]BE/i.test(v.lang)) || st.find(v => /^nl[-_]NL/i.test(v.lang)) || st[0] || null;
+}
+if ("speechSynthesis" in window) { kiesStem(); speechSynthesis.onvoiceschanged = kiesStem; }
+
+function uitspraak(t) {
+  return t.replace(/\bx\b/g, "iks");
+}
+function mond(aan) {
+  clearInterval(mondTimer);
+  if (!aan) { avatar.dataset.mond = "0"; return; }
+  mondTimer = setInterval(() => avatar.dataset.mond = String(1 + Math.floor(Math.random() * 3)), 140);
+}
+const ICOON_SPEEL = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>`;
+const ICOON_PAUZE = `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>`;
+
+function toon() {
+  const s = STAPPEN[i];
+  $("bord").innerHTML = bordHTML(i);
+  $("beeld").innerHTML = s.beeld ? s.beeld() : "";
+  $("ondertitel").textContent = s.zeg;
+  $("vg").style.width = (100 * (i + 1) / STAPPEN.length) + "%";
+  $("teller").textContent = `${i + 1} / ${STAPPEN.length}`;
+  $("terug").disabled = i === 0;
+  $("verder").disabled = i === STAPPEN.length - 1;
+}
+function stop() {
+  clearTimeout(timer);
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  mond(false);
+}
+function spreek() {
+  stop();
+  const s = STAPPEN[i];
+  const volgende = () => { mond(false); if (!speelt) return; if (s.eind || i >= STAPPEN.length - 1) { zetSpelen(false); return; } timer = setTimeout(() => { i++; toon(); spreek(); }, 900); };
+  if (!("speechSynthesis" in window) || !stem) {
+    $("status").textContent = stem === null && "speechSynthesis" in window ? "" : "Geen voorleesstem op dit apparaat: lees de ondertitel.";
+    mond(true);
+    timer = setTimeout(volgende, Math.max(4000, s.zeg.split(" ").length * 380));
+    return;
+  }
+  const u = new SpeechSynthesisUtterance(uitspraak(s.zeg));
+  u.voice = stem; u.lang = stem.lang; u.rate = 0.95; u.pitch = 0.88;
+  u.onstart = () => mond(true);
+  u.onend = volgende;
+  u.onerror = () => mond(false);
+  speechSynthesis.speak(u);
+}
+function zetSpelen(aan) {
+  speelt = aan;
+  $("pauze").innerHTML = aan ? ICOON_PAUZE : ICOON_SPEEL;
+  $("pauze").setAttribute("aria-label", aan ? "Pauze" : "Afspelen");
+  $("pauze").title = aan ? "Pauze" : "Afspelen";
+  if (aan) spreek(); else stop();
+}
+$("start").onclick = () => { $("start").hidden = true; i = 0; toon(); zetSpelen(true); };
+$("pauze").onclick = () => { $("start").hidden = true; zetSpelen(!speelt); };
+$("verder").onclick = () => { if (i < STAPPEN.length - 1) { i++; toon(); if (speelt) spreek(); } };
+$("terug").onclick = () => { if (i > 0) { i--; toon(); if (speelt) spreek(); } };
+toon(); zetSpelen(false);
+</script>
+</body>
+</html>
