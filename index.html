@@ -116,6 +116,8 @@ svg.uitleg-plot{max-width:380px}
 .verder b{font-size:1.15rem}
 .vd-sub{font-size:.92rem;opacity:.85}
 .vd-pijl{font-size:1.6rem}
+a.filmknop{background:var(--marker-soft);color:var(--text);border:2px solid var(--marker);box-shadow:3px 3px 0 var(--ink);text-decoration:none}
+a.filmknop .vd-label{color:var(--ink)}
 details.later{margin:.6rem 0}
 details.later>summary{cursor:pointer;color:var(--pencil);font-weight:700;padding:.7rem .2rem;min-height:44px}
 /* Grotere tikvlakken op de telefoon */
@@ -347,6 +349,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
     <h1>Esra's oefenschrift</h1>
     <p class="intro">Kies een paragraaf. Vast? Vraag het de professor.</p>
     <button class="verder hidden" id="verder"><span class="vd-tekst"><span class="vd-label">Verder waar je was</span><b id="verder-titel"></b><span class="vd-sub" id="verder-sub"></span></span><span class="vd-pijl" aria-hidden="true">→</span></button>
+    <a class="verder filmknop" href="som3-volta.html"><span class="vd-tekst"><span class="vd-label">Filmpje van je werkblad</span><b>Som 3: vergelijkingen oplossen</b><span class="vd-sub">Professor Volta legt 3a t/m 3d uit op het bord</span></span><span class="vd-pijl" aria-hidden="true">▶</span></a>
 
     <div class="tabs" role="tablist" aria-label="Kies een vak">
       <button type="button" role="tab" id="tab-wis" data-tab="wis" aria-selected="true">Wiskunde</button>
@@ -734,7 +737,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.10.10-9";
+const VERSIE = "2026.11.20-1";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");

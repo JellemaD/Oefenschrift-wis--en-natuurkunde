@@ -5,6 +5,10 @@ Terug naar een versie: `node tools/rollback.js <versie> --ja` (zie README.md).
 
 <!-- VERSIES -->
 
+## 2026.11.20-1 · 2026-11-20 14:16
+
+Knop op de startpagina naar het filmpje Som 3 (Professor Volta legt 3a t/m 3d uit op het bord)
+
 ## 2026.10.10-9 · 2026-10-10 17:50
 
 Database voor vragen en voortgang (staat uit tot de afspraak met leerling en ouder): site stuurt voortgang mee zodra bewaren aan staat, melding boven de chat zegt eerlijk wat er bewaard wordt; worker met tabellen gesprekken en voortgang onder pseudoniem, automatisch opruimen, zoekopdrachten in worker/DATABASE.md
