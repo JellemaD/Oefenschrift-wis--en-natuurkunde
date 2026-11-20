@@ -97,13 +97,17 @@ svg.uitleg-plot{max-width:380px}
 .vraagpil{background:var(--marker);color:#1F2733;border:2px solid #1F2733;border-radius:999px;padding:.45rem 1rem;font-family:var(--hand);font-size:1.1rem;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 #1F2733;white-space:nowrap;flex:none}
 .vraagpil:hover{filter:brightness(1.05)}
 .ikoon:disabled{opacity:.35;cursor:default;background:transparent}
-.u-balk{flex:1;height:6px;background:var(--grid-strong);border-radius:3px;overflow:hidden;margin:0 .3rem}
+.u-spoel{flex:1;padding:12px 0;margin:0 .3rem;cursor:pointer;touch-action:none;position:relative}
+.u-spoel:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:4px}
+.u-balk{height:8px;background:var(--grid-strong);border-radius:4px;overflow:hidden;transition:height .15s}
+.u-spoel:hover .u-balk{height:12px}
+#u-knop{position:absolute;top:50%;left:0;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--ink);border:3px solid var(--card);box-shadow:0 0 0 1px var(--grid-strong);transition:left .5s linear;pointer-events:none}
 #u-balk{height:100%;width:0;background:var(--ink);transition:width .5s linear}
 #u-rest{min-width:4.5rem;text-align:right;font-variant-numeric:tabular-nums}
 @media (max-width:540px){#u-av{width:84px;height:84px}.u-tekst{font-size:1.2rem}
   .vraagknop{padding:.55rem 1rem;font-size:1.05rem;right:.75rem}
   .spelerbalk{flex-wrap:wrap;border-radius:18px;justify-content:center}
-  .spelerbalk .u-balk{order:-2;flex:1 1 calc(100% - 7rem);margin:.3rem .3rem .2rem}
+  .spelerbalk .u-spoel{order:-2;flex:1 1 calc(100% - 7rem);margin:.1rem .3rem 0}
   .spelerbalk #u-rest{order:-1;margin-top:.1rem;min-width:0;flex:none}
 }
 .vraagknop{transition:transform .25s ease}
@@ -427,7 +431,7 @@ svg[data-mond="0"] .m0,svg[data-mond="1"] .m1,svg[data-mond="2"] .m2,svg[data-mo
       <button type="button" class="ikoon" id="u-terug" aria-label="Vorige stap" title="Vorige stap"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
       <button type="button" class="ikoon stuur speel" id="u-pauze" aria-label="Pauze" title="Pauze"></button>
       <button type="button" class="ikoon" id="u-verder" aria-label="Volgende stap" title="Volgende stap"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
-      <div class="u-balk"><div id="u-balk"></div></div>
+      <div class="u-spoel" id="u-spoel" role="slider" tabindex="0" aria-label="Spoelen naar stap" aria-valuemin="1"><div class="u-balk"><div id="u-balk"></div></div><span id="u-knop"></span></div>
       <span class="klein" id="u-rest"></span>
       <button type="button" class="vraagpil" id="u-vraag">Vraag stellen</button>
     </div>
@@ -737,7 +741,7 @@ function formule(a, b, x = "x", y = "y") {
 }
 const F = s => `<span class="formule">${s}</span>`;
 // Versie: ophogen bij elke publicatie; de datum van de laatste update komt van de server (Last-Modified)
-const VERSIE = "2026.11.20-2";
+const VERSIE = "2026.11.20-3";
 // a·letter + b netjes, bijv. lijnF(3, "q", -2) = "3q − 2"
 // " + 3" of " − 3" achter een term; niets bij 0
 const staart = b => (b ? ` ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}` : "");
@@ -3959,7 +3963,18 @@ function toonTijd() {
   const rest = Math.max(0, sec.slice(uStap).reduce((a, b) => a + b, 0) - bezig);
   const r = Math.round(rest);
   $("u-rest").textContent = uitleg.stappen[uStap].eind ? "klaar" : `nog ${Math.floor(r / 60)}:${String(r % 60).padStart(2, "0")}`;
-  $("u-balk").style.width = `${Math.round(100 * (1 - rest / totaal))}%`;
+  const pct = `${Math.round(100 * (1 - rest / totaal))}%`;
+  $("u-balk").style.width = pct; $("u-knop").style.left = pct;
+  const sp = $("u-spoel"), n = uitleg.stappen.length;
+  sp.setAttribute("aria-valuemax", n); sp.setAttribute("aria-valuenow", uStap + 1);
+  sp.setAttribute("aria-valuetext", `stap ${uStap + 1} van ${n}`);
+}
+// Spoelen: welke stap hoort bij een plek op de balk (de balk loopt op spreektijd)
+function stapOpBalk(frac) {
+  const sec = uitleg.stappen.map(stapSec), t = frac * sec.reduce((a, b) => a + b, 0);
+  let som = 0;
+  for (let k = 0; k < sec.length; k++) { som += sec[k]; if (t < som) return k; }
+  return sec.length - 1;
 }
 function uitlegDuur(u) { return Math.max(1, Math.round(u.stappen.reduce((n, s) => n + stapSec(s), 0) / 60)); }
 let uHerkomst = "home";
@@ -4024,9 +4039,9 @@ function toonControle(c, volgende) {
   });
 }
 
-function toonStap(i) {
+function toonStap(i, spoelen) {
   const ck = CONTROLE[uitlegSleutel()], midden = Math.floor(uitleg.stappen.length / 2);
-  if (ck && i === midden + 1 && i > uStap && uitleg._controle !== "klaar") { toonControle(ck, i); return; }
+  if (!spoelen && ck && i === midden + 1 && i > uStap && uitleg._controle !== "klaar") { toonControle(ck, i); return; }
   uStap = Math.max(0, Math.min(i, uitleg.stappen.length - 1));
   const st = uitleg.stappen[uStap], mijn = ++uId;
   $("u-beeld").innerHTML = uitleg.teken(st.teken);
@@ -4116,6 +4131,26 @@ function init() {
   $("u-terug").onclick = () => toonStap(uStap - 1);
   $("u-verder").onclick = () => toonStap(uStap + 1);
   $("u-pauze").onclick = () => { uSpeelt = !uSpeelt; toonStap(uStap); };
+  // Spoelen: klikken of slepen op de voortgangsbalk, of pijltjestoetsen. Tijdens slepen stil, bij loslaten verder.
+  const spoel = $("u-spoel");
+  let sleept = false, speeldeVoor = false;
+  const fracBij = e => { const r = spoel.getBoundingClientRect(); return Math.max(0, Math.min(0.9999, (e.clientX - r.left) / r.width)); };
+  spoel.addEventListener("pointerdown", e => {
+    if (!uitleg) return;
+    sleept = true; speeldeVoor = uSpeelt; uSpeelt = false; spoel.setPointerCapture(e.pointerId);
+    toonStap(stapOpBalk(fracBij(e)), true);
+  });
+  spoel.addEventListener("pointermove", e => { if (!sleept) return; const n = stapOpBalk(fracBij(e)); if (n !== uStap) toonStap(n, true); });
+  const loslaten = () => { if (!sleept) return; sleept = false; uSpeelt = speeldeVoor; toonStap(uStap, true); };
+  spoel.addEventListener("pointerup", loslaten);
+  spoel.addEventListener("pointercancel", loslaten);
+  spoel.addEventListener("keydown", e => {
+    if (!uitleg) return;
+    const d = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+    if (d) { e.preventDefault(); toonStap(uStap + d, true); }
+    else if (e.key === "Home") { e.preventDefault(); toonStap(0, true); }
+    else if (e.key === "End") { e.preventDefault(); toonStap(uitleg.stappen.length - 1, true); }
+  });
   $("u-zelf").onclick = () => start(uitleg.oefen);
   // Terug naar de paragraaf: de oefening waar Esra vandaan kwam, of het blok op de startpagina
   $("u-naar").onclick = () => {

@@ -5,6 +5,10 @@ Terug naar een versie: `node tools/rollback.js <versie> --ja` (zie README.md).
 
 <!-- VERSIES -->
 
+## 2026.11.20-3 · 2026-11-20 14:44
+
+Spoelen in alle uitlegfilmpjes: klikken of slepen op de voortgangsbalk, of pijltjestoetsen
+
 ## 2026.11.20-2 · 2026-11-20 14:18
 
 Filmpje Som 3 nu met Professor Delta (wiskunde) op som3-delta.html; oude Volta-link stuurt door

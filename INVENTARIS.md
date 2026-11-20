@@ -1,4 +1,4 @@
-# Inventaris — versie 2026.11.20-2
+# Inventaris — versie 2026.11.20-3
 
 Automatisch gemaakt uit `index.html` door `tools/inventaris.js`. Niet met de hand bewerken.
 
