@@ -155,19 +155,19 @@ const paren = [["1", "8", "8", "9"], ["2", "4", "8", "6"], ["−1", "−8", "8",
 
 const STAPPEN = [
   { deel: "Som 3", tekst: `Los op: ${F("algebraïsch")} = met rekenen,<br>niet met de GR`,
-    zeg: "Hoi Esra! Ik ben Professor Delta. Vandaag doen we samen som 3 van je werkblad. Er staat: los de vergelijkingen algebraïsch op. Algebraïsch betekent: met rekenen, op papier. Dus niet aflezen op de rekenmachine." },
+    zeg: "Hoi! Ik ben Professor Delta. Vandaag doen we samen som 3 van je werkblad. Er staat: los de vergelijkingen algebraïsch op. Algebraïsch betekent: met rekenen, op papier. Dus niet aflezen op de rekenmachine." },
   { deel: "Som 3", tekst: `Twee trucs:<br>① ${F("x² = getal")} → wortel, twee antwoorden<br>② ${F("A · B = 0")} → A = 0 of B = 0`,
     zeg: "Voor deze som heb je maar twee trucs nodig. Truc één: staat er x kwadraat is een getal, neem dan de wortel. En let op: dat geeft twee antwoorden. Truc twee: is een product nul, dan moet één van de twee stukken nul zijn. Een keersom is alleen nul als één van de getallen nul is." },
 
   { deel: "3a", tekst: F("x² = 25"), beeld: () => plot(A),
-    zeg: "We beginnen met a. x kwadraat is 25. Welk getal keer zichzelf is 25? In de grafiek zoek je waar de parabool y is x kwadraat de lijn y is 25 snijdt." },
+    zeg: "We beginnen met som 3a. x kwadraat is 25. Welk getal keer zichzelf is 25? In de grafiek zoek je waar de parabool y is x kwadraat de lijn y is 25 snijdt." },
   { deel: "3a", tekst: `${F("x = √25 = 5")}`, beeld: () => plot({ ...A, pts: [[5, 25, "5"]], wijs: [[5, 25]] }),
     zeg: "Neem de wortel: de wortel uit 25 is 5. Want 5 keer 5 is 25. Maar we zijn nog niet klaar." },
   { deel: "3a", tekst: `${F("(−5)² = −5 · −5 = 25")}<br>${G("x = 5 of x = −5")}`, beeld: () => plot({ ...A, pts: [[5, 25, "5"], [-5, 25, "−5"]], wijs: [[-5, 25], [5, 25]] }),
     zeg: "Min 5 keer min 5 is ook 25. Min keer min is plus. Je ziet het in de grafiek: de lijn snijdt de parabool twee keer. Het antwoord is dus: x is 5, of x is min 5. Dat tweede antwoord vergeten veel leerlingen. Jij niet!" },
 
   { deel: "3b", tekst: F("x(2x + 6) = 0"), beeld: () => plot(B),
-    zeg: "Nu b. x keer haakje 2x plus 6, is nul. Kijk: er staat een keersom, en die is nul. Dan gebruiken we truc twee. Werk de haakjes dus níet weg, dat maakt het alleen moeilijker." },
+    zeg: "Nu som 3b. x keer haakje 2x plus 6, is nul. Kijk: er staat een keersom, en die is nul. Dan gebruiken we truc twee. Werk de haakjes dus níet weg, dat maakt het alleen moeilijker." },
   { deel: "3b", tekst: `${F("x = 0")} of ${F("2x + 6 = 0")}`, beeld: () => plot(B),
     zeg: "Het eerste stuk is x. Het tweede stuk is 2x plus 6. Eén van de twee moet nul zijn. Dus: x is nul, of 2x plus 6 is nul." },
   { deel: "3b", tekst: `${F("2x + 6 = 0")} → ${F("2x = −6")} → ${F("x = −3")}`, beeld: () => plot(B),
@@ -176,7 +176,7 @@ const STAPPEN = [
     zeg: "Het antwoord is: x is nul, of x is min 3. In de grafiek zie je het: daar raakt de parabool de x-as, daar is y nul. Controle: vul min 3 in. 2 keer min 3 plus 6 is nul. Klopt!" },
 
   { deel: "3c", tekst: F("(x − 3)(x + 4½) = 0"), beeld: () => plot(C),
-    zeg: "Dan c. Haakje x min 3, keer haakje x plus vier en een half, is nul. Weer een keersom die nul is. Dus weer truc twee." },
+    zeg: "Dan som 3c. Haakje x min 3, keer haakje x plus vier en een half, is nul. Weer een keersom die nul is. Dus weer truc twee." },
   { deel: "3c", tekst: `${F("x − 3 = 0")} → ${F("x = 3")}`, beeld: () => plot({ ...C, pts: [[3, 0, "3"]], wijs: [[3, 0]] }),
     zeg: "Eerste stuk: x min 3 is nul. Welk getal min 3 is nul? Dat is 3. Dus x is 3." },
   { deel: "3c", tekst: `${F("x + 4½ = 0")} → ${F("x = −4½")}`, beeld: () => plot({ ...C, pts: [[3, 0, "3"], [-4.5, 0, "−4½"]], wijs: [[-4.5, 0]] }),
@@ -185,7 +185,7 @@ const STAPPEN = [
     zeg: "Het antwoord is: x is 3, of x is min vier en een half. Handig om te onthouden: bij haakje x min 3 hoort x is plus 3, en bij haakje x plus vier en een half hoort x is min vier en een half." },
 
   { deel: "3d", tekst: F("x² − 6x + 8 = 0"), beeld: () => plot(D),
-    zeg: "En de laatste, d. x kwadraat min 6x plus 8, is nul. Hier staat géén keersom, maar een plussom. Truc twee werkt dus nog niet. Eerst moeten we er een keersom van maken. Dat heet ontbinden in factoren." },
+    zeg: "En de laatste: som 3d. x kwadraat min 6x plus 8, is nul. Hier staat géén keersom, maar een plussom. Truc twee werkt dus nog niet. Eerst moeten we er een keersom van maken. Dat heet ontbinden in factoren." },
   { deel: "3d", tekst: `Zoek twee getallen:<br>keer = ${F("8")} en plus = ${F("−6")}`, beeld: () => tabel(paren, -1),
     zeg: "Zoek twee getallen die keer elkaar 8 zijn, en opgeteld min 6. Het getal 8 is het losse getal achteraan. Min 6 is het getal voor de x. Maak een lijstje van alle tweetallen die keer elkaar 8 zijn." },
   { deel: "3d", tekst: `${F("−2 · −4 = 8")} en ${F("−2 + −4 = −6")}`, beeld: () => tabel(paren, 3),
@@ -198,9 +198,9 @@ const STAPPEN = [
     zeg: "Controleer altijd even door in te vullen. Vul 4 in: 4 kwadraat is 16. Min 6 keer 4 is min 24. Plus 8. 16 min 24 plus 8 is nul. Het klopt!" },
 
   { deel: "Samenvatting", tekst: `a ${G("x = 5 of −5")} · b ${G("x = 0 of −3")}<br>c ${G("x = 3 of −4½")} · d ${G("x = 2 of 4")}`,
-    zeg: "Kort samengevat. Bij a: x kwadraat is een getal, dus wortel, en vergeet het min-antwoord niet. Bij b en c: een keersom is nul, dus elk stuk apart nul maken. Bij d: eerst ontbinden in een keersom, en dan hetzelfde trucje. En elke vergelijking had twee antwoorden." },
+    zeg: "Kort samengevat. Bij som 3a: x kwadraat is een getal, dus wortel, en vergeet het min-antwoord niet. Bij som 3b en 3c: een keersom is nul, dus elk stuk apart nul maken. Bij som 3d: eerst ontbinden in een keersom, en dan hetzelfde trucje. En elke vergelijking had twee antwoorden." },
   { deel: "Klaar", tekst: "Nu jij! Maak 3a t/m 3d zelf,<br>zonder te kijken.", eind: true,
-    zeg: "Goed gedaan, Esra! Pak nu je blad en maak som 3 zelf, zonder te spieken. Lukt het niet? Spoel dan terug naar dat stukje. Succes!" }
+    zeg: "Goed gedaan! Pak nu je blad en maak som 3 zelf, zonder te spieken. Lukt het niet? Spoel dan terug naar dat stukje. Succes!" }
 ];
 
 /* Wat Delta per stap op het bord schrijft. Regels blijven staan binnen dezelfde som; "!" = antwoord. */
